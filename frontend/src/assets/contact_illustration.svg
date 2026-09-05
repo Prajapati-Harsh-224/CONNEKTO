@@ -1,0 +1,83 @@
+<svg width="960" height="620" viewBox="0 0 960 620" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background blobs -->
+  <ellipse cx="280" cy="180" rx="180" ry="160" fill="#FDF3EE" opacity="0.6"/>
+  <ellipse cx="720" cy="420" rx="160" ry="140" fill="#EAF2EB" opacity="0.5"/>
+  
+  <!-- Decorative leaves -->
+  <path d="M140 440 Q 160 420 180 440 Q 160 460 140 440 Z" fill="#68B684" opacity="0.7"/>
+  <path d="M150 460 Q 170 450 180 470 Q 170 480 150 460 Z" fill="#4A9D6A" opacity="0.8"/>
+  <path d="M760 220 Q 780 210 790 230 Q 780 240 760 220 Z" fill="#68B684" opacity="0.6"/>
+  <path d="M770 240 Q 785 235 790 250 Q 785 255 770 240 Z" fill="#4A9D6A" opacity="0.7"/>
+  
+  <!-- Laptop/Device -->
+  <rect x="240" y="260" width="480" height="300" rx="8" fill="#2C3E50"/>
+  <rect x="260" y="280" width="440" height="260" rx="4" fill="#FFFFFF"/>
+  
+  <!-- Envelope on laptop -->
+  <path d="M380 360 L480 420 L580 360 L480 300 Z" fill="#FF8A65"/>
+  <path d="M380 360 L480 420 L580 360 L580 460 L380 460 Z" fill="#FF7043"/>
+  <path d="M380 360 L480 420 L580 360" stroke="#E8E5DE" stroke-width="2"/>
+  
+  <!-- Message paper inside envelope -->
+  <rect x="420" y="380" width="120" height="60" rx="3" fill="#FFFFFF"/>
+  <line x1="430" y1="395" x2="530" y2="395" stroke="#D4D7CF" stroke-width="2"/>
+  <line x1="430" y1="410" x2="510" y2="410" stroke="#D4D7CF" stroke-width="2"/>
+  <line x1="430" y1="425" x2="520" y2="425" stroke="#D4D7CF" stroke-width="2"/>
+  
+  <!-- Connekto badge on device -->
+  <circle cx="660" cy="290" r="28" fill="#FF7043"/>
+  <text x="660" y="298" text-anchor="middle" fill="#FFFFFF" font-family="Arial" font-size="24" font-weight="700">C</text>
+  
+  <!-- Paper plane with trail -->
+  <path d="M700 80 L760 140" stroke="#FF8A65" stroke-width="2" stroke-dasharray="8 4"/>
+  <path d="M760 140 Q 800 120 780 90" stroke="#FF8A65" stroke-width="2" stroke-dasharray="8 4"/>
+  <path d="M720 110 L780 90 L760 140 L720 120 Z" fill="#FF7043"/>
+  
+  <!-- "Let's Connect" text -->
+  <text x="820" y="160" font-family="'Brush Script MT', cursive" font-size="32" fill="#2C3E50" font-style="italic">Let's</text>
+  <text x="820" y="195" font-family="'Brush Script MT', cursive" font-size="32" fill="#2C3E50" font-style="italic">Connect</text>
+  <path d="M820 200 L920 210" stroke="#FF7043" stroke-width="3" stroke-linecap="round"/>
+  
+  <!-- Message bubble card - Questions -->
+  <rect x="100" y="300" width="180" height="110" rx="12" fill="#FFFFFF" stroke="#E8E5DE" stroke-width="2"/>
+  <circle cx="145" cy="340" r="22" fill="#FFE8E0"/>
+  <path d="M135 335 Q 138 330 145 330 Q 152 330 155 335 Q 158 340 155 345 Q 152 350 145 350 Q 138 350 135 345 Q 132 340 135 335 Z M145 360 L145 365" stroke="#FF7043" stroke-width="3" stroke-linecap="round" fill="none"/>
+  <text x="185" y="340" font-family="Arial" font-size="18" font-weight="700" fill="#2C3E50">Questions</text>
+  <text x="185" y="360" font-family="Arial" font-size="13" fill="#5A6E78">We're here</text>
+  <text x="185" y="378" font-family="Arial" font-size="13" fill="#5A6E78">to help</text>
+  
+  <!-- Message bubble top left -->
+  <path d="M180 180 L280 180 L280 230 L265 230 L250 245 L250 230 L180 230 Z" fill="#C8E6C9" rx="8"/>
+  <circle cx="210" cy="205" r="6" fill="#4A9D6A"/>
+  <circle cx="230" cy="205" r="6" fill="#4A9D6A"/>
+  <circle cx="250" cy="205" r="6" fill="#4A9D6A"/>
+  <path d="M190 190 L200 180 L195 175" stroke="#FF7043" stroke-width="2" stroke-linecap="round"/>
+  
+  <!-- Ideas card -->
+  <rect x="750" y="300" width="170" height="110" rx="12" fill="#FFFFFF" stroke="#E8E5DE" stroke-width="2"/>
+  <circle cx="790" cy="340" r="22" fill="#FFF4E0"/>
+  <circle cx="790" cy="335" r="8" stroke="#FFB300" stroke-width="2" fill="none"/>
+  <path d="M790 343 L790 355 M780 355 L800 355 M782 360 L798 360" stroke="#FFB300" stroke-width="2" stroke-linecap="round"/>
+  <text x="825" y="340" font-family="Arial" font-size="18" font-weight="700" fill="#2C3E50">Ideas</text>
+  <text x="825" y="360" font-family="Arial" font-size="13" fill="#5A6E78">Share your</text>
+  <text x="825" y="378" font-family="Arial" font-size="13" fill="#5A6E78">thoughts</text>
+  
+  <!-- Partnerships card -->
+  <rect x="680" y="450" width="210" height="110" rx="12" fill="#FFFFFF" stroke="#E8E5DE" stroke-width="2"/>
+  <circle cx="730" cy="495" r="22" fill="#E8E0F5"/>
+  <circle cx="720" cy="490" r="8" fill="#8E44AD"/>
+  <circle cx="740" cy="490" r="8" fill="#8E44AD"/>
+  <circle cx="730" cy="502" r="8" fill="#8E44AD"/>
+  <text x="770" y="488" font-family="Arial" font-size="18" font-weight="700" fill="#2C3E50">Partnerships</text>
+  <text x="770" y="510" font-family="Arial" font-size="13" fill="#5A6E78">Let's grow</text>
+  <text x="770" y="528" font-family="Arial" font-size="13" fill="#5A6E78">together</text>
+  
+  <!-- Decorative dots -->
+  <circle cx="160" cy="560" r="6" fill="#FF8A65"/>
+  <circle cx="180" cy="565" r="4" fill="#FF8A65" opacity="0.6"/>
+  <circle cx="600" cy="570" r="6" fill="#FF8A65"/>
+  <circle cx="620" cy="575" r="4" fill="#FF8A65" opacity="0.6"/>
+  
+  <!-- Curved dotted line -->
+  <path d="M80 520 Q 150 480 220 500" stroke="#FF8A65" stroke-width="2" stroke-dasharray="4 6" fill="none" opacity="0.5"/>
+</svg>

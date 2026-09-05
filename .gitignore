@@ -1,0 +1,30 @@
+node_modules/
+dist/
+.env
+.env.*
+!.env.example
+coverage/
+.DS_Store
+
+# Runtime and local backend data
+backend/data/
+backend/uploads/
+*.db
+*.db-shm
+*.db-wal
+*.sqlite
+*.sqlite3
+*.log
+logs/
+
+# Editor and operating system files
+.vscode/
+.idea/
+*.swp
+Thumbs.db
+Desktop.ini
+
+# Python local files
+.venv/
+__pycache__/
+*.py[cod]

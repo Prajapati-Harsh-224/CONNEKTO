@@ -1,0 +1,36 @@
+services:
+  backend:
+    build:
+      context: ./backend
+    environment:
+      CLIENT_ORIGIN: http://localhost:5173
+      DATABASE_URL: sqlite:////app/data/connekto.db
+    volumes:
+      - backend-data:/app/data
+    ports:
+      - "4000:4000"
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - >-
+          import urllib.request;
+          urllib.request.urlopen('http://127.0.0.1:4000/api/health')
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  frontend:
+    build:
+      context: ./frontend
+      args:
+        VITE_API_BASE_URL: /api
+    depends_on:
+      backend:
+        condition: service_healthy
+    ports:
+      - "5173:80"
+
+volumes:
+  backend-data:

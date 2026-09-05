@@ -1,0 +1,89 @@
+import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import './App.css'
+import AppShell from './layouts/AppShell.jsx'
+import RoleLayout from './layouts/RoleLayout.jsx'
+import AuthPlaceholderPage from './pages/AuthPlaceholderPage.jsx'
+import DashboardPlaceholderPage from './pages/DashboardPlaceholderPage.jsx'
+import LoginPage from './pages/LoginPage.jsx'
+import RoleSelectionPage from './pages/RoleSelectionPage.jsx'
+import SignupPage from './pages/SignupPage.jsx'
+import ShopOwnerDashboardPage from './pages/ShopOwnerDashboardPage.jsx'
+import SupplierListPage from './pages/SupplierListPage.jsx'
+import SupplierDetailPage from './pages/SupplierDetailPage.jsx'
+import SupplierCatalogPage from './pages/SupplierCatalogPage.jsx'
+import ProductDetailPage from './pages/ProductDetailPage.jsx'
+import ShopOwnerCartPage from './pages/ShopOwnerCartPage.jsx'
+import CheckoutPage from './pages/CheckoutPage.jsx'
+import ShopOwnerOrdersPage from './pages/ShopOwnerOrdersPage.jsx'
+import ShopOwnerOrderDetailPage from './pages/ShopOwnerOrderDetailPage.jsx'
+import ProtectedRoute from './components/ProtectedRoute.jsx'
+import WelcomePage from './pages/WelcomePage.jsx'
+import SupplierDashboardPage from './pages/SupplierDashboardPage.jsx'
+import SupplierIncomingOrdersPage from './pages/SupplierIncomingOrdersPage.jsx'
+import SupplierIncomingOrderDetailPage from './pages/SupplierIncomingOrderDetailPage.jsx'
+import SupplierProductManagementPage from './pages/SupplierProductManagementPage.jsx'
+import SupplierAnalyticsPage from './pages/SupplierAnalyticsPage.jsx'
+import SupplierCustomersPage from './pages/SupplierCustomersPage.jsx'
+import ShopOwnerAnalyticsPage from './pages/ShopOwnerAnalyticsPage.jsx'
+import ShopOwnerAssistantPage from './pages/ShopOwnerAssistantPage.jsx'
+import GruhUdyogDashboardPage from './pages/GruhUdyogDashboardPage.jsx'
+import GruhUdyogProductsPage from './pages/GruhUdyogProductsPage.jsx'
+import GruhUdyogServiceAreasPage from './pages/GruhUdyogServiceAreasPage.jsx'
+import GruhUdyogOrdersPage from './pages/GruhUdyogOrdersPage.jsx'
+import ProfilePage from './pages/ProfilePage.jsx'
+
+export default function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route element={<AppShell />}>
+          <Route index element={<WelcomePage />} />
+          <Route path="role-selection" element={<RoleSelectionPage />} />
+          <Route path="login" element={<LoginPage />} />
+          <Route path="signup" element={<SignupPage />} />
+          <Route path="forgot-password" element={<AuthPlaceholderPage />} />
+          <Route path="dashboard/shop-owner" element={<ProtectedRoute allowedRole="SHOP_OWNER"><RoleLayout role="shop-owner" /></ProtectedRoute>}>
+            <Route index element={<ShopOwnerDashboardPage />} />
+            <Route path="home" element={<ShopOwnerDashboardPage />} />
+            <Route path="suppliers" element={<SupplierListPage />} />
+            <Route path="cart" element={<ShopOwnerCartPage />} />
+            <Route path="checkout" element={<CheckoutPage />} />
+            <Route path="orders" element={<ShopOwnerOrdersPage />} />
+            <Route path="orders/:orderId" element={<ShopOwnerOrderDetailPage />} />
+            <Route path="analytics" element={<ShopOwnerAnalyticsPage />} />
+            <Route path="assistant" element={<ShopOwnerAssistantPage />} />
+            <Route path="profile" element={<ProfilePage role="shop-owner" />} />
+            <Route path="suppliers/:supplierId" element={<SupplierDetailPage />} />
+            <Route path="suppliers/:supplierId/products" element={<SupplierCatalogPage />} />
+            <Route path="suppliers/:supplierId/products/:productId" element={<ProductDetailPage />} />
+            <Route path=":section" element={<DashboardPlaceholderPage />} />
+          </Route>
+          <Route path="dashboard/supplier" element={<ProtectedRoute allowedRole="SUPPLIER"><RoleLayout role="supplier" /></ProtectedRoute>}>
+            <Route index element={<SupplierDashboardPage />} />
+            <Route path="home" element={<SupplierDashboardPage />} />
+            <Route path="orders" element={<SupplierIncomingOrdersPage />} />
+            <Route path="orders/:orderId" element={<SupplierIncomingOrderDetailPage />} />
+            <Route path="products" element={<SupplierProductManagementPage />} />
+            <Route path="customers" element={<SupplierCustomersPage />} />
+            <Route path="analytics" element={<SupplierAnalyticsPage />} />
+            <Route path="profile" element={<ProfilePage role="supplier" />} />
+            <Route path=":section" element={<DashboardPlaceholderPage />} />
+          </Route>
+          <Route path="dashboard/gruh-udyog" element={<ProtectedRoute allowedRole="GRUH_UDYOG"><RoleLayout role="gruh-udyog" /></ProtectedRoute>}>
+            <Route index element={<GruhUdyogDashboardPage />} />
+            <Route path="home" element={<GruhUdyogDashboardPage />} />
+            <Route path="products" element={<GruhUdyogProductsPage />} />
+            <Route path="service-areas" element={<GruhUdyogServiceAreasPage />} />
+            <Route path="orders" element={<GruhUdyogOrdersPage />} />
+            <Route path="profile" element={<ProfilePage role="gruh-udyog" />} />
+            <Route path=":section" element={<DashboardPlaceholderPage />} />
+          </Route>
+          <Route path="dashboard/:role" element={<RoleLayout />}>
+            <Route index element={<DashboardPlaceholderPage />} />
+            <Route path=":section" element={<DashboardPlaceholderPage />} />
+          </Route>
+        </Route>
+      </Routes>
+    </BrowserRouter>
+  )
+}
