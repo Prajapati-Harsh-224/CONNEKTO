@@ -15,6 +15,11 @@ load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_DATABASE_URL)
 
+if DATABASE_URL.startswith("sqlite"):
+    sqlite_db_path = Path(DATABASE_URL.split("sqlite:///", 1)[1] if DATABASE_URL.startswith("sqlite:///") else "/app/connekto.db")
+    sqlite_db_path.parent.mkdir(parents=True, exist_ok=True)
+    DATABASE_URL = f"sqlite:///{sqlite_db_path.as_posix()}"
+
 try:
     if DATABASE_URL.startswith("mysql"):
         mysql_engine = create_engine(DATABASE_URL, pool_pre_ping=True, future=True)
@@ -22,9 +27,11 @@ try:
             connection.execute(text("SELECT 1"))
         engine = mysql_engine
     else:
-        engine = create_engine("sqlite:///./connekto.db", future=True)
+        engine = create_engine(DATABASE_URL, future=True)
 except Exception:
-    DATABASE_URL = "sqlite:///./connekto.db"
+    fallback_path = Path("/app/data/connekto.db")
+    fallback_path.parent.mkdir(parents=True, exist_ok=True)
+    DATABASE_URL = f"sqlite:///{fallback_path.as_posix()}"
     engine = create_engine(DATABASE_URL, future=True)
 
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, expire_on_commit=False)
