@@ -5,6 +5,7 @@ const statusLabels = {
   Accepted: 'accepted',
   Preparing: 'preparing',
   'Out for Delivery': 'outForDelivery',
+  'On the way': 'onTheWay',
   Delivered: 'delivered',
   Cancelled: 'cancelled',
 }
