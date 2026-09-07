@@ -5095,3 +5095,27 @@ p {
         padding: 0;
     }
 }
+
+/* ============================================================
+   REMOVE SCROLLBAR FROM WELCOME, SIGNUP, LOGIN, & ROLE SELECTION PAGES
+   ============================================================ */
+html.auth-no-scroll,
+body.auth-no-scroll,
+html.auth-no-scroll *,
+body.auth-no-scroll *,
+.home-page,
+.home-page * {
+    -ms-overflow-style: none !important;
+    scrollbar-width: none !important;
+}
+
+html.auth-no-scroll::-webkit-scrollbar,
+body.auth-no-scroll::-webkit-scrollbar,
+html.auth-no-scroll *::-webkit-scrollbar,
+body.auth-no-scroll *::-webkit-scrollbar,
+.home-page::-webkit-scrollbar,
+.home-page *::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+}

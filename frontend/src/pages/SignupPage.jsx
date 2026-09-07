@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useSearchParams } from 'react-router-dom'
+import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import FormField from '../components/FormField.jsx'
 import PasswordField from '../components/PasswordField.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
@@ -7,22 +7,25 @@ import { register } from '../services/authService.js'
 import { getSelectedRole, saveSelectedRole } from '../utils/roleStorage.js'
 
 const roles = ['SHOP_OWNER', 'SUPPLIER', 'GRUH_UDYOG']
-const initialForm = { name: '', gruhName: '', shopName: '', shopAddress: '', area: '', phone: '', email: '', identifier: '', password: '', confirmPassword: '' }
+const initialForm = { name: '', shopName: '', shopAddress: '', area: '', phone: '', email: '', password: '', confirmPassword: '' }
 
 function validateForm(form, role, hasConsent) {
   const errors = {}
   if (!role || !roles.includes(role)) errors.role = 'Choose a role before creating your account.'
   if (!form.name.trim()) errors.name = 'Enter your full name.'
+
   if (role === 'SHOP_OWNER') {
     if (!form.shopName.trim()) errors.shopName = 'Enter your shop name.'
     if (!form.shopAddress.trim()) errors.shopAddress = 'Enter your shop address.'
     if (!form.area.trim()) errors.area = 'Enter your shop area.'
     if (!form.phone.trim()) errors.phone = 'Enter your phone number.'
     if (form.email.trim() && !/^\S+@\S+\.\S+$/.test(form.email.trim())) errors.email = 'Enter a valid email address.'
-  } else {
-    if (role === 'GRUH_UDYOG' && !form.gruhName.trim()) errors.gruhName = 'Enter your Gruh Udyog name.'
-    if (!form.identifier.trim()) errors.identifier = 'Enter your email or phone number.'
+  } else if (role === 'SUPPLIER' || role === 'GRUH_UDYOG') {
+    if (!form.area.trim()) errors.area = 'Enter your area.'
+    if (!form.phone.trim()) errors.phone = 'Enter your phone number.'
+    if (form.email.trim() && !/^\S+@\S+\.\S+$/.test(form.email.trim())) errors.email = 'Enter a valid email address.'
   }
+
   if (form.password.length < 8) errors.password = 'Use at least 8 characters.'
   if (form.confirmPassword !== form.password) errors.confirmPassword = 'Passwords do not match.'
   if (!hasConsent) errors.consent = 'Please accept the terms to continue.'
@@ -30,6 +33,7 @@ function validateForm(form, role, hasConsent) {
 }
 
 export default function SignupPage() {
+  const navigate = useNavigate()
   const [searchParams] = useSearchParams()
   const roleFromUrl = searchParams.get('role')
   const selectedRole = roles.includes(roleFromUrl) ? roleFromUrl : getSelectedRole()
@@ -66,10 +70,10 @@ export default function SignupPage() {
     setIsSubmitting(true)
     try {
       const credentials = selectedRole === 'SHOP_OWNER'
-        ? { name: form.name.trim(), shopName: form.shopName.trim(), shopAddress: form.shopAddress.trim(), area: form.area.trim(), phone: form.phone.trim(), email: form.email.trim(), password: form.password, role: selectedRole }
-        : { name: form.name.trim(), identifier: form.identifier.trim(), password: form.password, role: selectedRole }
+        ? { name: form.name.trim(), shopName: form.shopName.trim(), shopAddress: form.shopAddress.trim(), area: form.area.trim(), phone: form.phone.trim(), email: form.email.trim(), password: form.password, confirmPassword: form.confirmPassword, role: selectedRole }
+        : { name: form.name.trim(), area: form.area.trim(), phone: form.phone.trim(), email: form.email.trim(), password: form.password, confirmPassword: form.confirmPassword, role: selectedRole }
       await register(credentials)
-      setSuccessMessage('Signup request completed. Your account setup will continue next.')
+      navigate('/login')
     } catch (error) {
       setRequestError(error.message)
     } finally {
@@ -99,31 +103,33 @@ export default function SignupPage() {
         </div>
         {errors.role && <p className="form-message error" role="alert">{errors.role}</p>}
         {selectedRole === 'SHOP_OWNER' ? <>
-          <div className="signup-section"><h2>{t('businessInformation')}</h2><div className="signup-field-grid">
+          <div className="signup-section"><div className="signup-field-grid">
             <FormField autoComplete="name" error={errors.name} label={`${t('fullName')} *`} name="name" onChange={updateField} placeholder={t('userName')} type="text" value={form.name} />
             <FormField autoComplete="organization" error={errors.shopName} label={`${t('shopName')} *`} name="shopName" onChange={updateField} placeholder={t('shopName')} type="text" value={form.shopName} />
             <FormField autoComplete="street-address" error={errors.shopAddress} label={`${t('shopAddress')} *`} name="shopAddress" onChange={updateField} placeholder={t('shopAddress')} type="text" value={form.shopAddress} />
             <FormField autoComplete="address-level2" error={errors.area} label={`${t('area')} *`} name="area" onChange={updateField} placeholder={t('area')} type="text" value={form.area} />
           </div></div>
-          <div className="signup-section"><h2>{t('contactInformation')}</h2><div className="signup-field-grid">
+          <div className="signup-section"><div className="signup-field-grid">
             <FormField autoComplete="tel" error={errors.phone} label={`${t('phoneNumber')} *`} name="phone" onChange={updateField} placeholder="+91 98765 43210" type="tel" value={form.phone} />
             <FormField autoComplete="email" error={errors.email} label={t('optionalEmail')} name="email" onChange={updateField} placeholder="you@example.com" type="email" value={form.email} />
           </div></div>
-          <div className="signup-section"><h2>{t('security')}</h2><div className="signup-field-grid">
+          <div className="signup-section"><div className="signup-field-grid">
             <PasswordField autoComplete="new-password" error={errors.password} label={`${t('password')} *`} name="password" onChange={updateField} value={form.password} />
             <PasswordField autoComplete="new-password" error={errors.confirmPassword} label={`${t('confirmPassword')} *`} name="confirmPassword" onChange={updateField} value={form.confirmPassword} />
           </div></div>
-        </> : selectedRole === 'SUPPLIER' ? <>
-          <FormField autoComplete="name" error={errors.name} label={`${t('fullName')} *`} name="name" onChange={updateField} placeholder={t('userName')} type="text" value={form.name} />
-          <FormField autoComplete="username" error={errors.identifier} label={`${t('emailOrPhoneNumber')} *`} name="identifier" onChange={updateField} placeholder={t('enterEmailOrPhone')} type="text" value={form.identifier} />
-          <PasswordField autoComplete="new-password" error={errors.password} label={`${t('password')} *`} name="password" onChange={updateField} placeholder={t('enterYourPassword')} value={form.password} />
-          <PasswordField autoComplete="new-password" error={errors.confirmPassword} label={`${t('confirmPassword')} *`} name="confirmPassword" onChange={updateField} placeholder={t('confirmPassword')} value={form.confirmPassword} />
         </> : <>
-          <FormField autoComplete="organization" error={errors.gruhName} label={`${t('gruhUdyogName')} *`} name="gruhName" onChange={updateField} placeholder={t('enterGruhUdyogName')} type="text" value={form.gruhName} />
-          <FormField autoComplete="name" error={errors.name} label={`${t('fullName')} *`} name="name" onChange={updateField} placeholder={t('userName')} type="text" value={form.name} />
-          <FormField autoComplete="username" error={errors.identifier} label={`${t('emailOrPhoneNumber')} *`} name="identifier" onChange={updateField} placeholder={t('enterEmailOrPhone')} type="text" value={form.identifier} />
-          <PasswordField autoComplete="new-password" error={errors.password} label={`${t('password')} *`} name="password" onChange={updateField} placeholder={t('enterYourPassword')} value={form.password} />
-          <PasswordField autoComplete="new-password" error={errors.confirmPassword} label={`${t('confirmPassword')} *`} name="confirmPassword" onChange={updateField} placeholder={t('confirmPassword')} value={form.confirmPassword} />
+          <div className="signup-section"><div className="signup-field-grid">
+            <FormField autoComplete="name" error={errors.name} label={`${t('fullName')} *`} name="name" onChange={updateField} placeholder={t('userName')} type="text" value={form.name} />
+            <FormField autoComplete="address-level2" error={errors.area} label={`${t('area')} *`} name="area" onChange={updateField} placeholder={t('area')} type="text" value={form.area} />
+          </div></div>
+          <div className="signup-section"><div className="signup-field-grid">
+            <FormField autoComplete="tel" error={errors.phone} label={`${t('phoneNumber')} *`} name="phone" onChange={updateField} placeholder="+91 98765 43210" type="tel" value={form.phone} />
+            <FormField autoComplete="email" error={errors.email} label={t('optionalEmail')} name="email" onChange={updateField} placeholder="you@example.com" type="email" value={form.email} />
+          </div></div>
+          <div className="signup-section"><div className="signup-field-grid">
+            <PasswordField autoComplete="new-password" error={errors.password} label={`${t('password')} *`} name="password" onChange={updateField} value={form.password} />
+            <PasswordField autoComplete="new-password" error={errors.confirmPassword} label={`${t('confirmPassword')} *`} name="confirmPassword" onChange={updateField} value={form.confirmPassword} />
+          </div></div>
         </>}
         <label className={`consent-field${errors.consent ? ' consent-error' : ''}`}>
           <input checked={hasConsent} onChange={updateConsent} type="checkbox" />

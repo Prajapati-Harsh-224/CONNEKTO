@@ -26,29 +26,43 @@ def validate_http_image_url(value: str | None) -> str:
     return cleaned
 
 class ShopOwnerRegisterRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    role: Literal["SHOP_OWNER"]
+    model_config = ConfigDict(extra="ignore")
+    role: Literal["SHOP_OWNER"] = "SHOP_OWNER"
     name: str
     password: str
+    confirmPassword: str | None = None
     shopName: str
     shopAddress: str
     area: str
     phone: str
     email: str = ""
 
-class OtherRoleRegisterRequest(BaseModel):
-    model_config = ConfigDict(extra="forbid")
-    role: Literal["SUPPLIER", "GRUH_UDYOG"]
+class SupplierRegisterRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    role: Literal["SUPPLIER"] = "SUPPLIER"
     name: str
-    identifier: str
+    area: str
+    phone: str
+    email: str = ""
     password: str
+    confirmPassword: str | None = None
 
-RegisterRequest = Annotated[Union[ShopOwnerRegisterRequest, OtherRoleRegisterRequest], Field(discriminator="role")]
+class GruhUdyogRegisterRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    role: Literal["GRUH_UDYOG"] = "GRUH_UDYOG"
+    name: str
+    area: str
+    phone: str
+    email: str = ""
+    password: str
+    confirmPassword: str | None = None
+
+RegisterRequest = Annotated[Union[ShopOwnerRegisterRequest, SupplierRegisterRequest, GruhUdyogRegisterRequest], Field(discriminator="role")]
 
 class LoginRequest(BaseModel):
-    identifier: str
+    model_config = ConfigDict(extra="ignore")
+    emailOrPhone: str
     password: str
-    role: str | None = None
 
 class ProductRequest(BaseModel):
     name: str

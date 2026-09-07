@@ -4,14 +4,12 @@ import FormField from '../components/FormField.jsx'
 import PasswordField from '../components/PasswordField.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
-import { getRoleLabel } from '../utils/roleLabels.js'
-import { getSelectedRole } from '../utils/roleStorage.js'
+import { getSelectedRole, saveSelectedRole } from '../utils/roleStorage.js'
 
 const initialForm = { identifier: '', password: '' }
 
-function validateForm(form, selectedRole) {
+function validateForm(form) {
   const errors = {}
-  if (!selectedRole) errors.role = 'Choose a role before signing in.'
   if (!form.identifier.trim()) errors.identifier = 'Enter your email or phone number.'
   if (!form.password) errors.password = 'Enter your password.'
   return errors
@@ -38,7 +36,7 @@ export default function LoginPage() {
 
   async function handleSubmit(event) {
     event.preventDefault()
-    const validationErrors = validateForm(form, selectedRole)
+    const validationErrors = validateForm(form)
     setErrors(validationErrors)
     setRequestError('')
     setSuccessMessage('')
@@ -46,8 +44,10 @@ export default function LoginPage() {
 
     setIsSubmitting(true)
     try {
-      await signIn({ identifier: form.identifier.trim(), password: form.password, role: selectedRole })
-      navigate(selectedRole === 'SHOP_OWNER' ? '/dashboard/shop-owner' : `/dashboard/${selectedRole.toLowerCase().replaceAll('_', '-')}`)
+      const signedInUser = await signIn({ emailOrPhone: form.identifier.trim(), password: form.password })
+      const effectiveRole = signedInUser?.role || selectedRole || 'SHOP_OWNER'
+      saveSelectedRole(effectiveRole)
+      navigate(effectiveRole === 'SHOP_OWNER' ? '/dashboard/shop-owner' : `/dashboard/${effectiveRole.toLowerCase().replaceAll('_', '-')}`)
     } catch (error) {
       setRequestError(error.message)
     } finally {
@@ -70,7 +70,7 @@ export default function LoginPage() {
           <p>{t('shopOwnerLoginSubtitle')}</p>
           <Link className="signup-card-change-role" to="/role-selection">{t('changeRole')}</Link>
         </header>}
-        <div className={`selected-role${errors.role ? ' selected-role-error' : ''}`}>
+        <div className="selected-role">
           <span className="muted">{t('signingInAs')}</span>
           <strong>{selectedRole ? t(selectedRole === 'SHOP_OWNER' ? 'shopOwner' : selectedRole === 'SUPPLIER' ? 'supplier' : 'gruhUdyog') : t('noRoleSelected')}</strong>
           <Link to="/role-selection">{t('changeRole')}</Link>

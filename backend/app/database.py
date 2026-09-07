@@ -15,22 +15,16 @@ load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
 DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_DATABASE_URL)
 
-if DATABASE_URL.startswith("mysql+pymysql"):
-    try:
-        import pymysql
-    except ImportError:
-        DATABASE_URL = DATABASE_URL.replace("mysql+pymysql", "mysql+mysqldb", 1)
-
-if DATABASE_URL.startswith("mysql"):
-    mysql_engine = create_engine(DATABASE_URL, pool_pre_ping=True, future=True)
-    try:
+try:
+    if DATABASE_URL.startswith("mysql"):
+        mysql_engine = create_engine(DATABASE_URL, pool_pre_ping=True, future=True)
         with mysql_engine.connect() as connection:
             connection.execute(text("SELECT 1"))
         engine = mysql_engine
-    except Exception:
-        DATABASE_URL = "sqlite:///./connekto.db"
-        engine = create_engine(DATABASE_URL, future=True)
-else:
+    else:
+        engine = create_engine("sqlite:///./connekto.db", future=True)
+except Exception:
+    DATABASE_URL = "sqlite:///./connekto.db"
     engine = create_engine(DATABASE_URL, future=True)
 
 SessionLocal = sessionmaker(bind=engine, autoflush=False, autocommit=False, expire_on_commit=False)

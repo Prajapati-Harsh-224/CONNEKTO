@@ -9,12 +9,12 @@ from uuid import uuid4
 from fastapi import Depends, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from sqlalchemy import select
+from sqlalchemy import func, or_, select, text
 from sqlalchemy.orm import Session, joinedload
 
 from .database import Base, SessionLocal, engine, get_db
 from .models import Checkout, OrderItem, Product, SessionToken, Shop, Supplier, SupplierOrder, User
-from .schemas import CheckoutRequest, LoginRequest, ProductRequest, RegisterRequest, StatusRequest
+from .schemas import CheckoutRequest, LoginRequest, ProductRequest, ShopOwnerRegisterRequest, SupplierRegisterRequest, GruhUdyogRegisterRequest, StatusRequest
 
 SESSION_COOKIE = "connecto_session"
 SESSION_DAYS = 7
@@ -33,6 +33,11 @@ app.add_middleware(CORSMiddleware, allow_origins=[CLIENT_ORIGIN], allow_credenti
 @app.on_event("startup")
 def startup() -> None:
     Base.metadata.create_all(bind=engine)
+    try:
+        with engine.begin() as conn:
+            conn.execute(text("ALTER TABLE users ADD COLUMN area VARCHAR(100)"))
+    except Exception:
+        pass
 
 
 def envelope(data=None, message="OK", success=True):
@@ -67,7 +72,16 @@ def normalize_identifier(value: str) -> str:
 
 
 def safe_user(user: User) -> dict:
-    result = {"id": user.id, "name": user.name, "email": user.email, "phone": user.phone, "role": user.role, "createdAt": user.created_at.isoformat()}
+    user_area = user.area or (user.shop.area if user.shop else None)
+    result = {
+        "id": user.id,
+        "name": user.name,
+        "email": user.email,
+        "phone": user.phone,
+        "area": user_area,
+        "role": user.role,
+        "createdAt": user.created_at.isoformat()
+    }
     if user.shop:
         result["shop"] = {"name": user.shop.name, "address": user.shop.address, "area": user.shop.area}
     return result
@@ -115,41 +129,159 @@ def order_json(order: SupplierOrder) -> dict:
 def health():
     return envelope({"service": "connecto-api", "status": "ok"}, "API is healthy")
 
-@app.post("/api/auth/register", status_code=201)
-def register(payload: RegisterRequest, response: Response, db: Session = Depends(get_db)):
-    if payload.role not in ROLES:
+
+def _process_registration(
+    db: Session,
+    response: Response,
+    role: str,
+    name: str,
+    area: str,
+    phone: str,
+    email: str | None,
+    password: str,
+    confirm_password: str | None = None,
+    shop_name: str | None = None,
+    shop_address: str | None = None,
+    identifier: str | None = None
+):
+    if role not in ROLES:
         return error("Choose a supported Connecto role.", "VALIDATION_ERROR", 400, {"role": "Choose a supported Connecto role."})
+
     details = {}
-    if len(payload.name.strip()) < 2: details["name"] = "Name must be at least 2 characters."
-    if payload.role == "SHOP_OWNER":
-        if not payload.shopName or len(payload.shopName.strip()) < 2: details["shopName"] = "Shop name is required."
-        if not payload.shopAddress or len(payload.shopAddress.strip()) < 5: details["shopAddress"] = "Shop address is required."
-        if not payload.area or len(payload.area.strip()) < 2: details["area"] = "Area is required."
-        if not payload.phone or len(normalize_identifier(payload.phone)) < 8: details["phone"] = "A valid phone number is required."
-        identifier = normalize_identifier(payload.phone)
-        email = payload.email.strip().lower() if payload.email else None
-    else:
-        identifier = normalize_identifier(payload.identifier)
-        email = identifier if "@" in identifier else None
-        if not identifier: details["identifier"] = "Email or phone is required."
-    if len(payload.password) < 8: details["password"] = "Password must be at least 8 characters."
-    if db.scalar(select(User).where(User.login_identifier == identifier)): details["identifier"] = "An account with this identifier already exists."
-    if email and db.scalar(select(User).where(User.email == email)): details["email"] = "An account with this email already exists."
-    if details: return error("Please correct the highlighted fields.", "VALIDATION_ERROR", 400, details)
-    user = User(id=str(uuid4()), name=payload.name.strip(), email=email, phone=identifier if "@" not in identifier else None, login_identifier=identifier, password_hash=hash_password(payload.password), role=payload.role)
+    clean_name = name.strip() if name else ""
+    if len(clean_name) < 2:
+        details["name"] = "Full name must be at least 2 characters."
+    
+    clean_area = area.strip() if area else ""
+    if len(clean_area) < 2:
+        details["area"] = "Area is required."
+
+    if confirm_password is not None and confirm_password != password:
+        details["confirmPassword"] = "Passwords do not match."
+
+    if role == "SHOP_OWNER":
+        if not shop_name or len(shop_name.strip()) < 2:
+            details["shopName"] = "Shop name is required."
+        if not shop_address or len(shop_address.strip()) < 5:
+            details["shopAddress"] = "Shop address is required."
+
+    clean_phone = normalize_identifier(phone) if phone else ""
+    if not phone or len(clean_phone) < 8:
+        details["phone"] = "A valid phone number is required."
+
+    clean_email = email.strip().lower() if email and email.strip() else None
+    if email and email.strip() and "@" not in email:
+        details["email"] = "A valid email address is required."
+
+    if not password or len(password) < 8:
+        details["password"] = "Password must be at least 8 characters."
+
+    login_id = identifier if identifier else (clean_email or clean_phone)
+
+    if clean_phone and db.scalar(select(User).where(User.phone == clean_phone)):
+        details["phone"] = "An account with this phone number already exists."
+    if clean_email and db.scalar(select(User).where(User.email == clean_email)):
+        details["email"] = "An account with this email address already exists."
+    if db.scalar(select(User).where(User.login_identifier == login_id)):
+        details["identifier"] = "An account with this identifier already exists."
+
+    if details:
+        return error("Please correct the highlighted fields.", "VALIDATION_ERROR", 400, details)
+
+    user = User(
+        id=str(uuid4()),
+        name=clean_name,
+        email=clean_email,
+        phone=clean_phone if clean_phone else None,
+        area=clean_area,
+        login_identifier=login_id,
+        password_hash=hash_password(password),
+        role=role
+    )
     db.add(user)
-    if payload.role == "SHOP_OWNER": db.add(Shop(id=str(uuid4()), owner=user, name=payload.shopName.strip(), address=payload.shopAddress.strip(), area=payload.area.strip()))
-    if payload.role == "SUPPLIER": db.add(Supplier(id=f"supplier-{user.id[:8]}", owner_id=user.id, name=f"{user.name}'s Supply Desk"))
+
+    if role == "SHOP_OWNER":
+        db.add(Shop(id=str(uuid4()), owner=user, name=shop_name.strip(), address=shop_address.strip(), area=clean_area))
+    elif role == "SUPPLIER":
+        db.add(Supplier(id=f"supplier-{user.id[:8]}", owner_id=user.id, name=f"{user.name}'s Supply Desk"))
+    elif role == "GRUH_UDYOG":
+        db.add(Supplier(id=f"supplier-{user.id[:8]}", owner_id=user.id, name=f"{user.name}'s Gruh Udyog"))
+
     db.commit()
     db.refresh(user)
     set_session(response, db, user)
     return envelope({"user": safe_user(user)}, "Account created")
 
+
+@app.post("/api/auth/register/shop-owner", status_code=201, summary="Shop Owner Register API")
+def register_shop_owner(payload: ShopOwnerRegisterRequest, response: Response, db: Session = Depends(get_db)):
+    return _process_registration(
+        db=db,
+        response=response,
+        role="SHOP_OWNER",
+        name=payload.name,
+        area=payload.area,
+        phone=payload.phone,
+        email=payload.email,
+        password=payload.password,
+        confirm_password=payload.confirmPassword,
+        shop_name=payload.shopName,
+        shop_address=payload.shopAddress
+    )
+
+
+@app.post("/api/auth/register/supplier", status_code=201, summary="Supplier Register API")
+def register_supplier(payload: SupplierRegisterRequest, response: Response, db: Session = Depends(get_db)):
+    return _process_registration(
+        db=db,
+        response=response,
+        role="SUPPLIER",
+        name=payload.name,
+        area=payload.area,
+        phone=payload.phone,
+        email=payload.email,
+        password=payload.password,
+        confirm_password=payload.confirmPassword
+    )
+
+
+@app.post("/api/auth/register/gruh-udyog", status_code=201, summary="Gruh Udyog Register API")
+def register_gruh_udyog(payload: GruhUdyogRegisterRequest, response: Response, db: Session = Depends(get_db)):
+    return _process_registration(
+        db=db,
+        response=response,
+        role="GRUH_UDYOG",
+        name=payload.name,
+        area=payload.area,
+        phone=payload.phone,
+        email=payload.email,
+        password=payload.password,
+        confirm_password=payload.confirmPassword
+    )
+
 @app.post("/api/auth/login")
 def login(payload: LoginRequest, response: Response, db: Session = Depends(get_db)):
-    identifier = normalize_identifier(payload.identifier)
-    user = db.scalar(select(User).where(User.login_identifier == identifier))
-    if not user or not verify_password(payload.password, user.password_hash) or (payload.role and user.role != payload.role):
+    raw_input = payload.emailOrPhone.strip()
+    if not raw_input:
+        return error("Email or phone number is required.", "VALIDATION_ERROR", 400, {"emailOrPhone": "Email or phone number is required."})
+
+    clean_email = raw_input.lower()
+    norm_phone = normalize_identifier(raw_input)
+
+    # Robust case-insensitive search across email, phone, and login_identifier
+    query = select(User).where(
+        or_(
+            func.lower(User.email) == clean_email,
+            func.lower(User.login_identifier) == clean_email,
+            User.phone == norm_phone,
+            User.phone == raw_input,
+            User.login_identifier == norm_phone,
+            User.login_identifier == raw_input
+        )
+    )
+
+    user = db.scalar(query)
+    if not user or not verify_password(payload.password, user.password_hash):
         return error("The sign-in details are not valid.", "INVALID_CREDENTIALS", 401)
     set_session(response, db, user)
     return envelope({"user": safe_user(user)}, "Signed in")

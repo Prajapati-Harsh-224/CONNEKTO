@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { useLocale } from '../context/LocaleContext.jsx'
 import Navbar from '../components/Navbar.jsx'
@@ -7,7 +8,25 @@ import { getSelectedRole } from '../utils/roleStorage.js'
 export default function AppShell() {
   const { messages, t } = useLocale()
   const { pathname, search } = useLocation()
+
   const isWorkspace = pathname.startsWith('/dashboard/')
+  const isAuthPage = pathname === '/signup' || pathname === '/login' || pathname === '/role-selection' || pathname === '/forgot-password'
+  const isNoScrollPage = isAuthPage || pathname === '/'
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    if (isNoScrollPage) {
+      document.documentElement.classList.add('auth-no-scroll')
+      document.body.classList.add('auth-no-scroll')
+    } else {
+      document.documentElement.classList.remove('auth-no-scroll')
+      document.body.classList.remove('auth-no-scroll')
+    }
+    return () => {
+      document.documentElement.classList.remove('auth-no-scroll')
+      document.body.classList.remove('auth-no-scroll')
+    }
+  }, [pathname, search, isNoScrollPage])
   const isShopOwnerSignup = pathname === '/signup' && new URLSearchParams(search).get('role') === 'SHOP_OWNER'
   const isSupplierSignup = pathname === '/signup' && new URLSearchParams(search).get('role') === 'SUPPLIER'
   const isGruhUdyogSignup = pathname === '/signup' && new URLSearchParams(search).get('role') === 'GRUH_UDYOG'
@@ -28,7 +47,7 @@ export default function AppShell() {
                 <span className="pub-brand-tagline">{t('strongerLocalBusinesses')}</span>
               </span>
             </Link>
-            <Navbar />
+            {!isAuthPage && <Navbar />}
             <div className="pub-header-right">
               <LanguageSelector />
               <Link className="pub-login-btn" to="/login">{t('signIn')}</Link>

@@ -9,6 +9,7 @@ class User(Base):
     name: Mapped[str] = mapped_column(String(100))
     email: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True)
     phone: Mapped[str | None] = mapped_column(String(30), unique=True, nullable=True)
+    area: Mapped[str | None] = mapped_column(String(100), nullable=True)
     login_identifier: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(255))
     role: Mapped[str] = mapped_column(String(30), index=True)

@@ -4,9 +4,20 @@ The API should be implemented incrementally.
 
 ## Authentication
 
-POST /api/auth/register
-- Register user
-- Required: name, email/phone, password, role
+POST /api/auth/register/shop-owner
+- Shop Owner Register API
+- Required: name (Full name), shopName, shopAddress, area, phone, password
+- Optional: email, confirmPassword
+
+POST /api/auth/register/supplier
+- Supplier Register API
+- Required: name (Full name), area, phone, password
+- Optional: email, confirmPassword
+
+POST /api/auth/register/gruh-udyog
+- Gruh Udyog Register API
+- Required: name (Full name), area, phone, password
+- Optional: email, confirmPassword
 
 POST /api/auth/login
 - Authenticate user
