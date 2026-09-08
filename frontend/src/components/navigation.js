@@ -1,6 +1,6 @@
 export const roleNavigation = {
   'shop-owner': [
-    { key: 'home', section: 'home' }, { key: 'suppliers', section: 'suppliers' }, { key: 'cart', section: 'cart', badge: '0' }, { key: 'orders', section: 'orders' }, { key: 'analytics', section: 'analytics' }, { key: 'assistant', section: 'assistant' },
+    { key: 'home', section: 'home' }, { key: 'suppliers', section: 'suppliers' }, { key: 'cart', section: 'cart', badge: '0' }, { key: 'orders', section: 'orders' }, { key: 'analytics', section: 'analytics' },
   ],
   supplier: [
     { key: 'dashboard', section: 'home' }, { key: 'orders', section: 'orders' }, { key: 'products', section: 'products' }, { key: 'customers', section: 'customers' }, { key: 'analytics', section: 'analytics' },

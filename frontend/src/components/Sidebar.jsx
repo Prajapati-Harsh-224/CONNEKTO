@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react'
 import { NavLink, useParams } from 'react-router-dom'
 import { getRoleNavigation } from './navigation.js'
 import { useLocale } from '../context/LocaleContext.jsx'
@@ -8,7 +9,17 @@ export default function Sidebar({ role: routeRole }) {
   const role = routeRole || paramRole
   const items = getRoleNavigation(role)
   const { t } = useLocale()
-  const cartCount = getCart().length
+  const [cartCount, setCartCount] = useState(() => getCart().length)
+
+  useEffect(() => {
+    const refreshCartCount = () => setCartCount(getCart().length)
+    window.addEventListener('connecto-cart-updated', refreshCartCount)
+    window.addEventListener('storage', refreshCartCount)
+    return () => {
+      window.removeEventListener('connecto-cart-updated', refreshCartCount)
+      window.removeEventListener('storage', refreshCartCount)
+    }
+  }, [])
 
   return (
     <aside className="sidebar" aria-label={t('workspace')}>

@@ -2,275 +2,471 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import LoadingState from '../components/LoadingState.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
-import { getSuppliers } from '../services/catalogService.js'
+import { demoSuppliers, categoryDescriptions } from '../utils/supplierDiscoveryData.js'
 
+// ---------------------------------------------------------------------------
+// Category definitions
+// ---------------------------------------------------------------------------
 const categoryCatalog = [
-  { id: 'FMCG', key: 'categoryFmcg', icon: 'fmcg' },
-  { id: 'Grocery & Staples', key: 'categoryGrocery', icon: 'groceries' },
-  { id: 'Beverages', key: 'categoryBeverages', icon: 'beverage' },
-  { id: 'Personal Care', key: 'categoryPersonalCare', icon: 'personal' },
-  { id: 'Cleaning & Household', key: 'categoryCleaning', icon: 'cleaning' },
-  { id: 'Dairy & Bakery', key: 'categoryDairy', icon: 'dairy' },
-  { id: 'Snacks & Packaged Foods', key: 'categorySnacks', icon: 'snacks' },
-  { id: 'Local Manufacturers', key: 'categoryLocal', icon: 'local' },
+  { id: 'FMCG', key: 'categoryFmcg', descKey: 'categoryFmcgDesc', icon: 'fmcg' },
+  { id: 'Grocery & Staples', key: 'categoryGrocery', descKey: 'categoryGroceryDesc', icon: 'grocery' },
+  { id: 'Beverages', key: 'categoryBeverages', descKey: 'categoryBeveragesDesc', icon: 'beverage' },
+  { id: 'Personal Care', key: 'categoryPersonalCare', descKey: 'categoryPersonalCareDesc', icon: 'personal' },
+  { id: 'Cleaning & Household', key: 'categoryCleaning', descKey: 'categoryCleaningDesc', icon: 'cleaning' },
+  { id: 'Dairy & Bakery', key: 'categoryDairy', descKey: 'categoryDairyDesc', icon: 'dairy' },
+  { id: 'Snacks & Packaged Foods', key: 'categorySnacks', descKey: 'categorySnacksDesc', icon: 'snacks' },
+  { id: 'Local Manufacturers', key: 'categoryLocal', descKey: 'categoryLocalDesc', icon: 'local' },
 ]
 
-const categoryIcons = {
-  fmcg: (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M5 8.5h14l-1.2 10.3A2 2 0 0 1 15.9 20H8.1a2 2 0 0 1-2-1.2L5 8.5Z" />
-      <path d="M9 8.5V7a3 3 0 1 1 6 0v1.5" />
-      <path d="M9.5 12.5h5" />
-    </svg>
-  ),
-  groceries: (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M4.5 8.5h15l-1.2 10.2a2 2 0 0 1-2 1.8H7.7a2 2 0 0 1-2-1.8L4.5 8.5Z" />
-      <path d="M8 8.5V7a4 4 0 0 1 8 0v1.5" />
-      <path d="M9 11.5c.9 0 1.6-.7 1.6-1.5S9.9 8.5 9 8.5 7.4 9.2 7.4 10s.7 1.5 1.6 1.5Zm5 0c.9 0 1.6-.7 1.6-1.5S14.9 8.5 14 8.5s-1.6.7-1.6 1.5.7 1.5 1.6 1.5Z" />
-    </svg>
-  ),
-  beverage: (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M8 4.5h8l-1 13.5a2 2 0 0 1-2 1.8h-2a2 2 0 0 1-2-1.8L8 4.5Z" />
-      <path d="M9.5 8.5h5" />
-      <path d="M12 18.5v2.5" />
-    </svg>
-  ),
-  personal: (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M8 12.5c0-2.2 1.8-4 4-4s4 1.8 4 4v4.5H8v-4.5Z" />
-      <path d="M9.5 8.5V7.8A2.5 2.5 0 0 1 12 5.3a2.5 2.5 0 0 1 2.5 2.5v.7" />
-      <path d="M5.5 18.5h13" />
-    </svg>
-  ),
-  cleaning: (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M8.8 4.5h6.4l1.2 9.1a3.8 3.8 0 0 1-3.8 4.4 3.8 3.8 0 0 1-3.8-4.4l1.2-9.1Z" />
-      <path d="M9 9.5h6" />
-      <path d="M12 4.5v-2" />
-    </svg>
-  ),
-  dairy: (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M7 8.5h10l-1 11.5H8L7 8.5Z" />
-      <path d="M9 8.5V6.8A3 3 0 0 1 12 4a3 3 0 0 1 3 2.8v1.7" />
-      <path d="M10 12.5h4" />
-    </svg>
-  ),
-  snacks: (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M6 11.5h12l-1.2 7.2a2 2 0 0 1-2 1.7H9.2a2 2 0 0 1-2-1.7L6 11.5Z" />
-      <path d="M8 11.5V8.5A4 4 0 0 1 12 4.5a4 4 0 0 1 4 4v3" />
-      <path d="M9.5 15.5h5" />
-    </svg>
-  ),
-  local: (
-    <svg viewBox="0 0 24 24" aria-hidden="true">
-      <path d="M4.5 18.5h15" />
-      <path d="M6.5 18.5V9.5h11v9" />
-      <path d="M9 9.5V6.5h6v3" />
-      <path d="M10 13.5h4" />
+// ---------------------------------------------------------------------------
+// Category SVG icons
+// ---------------------------------------------------------------------------
+const CategoryIcon = ({ type }) => {
+  switch (type) {
+    case 'fmcg':
+      return (
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <rect x="8" y="14" width="16" height="13" rx="2" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+          <path d="M11 14v-3a5 5 0 0 1 10 0v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M12 20h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M12 23.5h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+      )
+    case 'grocery':
+      return (
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M7 13h18l-2 12H9L7 13Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+          <path d="M12 13v-2a4 4 0 0 1 8 0v2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <circle cx="13" cy="10" r="1.2" fill="currentColor" />
+          <circle cx="19" cy="10" r="1.2" fill="currentColor" />
+        </svg>
+      )
+    case 'beverage':
+      return (
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M11 7h10l-1.5 18H12.5L11 7Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+          <path d="M13 12h6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M16 25v2.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M9 7h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+      )
+    case 'personal':
+      return (
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M12 17c0-2.8 1.8-4 4-4s4 1.2 4 4v6H12v-6Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+          <path d="M13 13v-1.5a3 3 0 0 1 6 0V13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M8 23h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M16 8v2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+      )
+    case 'cleaning':
+      return (
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M13 7h6l2 14a4 4 0 0 1-4 5h-2a4 4 0 0 1-4-5L13 7Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+          <path d="M12 13h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M16 7V4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M14 4h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+      )
+    case 'dairy':
+      return (
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M10 12h12l-1.5 14H11.5L10 12Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+          <path d="M13 12V9.5a3 3 0 0 1 6 0V12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M13 18h6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M14 22h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+      )
+    case 'snacks':
+      return (
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M8 16h16l-2 9a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2L8 16Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+          <path d="M11 16v-4a5 5 0 0 1 10 0v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M13 21h6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+      )
+    case 'local':
+      return (
+        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
+          <path d="M6 26h20" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M9 26V14h14v12" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+          <path d="M12 14V10h8v4" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
+          <path d="M13 20h6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+          <path d="M16 10V7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
+        </svg>
+      )
+    default:
+      return null
+  }
+}
+
+// Category icon accent colors (background tint / icon color)
+const categoryColors = {
+  fmcg: { bg: '#e8f5e9', color: '#2E7D32' },
+  grocery: { bg: '#fff8e1', color: '#F57F17' },
+  beverage: { bg: '#e3f2fd', color: '#1565C0' },
+  personal: { bg: '#fce4ec', color: '#AD1457' },
+  cleaning: { bg: '#e8eaf6', color: '#283593' },
+  dairy: { bg: '#f3e5f5', color: '#6A1B9A' },
+  snacks: { bg: '#fff3e0', color: '#E65100' },
+  local: { bg: '#e0f2f1', color: '#00695C' },
+}
+
+// ---------------------------------------------------------------------------
+// Helper utilities
+// ---------------------------------------------------------------------------
+function getInitials(name = '') {
+  return (
+    name
+      .split(' ')
+      .filter(Boolean)
+      .slice(0, 2)
+      .map((w) => w[0]?.toUpperCase() || '')
+      .join('') || 'S'
+  )
+}
+
+const avatarPalette = [
+  '#1a3a4c', '#2e5266', '#4a6741', '#6b4e3d',
+  '#3d5a6e', '#5c4033', '#1b5e20', '#4a148c',
+]
+function getAvatarBg(name = '') {
+  return avatarPalette[name.charCodeAt(0) % avatarPalette.length]
+}
+
+// ---------------------------------------------------------------------------
+// VerifiedBadge sub-component
+// ---------------------------------------------------------------------------
+function VerifiedBadge() {
+  return (
+    <span className="sdc-verified-badge" aria-label="Verified Supplier">
+      <svg viewBox="0 0 14 14" fill="none" aria-hidden="true" width="11" height="11">
+        <circle cx="7" cy="7" r="6.5" fill="#1a7a3c" />
+        <path d="M4.5 7l1.8 1.8L9.5 5.5" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+      </svg>
+      Verified Supplier
+    </span>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// StarRating sub-component
+// ---------------------------------------------------------------------------
+function StarRating({ rating, reviewCount }) {
+  return (
+    <div className="sdc-rating-row">
+      <svg viewBox="0 0 16 16" fill="#F59E0B" aria-hidden="true" width="14" height="14">
+        <path d="M8 1l1.854 3.756L14 5.528l-3 2.924.708 4.133L8 10.5l-3.708 2.085L5 8.452 2 5.528l4.146-.772L8 1z" />
+      </svg>
+      <span className="sdc-rating-value">{rating.toFixed(1)}</span>
+      <span className="sdc-review-count">({reviewCount} reviews)</span>
+    </div>
+  )
+}
+
+// ---------------------------------------------------------------------------
+// LocationPin icon
+// ---------------------------------------------------------------------------
+function LocationPinIcon() {
+  return (
+    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="13" height="13" className="sdc-loc-icon">
+      <path d="M8 14s5-4.3 5-8.5a5 5 0 1 0-10 0C3 9.7 8 14 8 14Z" stroke="#6b7280" strokeWidth="1.4" />
+      <circle cx="8" cy="5.5" r="1.5" stroke="#6b7280" strokeWidth="1.4" />
     </svg>
   )
 }
 
-function getSupplierInitials(name = '') {
-  return name
-    .split(' ')
-    .filter(Boolean)
-    .slice(0, 2)
-    .map((part) => part[0]?.toUpperCase() || '')
-    .join('') || 'S'
+// ---------------------------------------------------------------------------
+// HeartButton sub-component
+// ---------------------------------------------------------------------------
+function HeartButton({ isFavorite, name, onClick }) {
+  return (
+    <button
+      type="button"
+      className={`sdc-heart-btn${isFavorite ? ' active' : ''}`}
+      aria-label={isFavorite ? `Remove ${name} from favorites` : `Save ${name}`}
+      onClick={onClick}
+    >
+      <svg viewBox="0 0 20 20" fill={isFavorite ? '#ef4444' : 'none'} stroke={isFavorite ? '#ef4444' : '#9ca3af'} strokeWidth="1.6" aria-hidden="true" width="18" height="18">
+        <path d="M10 17.5S2 13 2 7a5 5 0 0 1 8-4 5 5 0 0 1 8 4c0 6-8 10.5-8 10.5Z" strokeLinejoin="round" />
+      </svg>
+    </button>
+  )
 }
 
-function getAvatarColors(name = '') {
-  const palette = ['#1f2937', '#5c6a7f', '#7a7d9d', '#a46f74', '#5d7b73', '#7f8a65', '#de8f66', '#b690c7']
-  const index = name.charCodeAt(0) % palette.length
-  return palette[index]
+// ---------------------------------------------------------------------------
+// SupplierCard sub-component
+// ---------------------------------------------------------------------------
+function SupplierCard({ supplier, isFavorite, onToggleFavorite }) {
+  const initials = getInitials(supplier.name)
+  const bg = getAvatarBg(supplier.name)
+
+  return (
+    <article className="sdc-card">
+      <HeartButton
+        isFavorite={isFavorite}
+        name={supplier.name}
+        onClick={(e) => {
+          e.preventDefault()
+          onToggleFavorite(supplier.id)
+        }}
+      />
+
+      <div className="sdc-card-top">
+        <div className="sdc-avatar" style={{ background: bg }} aria-hidden="true">
+          {initials}
+        </div>
+        <div className="sdc-card-identity">
+          <div className="sdc-name-row">
+            <h3 className="sdc-name">{supplier.name}</h3>
+            {supplier.isVerified && <VerifiedBadge />}
+          </div>
+          <span className="sdc-type">{supplier.type}</span>
+        </div>
+      </div>
+
+      <div className="sdc-meta-row">
+        <LocationPinIcon />
+        <span className="sdc-location">{supplier.location}</span>
+        <span className="sdc-dot" aria-hidden="true">|</span>
+        <span className="sdc-service-areas">{supplier.serviceAreaCount} service areas</span>
+      </div>
+
+      <p className="sdc-description">{supplier.description}</p>
+
+      <StarRating rating={supplier.rating} reviewCount={supplier.reviewCount} />
+
+      <div className="sdc-tag-row">
+        {(supplier.tags || []).slice(0, 3).map((tag) => (
+          <span key={tag} className="sdc-tag">{tag}</span>
+        ))}
+      </div>
+
+      <div className="sdc-card-footer">
+        <Link
+          className="sdc-view-btn"
+          to={`/dashboard/shop-owner/suppliers/${supplier.id}/products`}
+          aria-label={`View ${supplier.name} supplier details`}
+        >
+          View Supplier <span aria-hidden="true">→</span>
+        </Link>
+      </div>
+    </article>
+  )
 }
 
+// ---------------------------------------------------------------------------
+// Main page component
+// ---------------------------------------------------------------------------
 export default function SupplierListPage() {
   const { t } = useLocale()
-  const [suppliers, setSuppliers] = useState([])
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [locationFilter, setLocationFilter] = useState('all')
   const [serviceAreaFilter, setServiceAreaFilter] = useState('all')
   const [sortBy, setSortBy] = useState('relevance')
   const [favorites, setFavorites] = useState({})
-  const [isLoading, setIsLoading] = useState(true)
+  const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
 
-  const loadSuppliers = useCallback(() => {
-    setIsLoading(true)
-    setError('')
-    getSuppliers()
-      .then((response) => setSuppliers(response?.data?.suppliers || []))
-      .catch((requestError) => setError(requestError?.message || t('supplierLoadError')))
-      .finally(() => setIsLoading(false))
-  }, [t])
+  // Use demo data; in production replace demoSuppliers with API response
+  const suppliers = demoSuppliers
 
-  useEffect(() => { loadSuppliers() }, [loadSuppliers])
+  const toggleFavorite = useCallback((id) => {
+    setFavorites((prev) => ({ ...prev, [id]: !prev[id] }))
+  }, [])
 
   const filteredSuppliers = useMemo(() => {
-    if (!suppliers.length) return []
-
-    const normalizedSearch = searchTerm.trim().toLowerCase()
-
+    const q = searchTerm.trim().toLowerCase()
     return [...suppliers]
-      .filter((supplier) => {
-        const categoryMatches = selectedCategory === 'all' || supplier.category === selectedCategory || (supplier.tags || []).includes(selectedCategory)
-        const searchMatches = !normalizedSearch || [supplier.name, supplier.category, supplier.location, supplier.description, ...(supplier.tags || [])].some((value) => String(value).toLowerCase().includes(normalizedSearch))
-        const locationMatches = locationFilter === 'all' || (supplier.location || '').toLowerCase().includes(locationFilter.toLowerCase())
-        const serviceAreaMatches = serviceAreaFilter === 'all' || (() => {
-          const count = Number(supplier.serviceAreaCount || supplier.serviceAreas?.length || 0)
-          if (serviceAreaFilter === '1-3') return count >= 1 && count <= 3
-          if (serviceAreaFilter === '4-6') return count >= 4 && count <= 6
-          if (serviceAreaFilter === '7+') return count >= 7
-          return true
-        })()
-
-        return categoryMatches && searchMatches && locationMatches && serviceAreaMatches
+      .filter((s) => {
+        if (selectedCategory !== 'all' && s.category !== selectedCategory) return false
+        if (q && ![s.name, s.type, s.category, s.location, s.description, ...(s.tags || [])].some((v) => String(v).toLowerCase().includes(q))) return false
+        if (locationFilter !== 'all' && !s.location.toLowerCase().includes(locationFilter.toLowerCase())) return false
+        if (serviceAreaFilter !== 'all') {
+          const count = s.serviceAreaCount || s.serviceAreas?.length || 0
+          if (serviceAreaFilter === '1-3' && !(count >= 1 && count <= 3)) return false
+          if (serviceAreaFilter === '4-6' && !(count >= 4 && count <= 6)) return false
+          if (serviceAreaFilter === '7+' && count < 7) return false
+        }
+        return true
       })
       .sort((a, b) => {
-        if (sortBy === 'rating') return Number(b.rating || 0) - Number(a.rating || 0)
-        if (sortBy === 'service') return Number(b.serviceAreaCount || b.serviceAreas?.length || 0) - Number(a.serviceAreaCount || a.serviceAreas?.length || 0)
-        if (sortBy === 'name') return String(a.name).localeCompare(String(b.name))
-        return Number(b.rating || 0) * (Number(b.reviewCount || 0) || 1) - Number(a.rating || 0) * (Number(a.reviewCount || 0) || 1)
+        if (sortBy === 'rating') return (b.rating || 0) - (a.rating || 0)
+        if (sortBy === 'service') return (b.serviceAreaCount || 0) - (a.serviceAreaCount || 0)
+        if (sortBy === 'name') return a.name.localeCompare(b.name)
+        // relevance: rating × log(reviewCount + 1)
+        return (b.rating || 0) * Math.log((b.reviewCount || 1) + 1) -
+          (a.rating || 0) * Math.log((a.reviewCount || 1) + 1)
       })
-  }, [locationFilter, searchTerm, selectedCategory, serviceAreaFilter, sortBy, suppliers])
+  }, [suppliers, selectedCategory, searchTerm, locationFilter, serviceAreaFilter, sortBy])
 
-  if (isLoading) return <LoadingState message={t('loadingWorkspace') || 'Loading suppliers...'} />
-  if (error) return <section className="supplier-discovery-page"><div className="supplier-discovery-header"><div className="supplier-crumb">{t('shopOwner')} <span>→</span> {t('suppliers')}</div><h1>{t('findSuppliers')}</h1></div><p className="form-message error" role="alert">{error}</p><button className="button secondary supplier-retry-button" type="button" onClick={loadSuppliers}>{t('tryAgain')}</button></section>
+  const activeCategoryLabel = useMemo(() => {
+    if (selectedCategory === 'all') return t('allSuppliers')
+    const cat = categoryCatalog.find((c) => c.id === selectedCategory)
+    return t('suppliersInCategory', { category: t(cat?.key || 'categoryFmcg') })
+  }, [selectedCategory, t])
+
+  if (isLoading) return <LoadingState message={t('loadingWorkspace')} />
 
   return (
-    <section className="supplier-discovery-page">
-      <div className="supplier-discovery-header">
-        <div className="supplier-discovery-copy">
-          <div className="supplier-crumb">{t('shopOwner')} <span>→</span> {t('suppliers')}</div>
-          <h1>{t('findSuppliers')}</h1>
-          <p>{t('findSuppliersDescription')}</p>
+    <section className="sdc-page">
+
+      {/* ── Page header ── */}
+      <div className="sdc-page-header">
+        <div className="sdc-page-header-copy">
+          <nav className="sdc-breadcrumb" aria-label="Breadcrumb">
+            <span>{t('shopOwner')}</span>
+            <span className="sdc-breadcrumb-sep" aria-hidden="true">›</span>
+            <span aria-current="page">{t('suppliers')}</span>
+          </nav>
+          <h1 className="sdc-heading">{t('findSuppliers')}</h1>
+          <p className="sdc-subheading">{t('findSuppliersDescription')}</p>
+        </div>
+        <div className="sdc-hero-banner" aria-hidden="true">
+          <div className="sdc-hero-icon">
+            <svg viewBox="0 0 56 56" fill="none" width="56" height="56" aria-hidden="true">
+              <rect x="8" y="28" width="40" height="22" rx="3" fill="#2E7D32" opacity=".15" />
+              <rect x="14" y="20" width="28" height="30" rx="2" fill="#2E7D32" opacity=".25" />
+              <rect x="20" y="14" width="16" height="36" rx="2" fill="#2E7D32" opacity=".45" />
+              <path d="M24 40h8M24 35h8M26 30h4" stroke="#1a5c1e" strokeWidth="1.6" strokeLinecap="round" />
+              <path d="M28 14v-4M24 12l4-4 4 4" stroke="#1a5c1e" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
+            </svg>
+          </div>
+          <div className="sdc-hero-text">
+            <div>Source Local</div>
+            <div>Stock Local</div>
+            <div>Grow Local</div>
+          </div>
         </div>
       </div>
 
-      <div className="supplier-category-panel">
-        <div className="supplier-panel-title">{t('shopByCategory')}</div>
-        <div className="supplier-category-grid">
-          {categoryCatalog.map((category) => (
-            <button
-              key={category.id}
-              type="button"
-              className={`supplier-category-card${selectedCategory === category.id ? ' active' : ''}`}
-              onClick={() => setSelectedCategory(category.id)}
-            >
-              <span className="supplier-category-icon">{categoryIcons[category.id.replace(/[^a-z]/g, '').toLowerCase()] || categoryIcons.fmcg}</span>
-              <span className="supplier-category-label">{t(category.key)}</span>
-            </button>
-          ))}
+      {/* ── Category carousel ── */}
+      <div className="sdc-category-section">
+        <div className="sdc-category-label">{t('shopByCategory')}</div>
+        <div className="sdc-category-list" role="list">
+          {categoryCatalog.map((cat) => {
+            const isActive = selectedCategory === cat.id
+            const colors = categoryColors[cat.icon] || categoryColors.fmcg
+            return (
+              <button
+                key={cat.id}
+                type="button"
+                role="listitem"
+                className={`sdc-cat-card${isActive ? ' active' : ''}`}
+                onClick={() => setSelectedCategory(isActive ? 'all' : cat.id)}
+                aria-pressed={isActive}
+              >
+                <span
+                  className="sdc-cat-icon"
+                  style={{ background: colors.bg, color: colors.color }}
+                >
+                  <CategoryIcon type={cat.icon} />
+                </span>
+                <span className="sdc-cat-name">{t(cat.key)}</span>
+                <span className="sdc-cat-desc">
+                  {categoryDescriptions[cat.id]}
+                </span>
+              </button>
+            )
+          })}
         </div>
       </div>
 
-      <div className="supplier-toolbar">
-        <label className="supplier-search-field" htmlFor="supplier-search">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="6.5"/><path d="m16 16 4.5 4.5"/></svg>
-          <input id="supplier-search" value={searchTerm} onChange={(event) => setSearchTerm(event.target.value)} placeholder={t('searchSuppliersByName')} type="text" />
+      {/* ── Search / filter toolbar ── */}
+      <div className="sdc-toolbar">
+        <label className="sdc-search-field" htmlFor="sdc-search">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" width="16" height="16" className="sdc-search-icon">
+            <circle cx="9" cy="9" r="5.5" stroke="#9ca3af" strokeWidth="1.6" />
+            <path d="m13 13 3.5 3.5" stroke="#9ca3af" strokeWidth="1.6" strokeLinecap="round" />
+          </svg>
+          <input
+            id="sdc-search"
+            type="text"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            placeholder={t('searchSuppliersByName')}
+          />
         </label>
 
-        <label className="supplier-filter-field" htmlFor="supplier-location">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/></svg>
-          <select id="supplier-location" value={locationFilter} onChange={(event) => setLocationFilter(event.target.value)}>
-            <option value="all">{t('allLocations')}</option>
+        <label className="sdc-filter-field" htmlFor="sdc-location">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" width="14" height="14" className="sdc-filter-icon">
+            <path d="M10 18s6-5 6-9.5a6 6 0 1 0-12 0C4 13 10 18 10 18Z" stroke="#6b7280" strokeWidth="1.5" />
+            <circle cx="10" cy="8.5" r="2" stroke="#6b7280" strokeWidth="1.5" />
+          </svg>
+          <select id="sdc-location" value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)}>
+            <option value="all">Ahmedabad</option>
             <option value="Ahmedabad">Ahmedabad</option>
           </select>
+          <svg viewBox="0 0 12 12" fill="none" aria-hidden="true" className="sdc-chevron" width="10" height="10">
+            <path d="m2 4 4 4 4-4" stroke="#6b7280" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </label>
 
-        <label className="supplier-filter-field" htmlFor="supplier-service-area">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5h16M6.5 6.5h11v11h-11z"/><path d="M9 17.5v-7.5M15 17.5v-7.5"/></svg>
-          <select id="supplier-service-area" value={serviceAreaFilter} onChange={(event) => setServiceAreaFilter(event.target.value)}>
+        <label className="sdc-filter-field" htmlFor="sdc-service-area">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" width="14" height="14" className="sdc-filter-icon">
+            <rect x="3" y="3" width="14" height="14" rx="2" stroke="#6b7280" strokeWidth="1.5" />
+            <path d="M3 8h14M8 8v9M12 8v9" stroke="#6b7280" strokeWidth="1.3" strokeLinecap="round" />
+          </svg>
+          <select id="sdc-service-area" value={serviceAreaFilter} onChange={(e) => setServiceAreaFilter(e.target.value)}>
             <option value="all">{t('serviceAreaFilter')}</option>
             <option value="1-3">{t('serviceAreasOneToThree')}</option>
             <option value="4-6">{t('serviceAreasFourToSix')}</option>
             <option value="7+">{t('serviceAreasSevenPlus')}</option>
           </select>
+          <svg viewBox="0 0 12 12" fill="none" aria-hidden="true" className="sdc-chevron" width="10" height="10">
+            <path d="m2 4 4 4 4-4" stroke="#6b7280" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </label>
 
-        <label className="supplier-filter-field supplier-sort-field" htmlFor="supplier-sort">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7h10M7 12h7M7 17h4"/><path d="M17 14v5l2 2"/></svg>
-          <select id="supplier-sort" value={sortBy} onChange={(event) => setSortBy(event.target.value)}>
+        <label className="sdc-filter-field sdc-sort-field" htmlFor="sdc-sort">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" width="14" height="14" className="sdc-filter-icon">
+            <path d="M5 5h10M5 10h7M5 15h4" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" />
+          </svg>
+          <select id="sdc-sort" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
             <option value="relevance">{t('sortByRelevance')}</option>
             <option value="rating">{t('sortByRating')}</option>
             <option value="service">{t('sortByServiceArea')}</option>
             <option value="name">{t('sortByName')}</option>
           </select>
+          <svg viewBox="0 0 12 12" fill="none" aria-hidden="true" className="sdc-chevron" width="10" height="10">
+            <path d="m2 4 4 4 4-4" stroke="#6b7280" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
+          </svg>
         </label>
       </div>
 
-      <div className="supplier-results-header">
-        <h2>
-          {selectedCategory === 'all' ? t('allSuppliers') : t('suppliersInCategory', { category: t(categoryCatalog.find((category) => category.id === selectedCategory)?.key || 'categoryFmcg') })}
-          <span> ({filteredSuppliers.length} {t('suppliers').toLowerCase()})</span>
+      {/* ── Results header ── */}
+      <div className="sdc-results-header">
+        <h2 className="sdc-results-heading">
+          {activeCategoryLabel}
+          <span className="sdc-results-count">({filteredSuppliers.length} suppliers)</span>
         </h2>
       </div>
 
+      {/* ── Error state ── */}
+      {error && (
+        <p className="form-message error sdc-error" role="alert">{error}</p>
+      )}
+
+      {/* ── Supplier grid ── */}
       {filteredSuppliers.length === 0 ? (
-        <div className="supplier-empty-state">{t('noSuppliers')}</div>
+        <div className="sdc-empty-state">
+          <svg viewBox="0 0 48 48" fill="none" aria-hidden="true" width="48" height="48">
+            <circle cx="24" cy="24" r="22" stroke="#e5e7eb" strokeWidth="2" />
+            <path d="M16 24h16M24 16v16" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" />
+          </svg>
+          <p>{t('noSuppliers')}</p>
+        </div>
       ) : (
-        <div className="supplier-cards-grid">
-          {filteredSuppliers.map((supplier) => {
-            const initials = getSupplierInitials(supplier.name)
-            const isFavorite = Boolean(favorites[supplier.id])
-
-            return (
-              <article className="supplier-card" key={supplier.id}>
-                <div className="supplier-card-head">
-                  <div className="supplier-avatar" style={{ background: getAvatarColors(supplier.name) }} aria-hidden="true">{initials}</div>
-                  <div className="supplier-card-main">
-                    <div className="supplier-name-row">
-                      <h3>{supplier.name}</h3>
-                      {supplier.isVerified && <span className="supplier-verified-badge">Verified Supplier</span>}
-                    </div>
-                    <div className="supplier-card-type">{supplier.category}</div>
-                  </div>
-                  <button
-                    type="button"
-                    className={`supplier-favorite${isFavorite ? ' active' : ''}`}
-                    aria-label={isFavorite ? `Remove ${supplier.name} from favorites` : `Add ${supplier.name} to favorites`}
-                    onClick={(event) => {
-                      event.preventDefault()
-                      event.stopPropagation()
-                      setFavorites((current) => ({ ...current, [supplier.id]: !current[supplier.id] }))
-                    }}
-                  >
-                    <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 20.5s-7.3-4.6-9.2-8.8C1.4 8.8 3.5 4.5 7.7 4.5c2 0 3.1 1.1 4.3 2.7 1.2-1.6 2.3-2.7 4.3-2.7 4.2 0 6.3 4.3 4.9 7.2-1.9 4.2-9.2 8.8-9.2 8.8Z" /></svg>
-                  </button>
-                </div>
-
-                <div className="supplier-meta-row">
-                  <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s6-5.2 6-11a6 6 0 1 0-12 0c0 5.8 6 11 6 11Z"/><circle cx="12" cy="10" r="2"/></svg>
-                  {supplier.location && <><span>{supplier.location}</span><span className="supplier-dot">•</span></>}
-                  {supplier.serviceAreaCount ? <span>{supplier.serviceAreaCount} {t('serviceAreas').toLowerCase()}</span> : null}
-                </div>
-
-                <p className="supplier-description">{supplier.description}</p>
-
-                {supplier.rating && supplier.reviewCount ? <div className="supplier-rating-row"><span className="supplier-star">★</span><span>{Number(supplier.rating).toFixed(1)}</span><span className="supplier-review-copy">({supplier.reviewCount} {t('reviews')})</span></div> : null}
-
-                <div className="supplier-tag-row">
-                  {(supplier.tags || []).slice(0, 3).map((tag) => (
-                    <span key={`${supplier.id}-${tag}`} className="supplier-tag">{tag}</span>
-                  ))}
-                </div>
-
-                <div className="supplier-card-footer">
-                  {supplier.minimumOrder && <span className="supplier-price">{supplier.minimumOrder}</span>}
-                  <Link className="button supplier-view-button" to={`/dashboard/shop-owner/suppliers/${supplier.id}`}>
-                    View Supplier <span aria-hidden="true">→</span>
-                  </Link>
-                </div>
-              </article>
-            )
-          })}
+        <div className="sdc-grid">
+          {filteredSuppliers.map((supplier) => (
+            <SupplierCard
+              key={supplier.id}
+              supplier={supplier}
+              isFavorite={Boolean(favorites[supplier.id])}
+              onToggleFavorite={toggleFavorite}
+            />
+          ))}
         </div>
       )}
     </section>

@@ -1,4 +1,4 @@
-import { BrowserRouter, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
 import './App.css'
 import AppShell from './layouts/AppShell.jsx'
 import RoleLayout from './layouts/RoleLayout.jsx'
@@ -25,7 +25,6 @@ import SupplierProductManagementPage from './pages/SupplierProductManagementPage
 import SupplierAnalyticsPage from './pages/SupplierAnalyticsPage.jsx'
 import SupplierCustomersPage from './pages/SupplierCustomersPage.jsx'
 import ShopOwnerAnalyticsPage from './pages/ShopOwnerAnalyticsPage.jsx'
-import ShopOwnerAssistantPage from './pages/ShopOwnerAssistantPage.jsx'
 import GruhUdyogDashboardPage from './pages/GruhUdyogDashboardPage.jsx'
 import GruhUdyogProductsPage from './pages/GruhUdyogProductsPage.jsx'
 import GruhUdyogServiceAreasPage from './pages/GruhUdyogServiceAreasPage.jsx'
@@ -51,7 +50,7 @@ export default function App() {
             <Route path="orders" element={<ShopOwnerOrdersPage />} />
             <Route path="orders/:orderId" element={<ShopOwnerOrderDetailPage />} />
             <Route path="analytics" element={<ShopOwnerAnalyticsPage />} />
-            <Route path="assistant" element={<ShopOwnerAssistantPage />} />
+            <Route path="assistant" element={<Navigate replace to="/dashboard/shop-owner/home" />} />
             <Route path="profile" element={<ProfilePage role="shop-owner" />} />
             <Route path="suppliers/:supplierId" element={<SupplierDetailPage />} />
             <Route path="suppliers/:supplierId/products" element={<SupplierCatalogPage />} />

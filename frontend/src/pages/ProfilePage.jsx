@@ -24,6 +24,7 @@ export default function ProfilePage({ role }) {
 
   return (
     <section className="profile-page">
+      <div className="profile-breadcrumb"><span>{t('shopOwner')}</span><span>›</span><span>{t('profile')}</span></div>
       <div className="profile-heading">
         <div>
           <div className="eyebrow">{roleLabel}</div>
