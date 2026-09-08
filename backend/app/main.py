@@ -335,7 +335,62 @@ def owned_supplier(user: User, db: Session):
     return db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
 
 def public_supplier_json(supplier: Supplier, products: list[Product]) -> dict:
-    return {"id": supplier.id, "name": supplier.name, "category": "FMCG distribution", "description": "", "serviceAreas": [], "productCount": len(products), "minimumOrder": "", "phone": "", "isDemoData": any(product.is_demo_data for product in products)}
+    product_categories = [product.category.strip() for product in products if product.category and product.category.strip()]
+    mapped_categories = {
+        "fmcg": "FMCG",
+        "grocery": "Grocery & Staples",
+        "staples": "Grocery & Staples",
+        "beverages": "Beverages",
+        "personal care": "Personal Care",
+        "personal-care": "Personal Care",
+        "cleaning": "Cleaning & Household",
+        "household": "Cleaning & Household",
+        "dairy": "Dairy & Bakery",
+        "bakery": "Dairy & Bakery",
+        "snacks": "Snacks & Packaged Foods",
+        "packaged foods": "Snacks & Packaged Foods",
+        "manufacturing": "Local Manufacturers",
+        "local manufacturers": "Local Manufacturers",
+    }
+    category_values = [mapped_categories.get(category.lower(), category) for category in product_categories]
+    category = next((value for value in category_values if value), "FMCG")
+    unique_tags = []
+    seen = set()
+    for tag in category_values:
+        key = tag.lower()
+        if key not in seen:
+            unique_tags.append(tag)
+            seen.add(key)
+    if not unique_tags:
+        unique_tags = [category]
+    description = {
+        "FMCG": "A reliable wholesale supplier for everyday essentials and quick-turn retail restocking.",
+        "Grocery & Staples": "Supplies core grocery staples and high-turn household essentials for active local stores.",
+        "Beverages": "Delivers soft drinks, packaged beverages, and local refreshment favourites.",
+        "Personal Care": "Stocks trusted personal care essentials for daily store demand and repeat replenishment.",
+        "Cleaning & Household": "Provides cleaning essentials, household basics, and value-led hygiene products.",
+        "Dairy & Bakery": "Sources fresh dairy, bakery staples, and ready-to-sell everyday food favourites.",
+        "Snacks & Packaged Foods": "Carries crunchy, ready-to-ship packaged food items for fast-moving demand.",
+        "Local Manufacturers": "Supports locally manufactured goods and regionally trusted speciality products.",
+    }.get(category, f"Offers {len(products)} active products across {len(unique_tags)} categories.")
+    return {
+        "id": supplier.id,
+        "name": supplier.name,
+        "category": category,
+        "categoryLabel": category,
+        "description": description,
+        "location": "",
+        "serviceAreas": [],
+        "serviceAreaCount": 0,
+        "productCount": len(products),
+        "minimumOrder": "",
+        "phone": "",
+        "isVerified": False,
+        "rating": None,
+        "reviewCount": 0,
+        "tags": unique_tags[:3],
+        "isDemoData": any(product.is_demo_data for product in products),
+    }
 
 @app.get("/api/suppliers")
 def shop_suppliers(user: User = Depends(require_user), db: Session = Depends(get_db)):
