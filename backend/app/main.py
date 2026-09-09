@@ -18,7 +18,7 @@ from .schemas import CheckoutRequest, LoginRequest, ProductRequest, ShopOwnerReg
 
 SESSION_COOKIE = "connecto_session"
 SESSION_DAYS = 7
-CLIENT_ORIGIN = os.getenv("CLIENT_ORIGIN", "http://localhost:5173")
+CLIENT_ORIGINS = [origin.strip() for origin in os.getenv("CLIENT_ORIGIN", "http://localhost:5173").split(",") if origin.strip()]
 ROLES = {"SHOP_OWNER", "SUPPLIER", "GRUH_UDYOG"}
 PAYMENT_METHODS = {"CASH_ON_DELIVERY", "PAY_LATER", "REQUEST_ORDER"}
 TRANSITIONS = {
@@ -28,7 +28,7 @@ TRANSITIONS = {
 }
 
 app = FastAPI(title="Connecto API", version="2.0.0")
-app.add_middleware(CORSMiddleware, allow_origins=[CLIENT_ORIGIN], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(CORSMiddleware, allow_origins=CLIENT_ORIGINS, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 @app.on_event("startup")
 def startup() -> None:
