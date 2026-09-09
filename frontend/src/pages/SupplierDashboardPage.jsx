@@ -1,25 +1,82 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import EmptyState from '../components/EmptyState.jsx'
-import IncomingOrderCard from '../components/IncomingOrderCard.jsx'
-import LoadingState from '../components/LoadingState.jsx'
+import { useMemo } from 'react'
+import { useNavigate } from 'react-router-dom'
 import MetricCard from '../components/MetricCard.jsx'
+import StatusBadge from '../components/StatusBadge.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
-import { getSupplierDashboard } from '../services/supplierDashboardService.js'
+import { supplierDashboardDemoData } from '../utils/supplierDashboardDemoData.js'
 
 export default function SupplierDashboardPage() {
-  const [dashboard, setDashboard] = useState(null)
-  const [isLoading, setIsLoading] = useState(true)
-  const [error, setError] = useState('')
   const { t } = useLocale()
+  const navigate = useNavigate()
+  const dashboard = supplierDashboardDemoData
+  const recentOrders = useMemo(() => dashboard.recentOrders.map((order) => ({
+    ...order,
+    amountLabel: `₹${Number(order.amount).toLocaleString('en-IN')}`,
+  })), [dashboard])
 
-  useEffect(() => {
-    getSupplierDashboard().then((response) => setDashboard(response.data)).catch((requestError) => setError(requestError.message)).finally(() => setIsLoading(false))
-  }, [])
+  return (
+    <section className="supplier-dashboard-page">
+      <header className="supplier-dashboard-header">
+        <div>
+          <p className="supplier-dashboard-greeting">{t('goodMorning')}</p>
+          <h1>{dashboard.businessName}</h1>
+          <p className="supplier-dashboard-subtitle">Manage your orders, products and customers from one place.</p>
+        </div>
+        <span className="demo-label">{t('demoData')}</span>
+      </header>
 
-  if (isLoading) return <LoadingState message={t('loadingSupplierDashboard')} />
-  if (error) return <section className="dashboard-page"><div className="eyebrow">{t('supplierWorkspace')}</div><h1>{t('dashboardUnavailable')}</h1><p className="form-message error" role="alert">{error}</p><button className="button secondary" onClick={() => window.location.reload()} type="button">{t('tryAgain')}</button></section>
-  if (!dashboard) return <EmptyState title={t('dashboardUnavailable')} message={t('supplierDashboardMessage')} />
+      <div className="supplier-summary-grid">
+        {dashboard.metrics.map((metric) => (
+          <MetricCard
+            key={metric.label}
+            accent={metric.accent}
+            actionTo={metric.actionTo}
+            detail={metric.detail}
+            icon={metric.icon}
+            label={metric.label}
+            value={metric.value}
+          />
+        ))}
+      </div>
 
-  return <section className="dashboard-page supplier-dashboard"><div className="dashboard-heading"><div><div className="eyebrow">{t('supplierWorkspace')}</div><h1>{dashboard.businessName}.</h1><p className="muted">{t('keepEyeOnDemand')}</p></div>{dashboard.isDemoData && <span className="demo-label">{t('demoData')}</span>}</div><div className="metric-grid">{dashboard.metrics.map((metric) => <MetricCard key={metric.label} {...metric} />)}</div><div className="dashboard-grid"><section className="dashboard-section revenue-panel"><div className="section-heading"><div><span className="section-kicker">{t('orderSummary')}</span><h2>{t('incomingOrders')}</h2></div><span className="summary-period">{t('summaryPeriodAugust')}</span></div><strong className="revenue-value">{dashboard.valueSummary.value}</strong><p className="muted">{dashboard.valueSummary.detail}</p><Link className="text-link" to="/dashboard/supplier/orders">{t('viewIncomingOrders')}</Link></section><section className="dashboard-section"><div className="section-heading"><div><span className="section-kicker">{t('retailerDemand')}</span><h2>{t('recentIncomingOrders')}</h2></div><span className="section-count">{t('shownCounter', { count: dashboard.recentOrders.length })}</span></div>{dashboard.recentOrders.length ? <div className="order-list">{dashboard.recentOrders.map((order) => <IncomingOrderCard key={order.id} linkTo={`/dashboard/supplier/orders/${encodeURIComponent(order.id)}`} order={order} />)}</div> : <EmptyState title={t('noPendingOrders')} message={t('incomingOrdersWillAppear')} />}</section></div></section>
+      <div className="supplier-main-panel">
+        <div className="supplier-orders-header">
+          <div>
+            <span className="supplier-section-kicker">Recent Orders</span>
+            <h2>Recent Orders</h2>
+          </div>
+          <button className="supplier-view-all" onClick={() => navigate('/dashboard/supplier/orders')} type="button">
+            View All Orders <span aria-hidden="true">→</span>
+          </button>
+        </div>
+
+        <div className="supplier-orders-table" role="table" aria-label="Recent supplier orders">
+          <div className="supplier-orders-head" role="row">
+            <span role="columnheader">Order ID</span>
+            <span role="columnheader">Customer (Shop)</span>
+            <span role="columnheader">Items</span>
+            <span role="columnheader">Amount</span>
+            <span role="columnheader">Status</span>
+            <span role="columnheader">Date &amp; Time</span>
+            <span aria-hidden="true" />
+          </div>
+
+          {recentOrders.map((order) => (
+            <div className="supplier-orders-row" key={order.id} role="row">
+              <span role="cell"><strong>{order.id}</strong></span>
+              <span role="cell">
+                <span className="supplier-order-shop-name">{order.shopOwner}</span>
+                <small>{order.location}</small>
+              </span>
+              <span role="cell">{order.items} items</span>
+              <span role="cell">{order.amountLabel}</span>
+              <span role="cell"><StatusBadge status={order.status} /></span>
+              <span role="cell">{order.date}</span>
+              <button className="supplier-row-action" onClick={() => navigate(`/dashboard/supplier/orders/${encodeURIComponent(order.id)}`)} type="button">View</button>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  )
 }

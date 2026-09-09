@@ -1,44 +1,289 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import EmptyState from '../components/EmptyState.jsx'
+import StatusBadge from '../components/StatusBadge.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
+import { listSupplierCustomersDemo } from '../data/supplierCustomersDemo.js'
 
-const demoCustomers = [
-  { name: 'Shree General Store', area: 'Indore', orders: 12, value: 'Rs 24,800' },
-  { name: 'Mahalaxmi Provisions', area: 'Bhopal', orders: 9, value: 'Rs 18,940' },
-  { name: 'Jai Ambe Mart', area: 'Dewas', orders: 7, value: 'Rs 14,680' },
-]
+const pageSize = 8
+
+function formatCurrency(value) {
+  return `₹${Number(value || 0).toLocaleString('en-IN')}`
+}
+
+function formatDate(dateValue) {
+  const date = new Date(dateValue)
+  if (Number.isNaN(date.getTime())) return '—'
+  return date.toLocaleDateString('en-IN', {
+    day: 'numeric',
+    month: 'short',
+    year: 'numeric',
+  })
+}
+
+function getInitials(value) {
+  return String(value || 'S').split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'S'
+}
 
 export default function SupplierCustomersPage() {
   const { t } = useLocale()
+  const [customers] = useState(listSupplierCustomersDemo())
   const [search, setSearch] = useState('')
-  const customers = demoCustomers.filter((customer) => customer.name.toLowerCase().includes(search.trim().toLowerCase()))
+  const [statusFilter, setStatusFilter] = useState('All status')
+  const [locationFilter, setLocationFilter] = useState('All cities')
+  const [page, setPage] = useState(1)
+  const [selectedCustomerId, setSelectedCustomerId] = useState(listSupplierCustomersDemo()[0]?.id || null)
+  const [menuCustomerId, setMenuCustomerId] = useState(null)
+
+  const filteredCustomers = useMemo(() => {
+    const query = search.trim().toLowerCase()
+    return customers.filter((customer) => {
+      const matchesSearch = !query || `${customer.name} ${customer.location} ${customer.shopOwner} ${customer.category}`.toLowerCase().includes(query)
+      const matchesStatus = statusFilter === 'All status' || customer.status === statusFilter
+      const matchesLocation = locationFilter === 'All cities' || customer.location === locationFilter
+      return matchesSearch && matchesStatus && matchesLocation
+    })
+  }, [customers, locationFilter, search, statusFilter])
+
+  const totalPages = Math.max(1, Math.ceil(filteredCustomers.length / pageSize))
+  const currentPage = Math.min(page, totalPages)
+  const visibleCustomers = filteredCustomers.slice((currentPage - 1) * pageSize, currentPage * pageSize)
+  const selectedCustomer = filteredCustomers.find((customer) => customer.id === selectedCustomerId) || visibleCustomers[0] || null
+
+  const stats = useMemo(() => {
+    const totalSpend = customers.reduce((sum, customer) => sum + Number(customer.totalSpent || 0), 0)
+    return {
+      totalCustomers: customers.length,
+      activeCustomers: customers.filter((customer) => customer.status === 'Active').length,
+      avgOrderValue: Math.round(totalSpend / Math.max(customers.length, 1)),
+      totalOrders: customers.reduce((sum, customer) => sum + Number(customer.totalOrders || 0), 0),
+    }
+  }, [customers])
+
+  function clearFilters() {
+    setSearch('')
+    setStatusFilter('All status')
+    setLocationFilter('All cities')
+    setPage(1)
+  }
+
+  function exportCustomers() {
+    const rows = [
+      ['Customer name', 'Contact', 'Location', 'Orders', 'Total spent', 'Last order', 'Status'].join(','),
+      ...filteredCustomers.map((customer) => [customer.name, customer.contact, customer.location, customer.totalOrders, customer.totalSpent, formatDate(customer.lastOrder), customer.status].map((value) => `"${String(value).replaceAll('"', '""')}"`).join(',') ),
+    ].join('\n')
+
+    const blob = new Blob([rows], { type: 'text/csv;charset=utf-8;' })
+    const url = URL.createObjectURL(blob)
+    const link = document.createElement('a')
+    link.href = url
+    link.download = 'supplier-customers.csv'
+    document.body.appendChild(link)
+    link.click()
+    document.body.removeChild(link)
+    URL.revokeObjectURL(url)
+  }
+
+  const locationOptions = ['All cities', ...new Set(customers.map((customer) => customer.location).filter(Boolean))]
 
   return (
-    <section className="customers-page">
-      <div className="customers-heading">
+    <section className="supplier-customers-page">
+      <div className="orders-breadcrumb">
+        <span>{t('supplier')}</span>
+        <span>›</span>
+        <span>{t('customers')}</span>
+      </div>
+
+      <div className="supplier-orders-header-row">
         <div>
-          <div className="eyebrow">{t('supplierWorkspace')}</div>
+          <p className="supplier-detail-eyebrow">Supplier workspace</p>
           <h1>{t('customers')}</h1>
-          <p className="muted">{t('customersDescription')}</p>
+          <p>{t('customersDescription')}</p>
         </div>
-        <span className="demo-label">{t('demoData')}</span>
+
+        <div className="supplier-orders-header-actions">
+          <span className="demo-label">{t('demoData')}</span>
+          <button className="supplier-export-button" onClick={exportCustomers} type="button">Export</button>
+        </div>
       </div>
-      <div className="customers-tools">
-        <input aria-label={t('searchCustomers')} onChange={(event) => setSearch(event.target.value)} placeholder={t('searchCustomers')} type="search" value={search} />
+
+      <div className="customer-summary-grid">
+        <div className="metric-card customer-stat-card">
+          <div className="metric-card-icon">◎</div>
+          <div className="metric-card-content">
+            <span>Total customers</span>
+            <strong>{stats.totalCustomers}</strong>
+            <small>{stats.activeCustomers} active this month</small>
+          </div>
+        </div>
+        <div className="metric-card customer-stat-card">
+          <div className="metric-card-icon">↗</div>
+          <div className="metric-card-content">
+            <span>Order volume</span>
+            <strong>{stats.totalOrders}</strong>
+            <small>Across all active stores</small>
+          </div>
+        </div>
+        <div className="metric-card customer-stat-card">
+          <div className="metric-card-icon">₹</div>
+          <div className="metric-card-content">
+            <span>Average spend</span>
+            <strong>{formatCurrency(stats.avgOrderValue)}</strong>
+            <small>Per customer</small>
+          </div>
+        </div>
+        <div className="metric-card customer-stat-card">
+          <div className="metric-card-icon">★</div>
+          <div className="metric-card-content">
+            <span>Retention</span>
+            <strong>86%</strong>
+            <small>Repeat buyers</small>
+          </div>
+        </div>
       </div>
-      {customers.length ? (
-        <div className="customer-list">
-          {customers.map((customer) => (
-            <article className="customer-card" key={customer.name}>
-              <div className="customer-card-main">
-                <span className="customer-avatar" aria-hidden="true">{customer.name.slice(0, 1)}</span>
-                <div><h2>{customer.name}</h2><p>{customer.area}</p></div>
+
+      <div className="supplier-filter-panel">
+        <div className="supplier-filter-row">
+          <label className="supplier-search-field">
+            <span aria-hidden="true">⌕</span>
+            <input aria-label={t('searchCustomers')} onChange={(event) => setSearch(event.target.value)} placeholder={t('searchCustomers')} type="search" value={search} />
+          </label>
+
+          <label className="supplier-select-field">
+            <select onChange={(event) => setStatusFilter(event.target.value)} value={statusFilter}>
+              <option value="All status">All status</option>
+              <option value="Active">Active</option>
+              <option value="Inactive">Inactive</option>
+            </select>
+          </label>
+
+          <label className="supplier-select-field">
+            <select onChange={(event) => setLocationFilter(event.target.value)} value={locationFilter}>
+              {locationOptions.map((location) => <option key={location} value={location}>{location}</option>)}
+            </select>
+          </label>
+
+          <button className="supplier-clear-button" onClick={clearFilters} type="button">Clear</button>
+        </div>
+      </div>
+
+      <div className="supplier-customer-layout">
+        <div className="supplier-table-wrap">
+          <div className="supplier-table-header">
+            <span>Customer</span>
+            <span>Contact</span>
+            <span>Location</span>
+            <span>Orders</span>
+            <span>Total spent</span>
+            <span>Last order</span>
+            <span>Status</span>
+            <span>Action</span>
+          </div>
+
+          {visibleCustomers.length ? (
+            <>
+              {visibleCustomers.map((customer) => (
+                <div className={`supplier-table-row ${selectedCustomer?.id === customer.id ? 'is-selected' : ''}`} key={customer.id}>
+                  <div className="supplier-customer-cell">
+                    <span className={`supplier-customer-avatar color-${customer.color || 'green'}`}>{getInitials(customer.name)}</span>
+                    <div>
+                      <strong>{customer.name}</strong>
+                      <small>{customer.category}</small>
+                    </div>
+                  </div>
+
+                  <div className="supplier-customer-contact">
+                    <strong>{customer.phone}</strong>
+                    <small>{customer.shopOwner}</small>
+                  </div>
+
+                  <div className="supplier-customer-location">{customer.location}</div>
+                  <div className="supplier-amount-cell">{customer.totalOrders}</div>
+                  <div className="supplier-amount-cell">{formatCurrency(customer.totalSpent)}</div>
+                  <div className="supplier-date-cell">{formatDate(customer.lastOrder)}</div>
+                  <div className="supplier-status-cell"><StatusBadge status={customer.status} /></div>
+                  <div className="supplier-action-cell">
+                    <button className="supplier-view-button" onClick={() => setSelectedCustomerId(customer.id)} type="button">View</button>
+                    <div className="supplier-menu-wrap">
+                      <button aria-label={`More actions for ${customer.name}`} className="supplier-menu-button" onClick={() => setMenuCustomerId(menuCustomerId === customer.id ? null : customer.id)} type="button">⋮</button>
+                      {menuCustomerId === customer.id && (
+                        <div className="supplier-menu-popover">
+                          <button onClick={() => setSelectedCustomerId(customer.id)} type="button">View profile</button>
+                          <button onClick={() => setMenuCustomerId(null)} type="button">Call customer</button>
+                          <button onClick={() => setMenuCustomerId(null)} type="button">Mark inactive</button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+
+              <div className="supplier-pagination">
+                <span>Showing {filteredCustomers.length ? (currentPage - 1) * pageSize + 1 : 0}–{Math.min(currentPage * pageSize, filteredCustomers.length)} of {filteredCustomers.length} customers</span>
+                <div className="supplier-pagination-controls">
+                  <button disabled={currentPage === 1} onClick={() => setPage((pageNumber) => Math.max(1, pageNumber - 1))} type="button">‹</button>
+                  {Array.from({ length: totalPages }, (_, index) => index + 1).slice(0, 5).map((pageNumber) => (
+                    <button className={pageNumber === currentPage ? 'active' : ''} key={pageNumber} onClick={() => setPage(pageNumber)} type="button">{pageNumber}</button>
+                  ))}
+                  <button disabled={currentPage === totalPages} onClick={() => setPage((pageNumber) => Math.min(totalPages, pageNumber + 1))} type="button">›</button>
+                </div>
               </div>
-              <div className="customer-card-stats"><span><strong>{customer.orders}</strong> {t('orders')}</span><strong>{customer.value}</strong></div>
-            </article>
-          ))}
+            </>
+          ) : (
+            <EmptyState title={t('noCustomerData')} message={t('tryDifferentSearch')} />
+          )}
         </div>
-      ) : <EmptyState title={t('noCustomerData')} message={t('tryDifferentSearch')} />}
+
+        {selectedCustomer && (
+          <aside className="customer-detail-card">
+            <div className="customer-detail-header">
+              <span className={`supplier-customer-avatar color-${selectedCustomer.color || 'green'}`}>{getInitials(selectedCustomer.name)}</span>
+              <div>
+                <h2>{selectedCustomer.name}</h2>
+                <p>{selectedCustomer.category}</p>
+              </div>
+            </div>
+
+            <div className="customer-detail-metrics">
+              <div>
+                <span>Orders</span>
+                <strong>{selectedCustomer.totalOrders}</strong>
+              </div>
+              <div>
+                <span>Revenue</span>
+                <strong>{formatCurrency(selectedCustomer.totalSpent)}</strong>
+              </div>
+            </div>
+
+            <div className="customer-detail-list">
+              <div>
+                <label>Owner</label>
+                <strong>{selectedCustomer.shopOwner}</strong>
+              </div>
+              <div>
+                <label>Phone</label>
+                <strong>{selectedCustomer.phone}</strong>
+              </div>
+              <div>
+                <label>Location</label>
+                <strong>{selectedCustomer.location}</strong>
+              </div>
+              <div>
+                <label>Last order</label>
+                <strong>{formatDate(selectedCustomer.lastOrder)}</strong>
+              </div>
+              <div>
+                <label>Status</label>
+                <StatusBadge status={selectedCustomer.status} />
+              </div>
+            </div>
+
+            <div className="customer-detail-actions">
+              <button className="supplier-view-button" type="button">Call now</button>
+              <button className="supplier-detail-secondary" type="button">View notes</button>
+            </div>
+          </aside>
+        )}
+      </div>
     </section>
   )
 }

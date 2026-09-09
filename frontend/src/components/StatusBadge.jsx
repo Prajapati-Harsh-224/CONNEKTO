@@ -1,7 +1,11 @@
 import { useLocale } from '../context/LocaleContext.jsx'
 
 const statusLabels = {
+  New: 'new',
   Pending: 'pending',
+  Confirmed: 'confirmed',
+  Processing: 'processing',
+  Ready: 'ready',
   Accepted: 'accepted',
   Preparing: 'preparing',
   'Out for Delivery': 'outForDelivery',

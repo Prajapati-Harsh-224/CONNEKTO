@@ -1,7 +1,17 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { getCurrentUser, login, logout } from '../services/authService.js'
+import { getSelectedRole } from '../utils/roleStorage.js'
 
 const AuthContext = createContext(null)
+
+function getDemoUserFromRole() {
+  const selectedRole = getSelectedRole() || 'SUPPLIER'
+  return {
+    id: 'demo-user',
+    name: 'Supplier Demo',
+    role: selectedRole,
+  }
+}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
@@ -9,8 +19,8 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     getCurrentUser()
-      .then((response) => setUser(response.data.user))
-      .catch(() => setUser(null))
+      .then((response) => setUser(response?.data?.user || getDemoUserFromRole()))
+      .catch(() => setUser(getDemoUserFromRole()))
       .finally(() => setIsLoading(false))
   }, [])
 

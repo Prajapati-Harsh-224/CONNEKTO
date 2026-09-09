@@ -66,6 +66,7 @@ export default function App() {
             <Route path="customers" element={<SupplierCustomersPage />} />
             <Route path="analytics" element={<SupplierAnalyticsPage />} />
             <Route path="profile" element={<ProfilePage role="supplier" />} />
+            <Route path="settings" element={<ProfilePage role="supplier" />} />
             <Route path=":section" element={<DashboardPlaceholderPage />} />
           </Route>
           <Route path="dashboard/gruh-udyog" element={<ProtectedRoute allowedRole="GRUH_UDYOG"><RoleLayout role="gruh-udyog" /></ProtectedRoute>}>
