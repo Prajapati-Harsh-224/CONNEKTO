@@ -36,10 +36,12 @@ export default function RoleLayout({ role: routeRole }) {
           </Link>
         </div>
 
-        <div className="workspace-header-search">
-          <span className="workspace-search-icon"><HeaderIcon name="search" /></span>
-          <input aria-label={t('searchSuppliersOrders')} placeholder={t('searchSuppliersOrders')} type="text" />
-        </div>
+        {role !== 'supplier' ? (
+          <div className="workspace-header-search">
+            <span className="workspace-search-icon"><HeaderIcon name="search" /></span>
+            <input aria-label={t('searchSuppliersOrders')} placeholder={t('searchSuppliersOrders')} type="text" />
+          </div>
+        ) : null}
 
         <div className="workspace-header-tools">
           <div className="workspace-location">

@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { Fragment, useEffect, useState } from 'react'
 import { NavLink, useParams } from 'react-router-dom'
 import { getRoleNavigation } from './navigation.js'
 import { useLocale } from '../context/LocaleContext.jsx'
@@ -26,16 +26,19 @@ export default function Sidebar({ role: routeRole }) {
       <div className="sidebar-label">{t('workspace')}</div>
       {items.map((item) => {
         const badge = item.section === 'cart' ? String(cartCount || 0) : item.badge
+        const showSupplierDivider = role === 'supplier' && item.section === 'customers'
         return (
-          <NavLink
-            className={({ isActive }) => `side-link${isActive ? ' active' : ''}`}
-            end={item.section === 'home'}
-            key={item.section}
-            to={`/dashboard/${role}/${item.section}`}
-          >
-            <span>{t(item.key)}</span>
-            {badge && Number(badge) > 0 ? <span className="nav-badge">{badge}</span> : null}
-          </NavLink>
+          <Fragment key={item.section}>
+            <NavLink
+              className={({ isActive }) => `side-link${isActive ? ' active' : ''}`}
+              end={item.section === 'home'}
+              to={`/dashboard/${role}/${item.section}`}
+            >
+              <span>{t(item.key)}</span>
+              {badge && Number(badge) > 0 ? <span className="nav-badge">{badge}</span> : null}
+            </NavLink>
+            {showSupplierDivider ? <div className="sidebar-section-divider" aria-hidden="true" /> : null}
+          </Fragment>
         )
       })}
     </aside>

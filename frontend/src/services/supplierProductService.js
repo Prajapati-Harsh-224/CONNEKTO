@@ -22,18 +22,28 @@ function readLocalProducts() {
     const stored = localStorage.getItem(STORAGE_KEY)
     if (stored) {
       const parsed = JSON.parse(stored)
-      if (Array.isArray(parsed) && parsed.length) return parsed
+      if (Array.isArray(parsed) && parsed.length) return parsed.map((product) => normalizeProduct(product))
     }
   } catch (error) {
     // Ignore storage issues and fall back to demo data.
   }
 
-  return demoProducts
+  const fallbackProducts = demoProducts.map((product) => normalizeProduct(product))
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(fallbackProducts))
+  } catch (error) {
+    // Ignore storage issues in restricted environments.
+  }
+  return fallbackProducts
 }
 
 function writeLocalProducts(nextProducts) {
   try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(nextProducts))
+    const safeProducts = Array.isArray(nextProducts) && nextProducts.length
+      ? nextProducts.map((product) => normalizeProduct(product))
+      : demoProducts.map((product) => normalizeProduct(product))
+
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(safeProducts))
   } catch (error) {
     // Ignore storage issues in restricted environments.
   }
