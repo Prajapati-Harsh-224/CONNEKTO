@@ -7,7 +7,6 @@ coverage/
 .DS_Store
 
 # Runtime and local backend data
-backend/data/
 backend/uploads/
 *.db
 *.db-shm
@@ -21,7 +20,6 @@ logs/
 .vscode/
 .idea/
 *.swp
-Thumbs.db
 Desktop.ini
 
 # Python local files

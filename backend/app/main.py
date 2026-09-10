@@ -299,28 +299,28 @@ def logout(request: Request, response: Response, db: Session = Depends(get_db)):
 
 @app.get("/api/supplier/dashboard")
 def supplier_dashboard(user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "SUPPLIER": return role_error("Suppliers", user)
+    if user.role == "SHOP_OWNER": return role_error("Suppliers", user)
     supplier = db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
     orders = db.scalars(select(SupplierOrder).where(SupplierOrder.supplier_id == supplier.id).options(joinedload(SupplierOrder.items))).all() if supplier else []
     return envelope({"businessName": supplier.name if supplier else f"{user.name}'s Supply Desk", "supplierId": supplier.id if supplier else None, "metrics": [{"label": "New orders", "value": str(sum(o.status == "Pending" for o in orders)).zfill(2), "detail": "Received this week", "accent": "metric-primary"}, {"label": "Pending orders", "value": str(sum(o.status not in {"Delivered", "Cancelled"} for o in orders)).zfill(2), "detail": "Awaiting fulfilment", "accent": "metric-warning"}, {"label": "Completed orders", "value": str(sum(o.status == "Delivered" for o in orders)).zfill(2), "detail": "Delivered successfully", "accent": "metric-success"}], "valueSummary": {"value": f"Rs {sum(float(o.subtotal) for o in orders):,.0f}", "detail": "Estimated incoming order value this month"}, "recentOrders": [order_json(o) for o in orders], "isDemoData": not bool(orders)}, "Supplier dashboard returned")
 
 @app.get("/api/supplier/orders")
 def supplier_orders(user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "SUPPLIER": return role_error("Suppliers", user)
+    if user.role == "SHOP_OWNER": return role_error("Suppliers", user)
     supplier = db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
     orders = db.scalars(select(SupplierOrder).where(SupplierOrder.supplier_id == supplier.id).options(joinedload(SupplierOrder.items))).all() if supplier else []
     return envelope({"orders": [order_json(o) for o in orders]}, "Incoming orders returned")
 
 @app.get("/api/supplier/orders/{order_id}")
 def supplier_order(order_id: str, user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "SUPPLIER": return role_error("Suppliers", user)
+    if user.role == "SHOP_OWNER": return role_error("Suppliers", user)
     supplier = db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
     order = db.scalar(select(SupplierOrder).where(SupplierOrder.id == order_id, SupplierOrder.supplier_id == supplier.id).options(joinedload(SupplierOrder.items))) if supplier else None
     return envelope({"order": order_json(order)}, "Incoming order returned") if order else error("Incoming order not found.", "NOT_FOUND", 404)
 
 @app.put("/api/supplier/orders/{order_id}/status")
 def update_supplier_order(order_id: str, payload: StatusRequest, user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "SUPPLIER": return role_error("Suppliers", user)
+    if user.role == "SHOP_OWNER": return role_error("Suppliers", user)
     supplier = db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
     order = db.scalar(select(SupplierOrder).where(SupplierOrder.id == order_id, SupplierOrder.supplier_id == supplier.id).options(joinedload(SupplierOrder.items))) if supplier else None
     if not order: return error("Incoming order not found.", "NOT_FOUND", 404)
@@ -424,14 +424,14 @@ def shop_supplier_product(supplier_id: str, product_id: str, user: User = Depend
 
 @app.get("/api/supplier/products")
 def products(user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "SUPPLIER": return role_error("Suppliers", user)
+    if user.role == "SHOP_OWNER": return role_error("Suppliers", user)
     supplier = owned_supplier(user, db)
     rows = db.scalars(select(Product).where(Product.supplier_id == supplier.id)).all() if supplier else []
     return envelope({"products": [product_json(p) for p in rows]}, "Products returned")
 
 @app.post("/api/supplier/products", status_code=201)
 def create_product(payload: ProductRequest, user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "SUPPLIER": return role_error("Suppliers", user)
+    if user.role == "SHOP_OWNER": return role_error("Suppliers", user)
     supplier = owned_supplier(user, db)
     if not supplier: return error("Supplier profile not found.", "NOT_FOUND", 404)
     image_url = payload.imageUrl.strip() if payload.imageUrl else ""
@@ -441,14 +441,14 @@ def create_product(payload: ProductRequest, user: User = Depends(require_user), 
 
 @app.get("/api/supplier/products/{product_id}")
 def get_product(product_id: str, user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "SUPPLIER": return role_error("Suppliers", user)
+    if user.role == "SHOP_OWNER": return role_error("Suppliers", user)
     supplier = owned_supplier(user, db)
     product = db.scalar(select(Product).where(Product.id == product_id, Product.supplier_id == supplier.id)) if supplier else None
     return envelope({"product": product_json(product)}, "Product returned") if product else error("Product not found.", "NOT_FOUND", 404)
 
 @app.put("/api/supplier/products/{product_id}")
 def edit_product(product_id: str, payload: ProductRequest, user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "SUPPLIER": return role_error("Suppliers", user)
+    if user.role == "SHOP_OWNER": return role_error("Suppliers", user)
     supplier = owned_supplier(user, db)
     product = db.scalar(select(Product).where(Product.id == product_id, Product.supplier_id == supplier.id)) if supplier else None
     if not product: return error("Product not found.", "NOT_FOUND", 404)
@@ -458,7 +458,7 @@ def edit_product(product_id: str, payload: ProductRequest, user: User = Depends(
 
 @app.delete("/api/supplier/products/{product_id}")
 def deactivate_product(product_id: str, user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "SUPPLIER": return role_error("Suppliers", user)
+    if user.role == "SHOP_OWNER": return role_error("Suppliers", user)
     supplier = owned_supplier(user, db)
     product = db.scalar(select(Product).where(Product.id == product_id, Product.supplier_id == supplier.id)) if supplier else None
     if not product: return error("Product not found.", "NOT_FOUND", 404)
@@ -517,7 +517,7 @@ def shop_analytics(user: User = Depends(require_user), db: Session = Depends(get
 
 @app.get("/api/analytics/supplier")
 def supplier_analytics(user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "SUPPLIER": return role_error("Suppliers", user)
+    if user.role == "SHOP_OWNER": return role_error("Suppliers", user)
     supplier = owned_supplier(user, db)
     rows = db.scalars(select(SupplierOrder).where(SupplierOrder.supplier_id == supplier.id)).all() if supplier else []
     return envelope({"isDemoData": not bool(rows), "ordersReceived": len(rows), "orderValue": sum(float(o.subtotal) for o in rows), "topProducts": [], "topCustomers": [], "orderStatus": {"pending": sum(o.status not in {"Delivered", "Cancelled"} for o in rows), "completed": sum(o.status == "Delivered" for o in rows)}}, "Supplier analytics returned")
