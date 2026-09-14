@@ -27,7 +27,7 @@ export default function RoleLayout({ role: routeRole }) {
   const avatarInitial = displayName.trim().slice(0, 1).toUpperCase()
 
   return (
-    <div className={`workspace-layout${role === 'shop-owner' ? ' shop-owner-layout' : ''}`}>
+    <div className={`workspace-layout${role === 'shop-owner' ? ' shop-owner-layout' : ''}${role === 'supplier' ? ' supplier-layout' : ''}`}>
       <header className="workspace-header">
         <div className="workspace-header-brand">
           <Link className="brand" to="/" aria-label={t('connectoHome')}>

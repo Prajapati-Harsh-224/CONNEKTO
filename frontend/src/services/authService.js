@@ -1,77 +1,42 @@
-import { apiRequest } from './api.js'
 import { getSelectedRole } from '../utils/roleStorage.js'
 
 export function login(credentials) {
-  return apiRequest('/auth/login', {
-    body: {
-      emailOrPhone: credentials.emailOrPhone || credentials.identifier,
-      password: credentials.password,
+  // Demo mode: resolve locally without backend
+  const fallbackRole = getSelectedRole() || 'SHOP_OWNER'
+  return Promise.resolve({
+    data: {
+      user: {
+        id: 'demo-user',
+        name: credentials.emailOrPhone || credentials.identifier || 'Demo User',
+        role: fallbackRole,
+      },
     },
-    method: 'POST',
-  })
-}
-
-export function registerShopOwner(credentials) {
-  return apiRequest('/auth/register/shop-owner', {
-    body: credentials,
-    method: 'POST',
-  })
-}
-
-export function registerSupplier(credentials) {
-  return apiRequest('/auth/register/supplier', {
-    body: credentials,
-    method: 'POST',
-  })
-}
-
-export function registerGruhUdyog(credentials) {
-  return apiRequest('/auth/register/gruh-udyog', {
-    body: credentials,
-    method: 'POST',
   })
 }
 
 export function register(credentials) {
-  if (credentials.role === 'SHOP_OWNER') {
-    return registerShopOwner(credentials)
+  // Demo mode: resolve locally without backend
+  if (!['SHOP_OWNER', 'SUPPLIER', 'GRUH_UDYOG'].includes(credentials.role)) {
+    return Promise.reject(new Error('Unsupported registration role.'))
   }
-  if (credentials.role === 'SUPPLIER') {
-    return registerSupplier(credentials)
-  }
-  if (credentials.role === 'GRUH_UDYOG') {
-    return registerGruhUdyog(credentials)
-  }
-  throw new Error('Unsupported registration role.')
+  return Promise.resolve({ data: { message: 'Account created successfully.' } })
 }
 
 export function getCurrentUser() {
-  return apiRequest('/auth/me').catch((error) => {
-    const fallbackRole = getSelectedRole() || 'SUPPLIER'
-    const errorText = String(error?.message || '').toLowerCase()
-
-    if (
-      error?.status === 401 ||
-      errorText.includes('401') ||
-      errorText.includes('unauthorized') ||
-      errorText.includes('api is unavailable') ||
-      errorText.includes('failed to fetch')
-    ) {
-      return {
-        data: {
-          user: {
-            id: 'demo-user',
-            name: 'Supplier Demo',
-            role: fallbackRole,
-          },
-        },
-      }
-    }
-
-    throw error
+  // Demo mode: resolve locally without backend
+  const fallbackRole = getSelectedRole() || 'SHOP_OWNER'
+  return Promise.resolve({
+    data: {
+      user: {
+        id: 'demo-user',
+        name: 'Demo User',
+        role: fallbackRole,
+      },
+    },
   })
 }
 
 export function logout() {
-  return apiRequest('/auth/logout', { method: 'POST' })
+  // Demo mode: resolve locally without backend
+  return Promise.resolve({ data: { message: 'Logged out.' } })
 }
