@@ -308,7 +308,7 @@ def supplier_dashboard(user: User = Depends(require_user), db: Session = Depends
 def supplier_orders(user: User = Depends(require_user), db: Session = Depends(get_db)):
     if user.role == "SHOP_OWNER": return role_error("Suppliers", user)
     supplier = db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
-    orders = db.scalars(select(SupplierOrder).where(SupplierOrder.supplier_id == supplier.id).options(joinedload(SupplierOrder.items))).all() if supplier else []
+    orders = db.scalars(select(SupplierOrder).where(SupplierOrder.supplier_id == supplier.id).options(joinedload(SupplierOrder.items))).unique().all() if supplier else []
     return envelope({"orders": [order_json(o) for o in orders]}, "Incoming orders returned")
 
 @app.get("/api/supplier/orders/{order_id}")
@@ -468,7 +468,7 @@ def deactivate_product(product_id: str, user: User = Depends(require_user), db: 
 @app.get("/api/orders")
 def shop_orders(user: User = Depends(require_user), db: Session = Depends(get_db)):
     if user.role != "SHOP_OWNER": return role_error("Shop Owners", user)
-    rows = db.scalars(select(SupplierOrder).where(SupplierOrder.shop_owner_id == user.id).options(joinedload(SupplierOrder.items))).all()
+    rows = db.scalars(select(SupplierOrder).where(SupplierOrder.shop_owner_id == user.id).options(joinedload(SupplierOrder.items))).unique().all()
     return envelope({"orders": [order_json(o) for o in rows]}, "Orders returned")
 
 @app.get("/api/orders/{order_id}")
