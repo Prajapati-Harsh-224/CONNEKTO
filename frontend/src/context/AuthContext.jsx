@@ -1,17 +1,8 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { getCurrentUser, login, logout } from '../services/authService.js'
-import { getSelectedRole } from '../utils/roleStorage.js'
+import { saveSelectedRole } from '../utils/roleStorage.js'
 
 const AuthContext = createContext(null)
-
-function getDemoUserFromRole() {
-  const selectedRole = getSelectedRole() || 'SUPPLIER'
-  return {
-    id: 'demo-user',
-    name: 'Supplier Demo',
-    role: selectedRole,
-  }
-}
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null)
@@ -19,19 +10,25 @@ export function AuthProvider({ children }) {
 
   useEffect(() => {
     getCurrentUser()
-      .then((response) => setUser(response?.data?.user || getDemoUserFromRole()))
-      .catch(() => setUser(getDemoUserFromRole()))
+      .then((response) => {
+        const realUser = response?.data?.user || null
+        setUser(realUser)
+        if (realUser?.role) saveSelectedRole(realUser.role)
+      })
+      .catch(() => setUser(null))
       .finally(() => setIsLoading(false))
   }, [])
 
   async function signIn(credentials) {
     const response = await login(credentials)
-    setUser(response.data.user)
-    return response.data.user
+    const realUser = response?.data?.user || null
+    setUser(realUser)
+    if (realUser?.role) saveSelectedRole(realUser.role)
+    return realUser
   }
 
   async function signOut() {
-    await logout()
+    await logout().catch(() => { })
     setUser(null)
   }
 

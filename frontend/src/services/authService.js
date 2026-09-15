@@ -1,42 +1,36 @@
-import { getSelectedRole } from '../utils/roleStorage.js'
+import { apiRequest } from './api.js'
+
+const REGISTER_ROUTES = {
+  SHOP_OWNER: '/auth/register/shop-owner',
+  SUPPLIER: '/auth/register/supplier',
+  GRUH_UDYOG: '/auth/register/gruh-udyog',
+}
 
 export function login(credentials) {
-  // Demo mode: resolve locally without backend
-  const fallbackRole = getSelectedRole() || 'SHOP_OWNER'
-  return Promise.resolve({
-    data: {
-      user: {
-        id: 'demo-user',
-        name: credentials.emailOrPhone || credentials.identifier || 'Demo User',
-        role: fallbackRole,
-      },
+  return apiRequest('/auth/login', {
+    method: 'POST',
+    body: {
+      emailOrPhone: credentials.emailOrPhone,
+      password: credentials.password,
     },
   })
 }
 
 export function register(credentials) {
-  // Demo mode: resolve locally without backend
-  if (!['SHOP_OWNER', 'SUPPLIER', 'GRUH_UDYOG'].includes(credentials.role)) {
+  const route = REGISTER_ROUTES[credentials.role]
+  if (!route) {
     return Promise.reject(new Error('Unsupported registration role.'))
   }
-  return Promise.resolve({ data: { message: 'Account created successfully.' } })
-}
-
-export function getCurrentUser() {
-  // Demo mode: resolve locally without backend
-  const fallbackRole = getSelectedRole() || 'SHOP_OWNER'
-  return Promise.resolve({
-    data: {
-      user: {
-        id: 'demo-user',
-        name: 'Demo User',
-        role: fallbackRole,
-      },
-    },
+  return apiRequest(route, {
+    method: 'POST',
+    body: credentials,
   })
 }
 
+export function getCurrentUser() {
+  return apiRequest('/auth/me')
+}
+
 export function logout() {
-  // Demo mode: resolve locally without backend
-  return Promise.resolve({ data: { message: 'Logged out.' } })
+  return apiRequest('/auth/logout', { method: 'POST' })
 }
