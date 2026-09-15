@@ -42,6 +42,7 @@ class SupplierRegisterRequest(BaseModel):
     role: Literal["SUPPLIER"] = "SUPPLIER"
     name: str
     area: str
+    category: str | None = None
     serviceAreas: list[str] = Field(default_factory=list)
     phone: str
     email: str = ""
@@ -53,10 +54,12 @@ class GruhUdyogRegisterRequest(BaseModel):
     role: Literal["GRUH_UDYOG"] = "GRUH_UDYOG"
     name: str
     area: str
+    category: str | None = None
     phone: str
     email: str = ""
     password: str
     confirmPassword: str | None = None
+
 
 RegisterRequest = Annotated[Union[ShopOwnerRegisterRequest, SupplierRegisterRequest, GruhUdyogRegisterRequest], Field(discriminator="role")]
 
@@ -72,6 +75,7 @@ class ProductRequest(BaseModel):
     packSize: str
     price: float = Field(gt=0)
     minimumQuantity: int = Field(gt=0)
+    unitsPerBox: int = Field(default=1, gt=0)
     imageUrl: str = ""
 
     @field_validator('imageUrl')

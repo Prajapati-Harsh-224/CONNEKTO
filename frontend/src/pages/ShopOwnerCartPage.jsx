@@ -54,15 +54,26 @@ export default function ShopOwnerCartPage() {
     window.dispatchEvent(new Event('connecto-cart-updated'))
   }
 
-  function changeQuantity(item, nextQuantity) {
-    const numericQuantity = Number(nextQuantity)
-    const minimum = Number(item.minimumQuantity || 1)
-    if (!Number.isInteger(numericQuantity) || numericQuantity < minimum) {
-      setQuantityErrors((current) => ({ ...current, [item.productId]: t('wholeNumberAtLeast', { minimum }) }))
+  function changeQuantity(item, nextValue) {
+    const unitsPerBox = Math.max(1, Number(item.unitsPerBox || 1))
+    const numericValue = Number(nextValue)
+    const minQty = Number(item.minimumQuantity || 1)
+    const minBoxes = Math.ceil(minQty / unitsPerBox)
+
+    const isBox = unitsPerBox > 1
+    const minimumAllowed = isBox ? minBoxes : minQty
+
+    if (!Number.isInteger(numericValue) || numericValue < minimumAllowed) {
+      setQuantityErrors((current) => ({
+        ...current,
+        [item.productId]: isBox
+          ? `Minimum order is ${minBoxes} ${minBoxes === 1 ? 'box' : 'boxes'} (${minQty} packets)`
+          : t('wholeNumberAtLeast', { minimum: minQty })
+      }))
       return
     }
     setQuantityErrors((current) => ({ ...current, [item.productId]: '' }))
-    setCart(updateCartItem(item.productId, item.supplierId, numericQuantity))
+    setCart(updateCartItem(item.productId, item.supplierId, numericValue))
     notifyCartUpdated()
   }
 
@@ -87,13 +98,34 @@ export default function ShopOwnerCartPage() {
                 <div className="cart-group-summary"><span>{t('supplierSubtotal')}</span><strong>{formatPrice(group.subtotal)}</strong></div>
                 <button className="cart-collapse-button" type="button" aria-label={isCollapsed ? `Expand ${group.name}` : `Collapse ${group.name}`} aria-expanded={!isCollapsed} onClick={() => setCollapsedSuppliers((current) => ({ ...current, [group.supplierId]: !current[group.supplierId] }))}>{isCollapsed ? '⌄' : '⌃'}</button>
               </div>
-              {!isCollapsed && <div className="cart-group-items">{group.items.map((item) => <article className="cart-item" key={`${item.supplierId}-${item.productId}`}>
-                <ProductImage alt={`${item.name} cart item`} aria-hidden="true" className="cart-item-art" fallbackText={(item.name || 'P').slice(0, 1).toUpperCase()} src={item.imageUrl || item.imageLabel || ''} />
-                <div className="cart-item-info"><strong>{item.name}</strong><span>{item.packSize} <b>|</b> {item.brand}</span><small>{formatPrice(parsePrice(item.unitPrice))} each</small></div>
-                <QuantitySelector error={quantityErrors[item.productId]} minimum={Number(item.minimumQuantity || 1)} onChange={(quantity) => changeQuantity(item, quantity)} value={item.quantity} />
-                <strong className="cart-item-subtotal">{formatPrice(parsePrice(item.unitPrice) * Number(item.quantity))}</strong>
-                <button className="remove-item" onClick={() => removeItem(item)} type="button" aria-label={`Remove ${item.name}`}>×</button>
-              </article>)}</div>}
+              {!isCollapsed && <div className="cart-group-items">{group.items.map((item) => {
+                const unitsPerBox = Math.max(1, Number(item.unitsPerBox || 1))
+                const isBox = unitsPerBox > 1
+                const boxes = Number(item.boxes || Math.ceil(item.quantity / unitsPerBox))
+                const minBoxes = Math.ceil(Number(item.minimumQuantity || 1) / unitsPerBox)
+                return (
+                  <article className="cart-item" key={`${item.supplierId}-${item.productId}`}>
+                    <ProductImage alt={`${item.name} cart item`} aria-hidden="true" className="cart-item-art" fallbackText={(item.name || 'P').slice(0, 1).toUpperCase()} src={item.imageUrl || item.imageLabel || ''} />
+                    <div className="cart-item-info">
+                      <strong>{item.name}</strong>
+                      <span>{item.packSize} <b>|</b> {item.brand}</span>
+                      <small>
+                        {formatPrice(parsePrice(item.unitPrice))}/packet
+                        {isBox && <span style={{ display: 'block', color: '#047857', fontWeight: '600' }}>1 Box = {unitsPerBox} packets ({formatPrice(parsePrice(item.unitPrice) * unitsPerBox)}/box)</span>}
+                      </small>
+                      {isBox && <div style={{ fontSize: '0.78rem', color: '#4b5563', marginTop: '0.2rem' }}>Total: {item.quantity} packets</div>}
+                    </div>
+                    <QuantitySelector
+                      error={quantityErrors[item.productId]}
+                      minimum={isBox ? minBoxes : Number(item.minimumQuantity || 1)}
+                      onChange={(val) => changeQuantity(item, val)}
+                      value={isBox ? boxes : item.quantity}
+                    />
+                    <strong className="cart-item-subtotal">{formatPrice(parsePrice(item.unitPrice) * Number(item.quantity))}</strong>
+                    <button className="remove-item" onClick={() => removeItem(item)} type="button" aria-label={`Remove ${item.name}`}>×</button>
+                  </article>
+                )
+              })}</div>}
               <div className="cart-group-footer"><span>{group.items.length} {group.items.length === 1 ? t('itemCount') : t('itemsCount')}</span><button type="button" onClick={() => group.items.forEach(removeItem)}>Clear supplier cart</button></div>
             </section>
           })}

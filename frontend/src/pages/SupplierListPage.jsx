@@ -264,19 +264,15 @@ function SupplierCard({ supplier, isFavorite, onToggleFavorite }) {
             {supplier.isVerified && <VerifiedBadge />}
           </div>
           <span className="sdc-type">{supplier.type}</span>
+          {(supplier.location || supplier.serviceAreas?.[0]) && (
+            <div className="sdc-location-sub" style={{ fontSize: '0.82rem', color: '#6b7280', marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+              📍 {supplier.location || supplier.serviceAreas?.[0]}
+            </div>
+          )}
         </div>
       </div>
 
-      <div className="sdc-meta-row">
-        <LocationPinIcon />
-        <span className="sdc-location">{supplier.location || '—'}</span>
-        <span className="sdc-dot" aria-hidden="true">|</span>
-        <span className="sdc-service-areas">{supplier.serviceAreaCount} service areas</span>
-      </div>
-
       <p className="sdc-description">{supplier.description}</p>
-
-      <StarRating rating={supplier.rating} reviewCount={supplier.reviewCount} />
 
       <div className="sdc-tag-row">
         {(supplier.tags || []).slice(0, 3).map((tag) => (
@@ -287,10 +283,10 @@ function SupplierCard({ supplier, isFavorite, onToggleFavorite }) {
       <div className="sdc-card-footer">
         <Link
           className="sdc-view-btn"
-          to={`/dashboard/shop-owner/suppliers/${supplier.id}`}
-          aria-label={`View ${supplier.name} supplier details`}
+          to={`/dashboard/shop-owner/suppliers/${supplier.id}/products`}
+          aria-label={`View ${supplier.name} products`}
         >
-          View Supplier <span aria-hidden="true">→</span>
+          View Products <span aria-hidden="true">→</span>
         </Link>
       </div>
     </article>
@@ -304,9 +300,6 @@ export default function SupplierListPage() {
   const { t } = useLocale()
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
-  const [locationFilter, setLocationFilter] = useState('all')
-  const [serviceAreaFilter, setServiceAreaFilter] = useState('all')
-  const [sortBy, setSortBy] = useState('relevance')
   const [favorites, setFavorites] = useState({})
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
@@ -352,24 +345,10 @@ export default function SupplierListPage() {
       .filter((s) => {
         if (selectedCategory !== 'all' && s.category !== selectedCategory) return false
         if (q && ![s.name, s.type, s.category, s.location, s.description, ...(s.tags || [])].some((v) => String(v).toLowerCase().includes(q))) return false
-        if (locationFilter !== 'all' && !(s.location || '').toLowerCase().includes(locationFilter.toLowerCase()) && !(s.serviceAreas || []).some((area) => area.toLowerCase().includes(locationFilter.toLowerCase()))) return false
-        if (serviceAreaFilter !== 'all') {
-          const count = s.serviceAreaCount || s.serviceAreas?.length || 0
-          if (serviceAreaFilter === '1-3' && !(count >= 1 && count <= 3)) return false
-          if (serviceAreaFilter === '4-6' && !(count >= 4 && count <= 6)) return false
-          if (serviceAreaFilter === '7+' && count < 7) return false
-        }
         return true
       })
-      .sort((a, b) => {
-        if (sortBy === 'rating') return (b.rating || 0) - (a.rating || 0)
-        if (sortBy === 'service') return (b.serviceAreaCount || 0) - (a.serviceAreaCount || 0)
-        if (sortBy === 'name') return a.name.localeCompare(b.name)
-        // relevance: rating × log(reviewCount + 1)
-        return (b.rating || 0) * Math.log((b.reviewCount || 1) + 1) -
-          (a.rating || 0) * Math.log((a.reviewCount || 1) + 1)
-      })
-  }, [suppliers, selectedCategory, searchTerm, locationFilter, serviceAreaFilter, sortBy])
+      .sort((a, b) => (b.rating || 0) * Math.log((b.reviewCount || 1) + 1) - (a.rating || 0) * Math.log((a.reviewCount || 1) + 1))
+  }, [suppliers, selectedCategory, searchTerm])
 
   const activeCategoryLabel = useMemo(() => {
     if (selectedCategory === 'all') return t('allSuppliers')
@@ -443,7 +422,7 @@ export default function SupplierListPage() {
         </div>
       </div>
 
-      {/* ── Search / filter toolbar ── */}
+      {/* ── Search toolbar ── */}
       <div className="sdc-toolbar">
         <label className="sdc-search-field" htmlFor="sdc-search">
           <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" width="16" height="16" className="sdc-search-icon">
@@ -457,51 +436,6 @@ export default function SupplierListPage() {
             onChange={(e) => setSearchTerm(e.target.value)}
             placeholder={t('searchSuppliersByName')}
           />
-        </label>
-
-        <label className="sdc-filter-field" htmlFor="sdc-location">
-          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" width="14" height="14" className="sdc-filter-icon">
-            <path d="M10 18s6-5 6-9.5a6 6 0 1 0-12 0C4 13 10 18 10 18Z" stroke="#6b7280" strokeWidth="1.5" />
-            <circle cx="10" cy="8.5" r="2" stroke="#6b7280" strokeWidth="1.5" />
-          </svg>
-          <select id="sdc-location" value={locationFilter} onChange={(e) => setLocationFilter(e.target.value)}>
-            <option value="all">Ahmedabad</option>
-            <option value="Ahmedabad">Ahmedabad</option>
-          </select>
-          <svg viewBox="0 0 12 12" fill="none" aria-hidden="true" className="sdc-chevron" width="10" height="10">
-            <path d="m2 4 4 4 4-4" stroke="#6b7280" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </label>
-
-        <label className="sdc-filter-field" htmlFor="sdc-service-area">
-          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" width="14" height="14" className="sdc-filter-icon">
-            <rect x="3" y="3" width="14" height="14" rx="2" stroke="#6b7280" strokeWidth="1.5" />
-            <path d="M3 8h14M8 8v9M12 8v9" stroke="#6b7280" strokeWidth="1.3" strokeLinecap="round" />
-          </svg>
-          <select id="sdc-service-area" value={serviceAreaFilter} onChange={(e) => setServiceAreaFilter(e.target.value)}>
-            <option value="all">{t('serviceAreaFilter')}</option>
-            <option value="1-3">{t('serviceAreasOneToThree')}</option>
-            <option value="4-6">{t('serviceAreasFourToSix')}</option>
-            <option value="7+">{t('serviceAreasSevenPlus')}</option>
-          </select>
-          <svg viewBox="0 0 12 12" fill="none" aria-hidden="true" className="sdc-chevron" width="10" height="10">
-            <path d="m2 4 4 4 4-4" stroke="#6b7280" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
-        </label>
-
-        <label className="sdc-filter-field sdc-sort-field" htmlFor="sdc-sort">
-          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" width="14" height="14" className="sdc-filter-icon">
-            <path d="M5 5h10M5 10h7M5 15h4" stroke="#6b7280" strokeWidth="1.5" strokeLinecap="round" />
-          </svg>
-          <select id="sdc-sort" value={sortBy} onChange={(e) => setSortBy(e.target.value)}>
-            <option value="relevance">{t('sortByRelevance')}</option>
-            <option value="rating">{t('sortByRating')}</option>
-            <option value="service">{t('sortByServiceArea')}</option>
-            <option value="name">{t('sortByName')}</option>
-          </select>
-          <svg viewBox="0 0 12 12" fill="none" aria-hidden="true" className="sdc-chevron" width="10" height="10">
-            <path d="m2 4 4 4 4-4" stroke="#6b7280" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
-          </svg>
         </label>
       </div>
 

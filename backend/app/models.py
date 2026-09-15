@@ -35,8 +35,21 @@ class Supplier(Base):
     __tablename__ = "suppliers"
     id: Mapped[str] = mapped_column(String(80), primary_key=True)
     name: Mapped[str] = mapped_column(String(150))
+    category: Mapped[str | None] = mapped_column(String(100), nullable=True, default="")
+    description: Mapped[str | None] = mapped_column(Text, nullable=True, default="")
+    location: Mapped[str | None] = mapped_column(String(100), nullable=True, default="")
+    service_areas_raw: Mapped[str | None] = mapped_column("service_areas", Text, nullable=True, default="")
+    minimum_order: Mapped[str | None] = mapped_column(String(100), nullable=True, default="")
+    phone: Mapped[str | None] = mapped_column(String(30), nullable=True, default="")
+    email: Mapped[str | None] = mapped_column(String(255), nullable=True, default="")
+    is_verified: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
+    rating: Mapped[float | None] = mapped_column(Numeric(3, 2), nullable=True, default=None)
+    review_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
+    tags: Mapped[str | None] = mapped_column(Text, nullable=True, default="")
     owner_id: Mapped[str | None] = mapped_column(ForeignKey("users.id"), nullable=True, unique=True)
+    owner: Mapped[User | None] = relationship(lazy="joined")
     service_areas: Mapped[list["SupplierServiceArea"]] = relationship(cascade="all, delete-orphan", lazy="selectin")
+
 
 class SupplierServiceArea(Base):
     __tablename__ = "supplier_service_areas"
@@ -54,6 +67,8 @@ class Product(Base):
     pack_size: Mapped[str] = mapped_column(String(80))
     price: Mapped[float] = mapped_column(Numeric(10, 2))
     minimum_quantity: Mapped[int] = mapped_column(Integer)
+    units_per_box: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
+    description: Mapped[str | None] = mapped_column(Text, nullable=True, default="")
     image_url: Mapped[str] = mapped_column(Text, default="")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_demo_data: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -92,5 +107,6 @@ class OrderItem(Base):
     product_name_snapshot: Mapped[str] = mapped_column(String(150))
     product_image_url_snapshot: Mapped[str | None] = mapped_column(Text, default="")
     quantity: Mapped[int] = mapped_column(Integer)
+    units_per_box_snapshot: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
     unit_price_snapshot: Mapped[float] = mapped_column(Numeric(10, 2))
     line_total: Mapped[float] = mapped_column(Numeric(10, 2))

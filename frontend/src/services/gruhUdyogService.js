@@ -1,53 +1,42 @@
 import { apiRequest } from './api.js'
 
-const demoData = {
-  businessName: 'Swad Saman',
-  metrics: [
-    { label: 'Products live', value: '18', detail: 'Ready for local retailer orders', accent: 'metric-primary' },
-    { label: 'Open orders', value: '07', detail: 'Across nearby markets', accent: 'metric-warning' },
-    { label: 'Service coverage', value: '06 areas', detail: 'Delivery and pickup zones', accent: 'metric-success' },
-    { label: 'Daily demand', value: 'Rs 16,400', detail: 'Average daily demand signal', accent: 'metric-primary' },
-  ],
-  products: [
-    { id: 'gu-01', name: 'Groundnut Chikki', brand: 'Swad Saman', category: 'Snacks', packSize: '250 g', price: 120, minimumQuantity: 10, imageLabel: 'C' },
-    { id: 'gu-02', name: 'Sev Mamra Mix', brand: 'Swad Saman', category: 'Snacks', packSize: '500 g', price: 180, minimumQuantity: 8, imageLabel: 'M' },
-    { id: 'gu-03', name: 'Masala Khakhra', brand: 'Swad Saman', category: 'Bakery', packSize: '200 g', price: 95, minimumQuantity: 12, imageLabel: 'K' },
-    { id: 'gu-04', name: 'Herbal Tea', brand: 'Swad Saman', category: 'Beverages', packSize: '200 g', price: 140, minimumQuantity: 15, imageLabel: 'T' },
-  ],
-  serviceAreas: ['Maninagar', 'Bapunagar', 'Vastrapur', 'Anand Nagar', 'Naroda', 'Nikol'],
-  orders: [
-    { id: '#GU-201', shopOwner: 'Asha Mart', area: 'Maninagar', status: 'Pending', amount: 2480, date: 'Today, 9:10 AM' },
-    { id: '#GU-202', shopOwner: 'Kutch Foods', area: 'Naroda', status: 'Accepted', amount: 3150, date: 'Today, 8:05 AM' },
-    { id: '#GU-203', shopOwner: 'Shree Kirana', area: 'Vastrapur', status: 'Preparing', amount: 1820, date: 'Yesterday' },
-    { id: '#GU-204', shopOwner: 'Jalaram Store', area: 'Nikol', status: 'Out for Delivery', amount: 2240, date: 'Yesterday' },
-  ],
-}
-
 export function getGruhUdyogDashboard() {
-  return Promise.resolve({ data: demoData })
+  return apiRequest('/supplier/dashboard').then((res) => {
+    const data = res.data || {}
+    return {
+      data: {
+        businessName: data.businessName || 'Gruh Udyog',
+        metrics: data.metrics || [
+          { label: 'New orders', value: '00', detail: 'Received this week', accent: 'metric-primary' },
+          { label: 'Pending orders', value: '00', detail: 'Awaiting fulfillment', accent: 'metric-warning' },
+          { label: 'Completed orders', value: '00', detail: 'Delivered successfully', accent: 'metric-success' },
+        ],
+        orders: data.recentOrders || []
+      }
+    }
+  })
 }
 
 export function getGruhUdyogProducts() {
-  return Promise.resolve({ data: { products: demoData.products } })
+  return apiRequest('/supplier/products')
 }
 
 export function getGruhUdyogServiceAreas() {
-  return Promise.resolve({ data: { serviceAreas: demoData.serviceAreas } })
+  return apiRequest('/auth/me').then((res) => {
+    const user = res.data?.user || {}
+    const area = user.area || 'Ahmedabad'
+    return { data: { serviceAreas: [area] } }
+  }).catch(() => ({ data: { serviceAreas: [] } }))
 }
 
 export function getGruhUdyogOrders() {
-  return Promise.resolve({ data: { orders: demoData.orders } })
+  return apiRequest('/supplier/orders')
 }
 
 export function updateGruhUdyogOrderStatus(orderId, status) {
-  const nextOrder = demoData.orders.find((order) => order.id === orderId)
-  if (!nextOrder) {
-    return Promise.reject(new Error('Order not found.'))
-  }
-  nextOrder.status = status
-  return Promise.resolve({ data: { order: nextOrder } })
+  return apiRequest(`/supplier/orders/${encodeURIComponent(orderId)}/status`, {
+    method: 'PUT',
+    body: { status }
+  })
 }
 
-export function apiRequestForGruhUdyog() {
-  return apiRequest('/gruh-udyog/demo')
-}

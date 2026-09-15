@@ -9,7 +9,6 @@ import RoleSelectionPage from './pages/RoleSelectionPage.jsx'
 import SignupPage from './pages/SignupPage.jsx'
 import ShopOwnerDashboardPage from './pages/ShopOwnerDashboardPage.jsx'
 import SupplierListPage from './pages/SupplierListPage.jsx'
-import SupplierDetailPage from './pages/SupplierDetailPage.jsx'
 import SupplierCatalogPage from './pages/SupplierCatalogPage.jsx'
 import ProductDetailPage from './pages/ProductDetailPage.jsx'
 import ShopOwnerCartPage from './pages/ShopOwnerCartPage.jsx'
@@ -52,7 +51,7 @@ export default function App() {
             <Route path="analytics" element={<ShopOwnerAnalyticsPage />} />
             <Route path="assistant" element={<Navigate replace to="/dashboard/shop-owner/home" />} />
             <Route path="profile" element={<ProfilePage role="shop-owner" />} />
-            <Route path="suppliers/:supplierId" element={<SupplierDetailPage />} />
+            <Route path="suppliers/:supplierId" element={<Navigate replace to="products" />} />
             <Route path="suppliers/:supplierId/products" element={<SupplierCatalogPage />} />
             <Route path="suppliers/:supplierId/products/:productId" element={<ProductDetailPage />} />
             <Route path=":section" element={<DashboardPlaceholderPage />} />

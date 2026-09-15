@@ -1,68 +1,45 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { listSupplierAnalyticsDemo } from '../data/supplierAnalyticsDemo.js'
+import { FiCalendar, FiChevronDown, FiDollarSign, FiShoppingBag, FiUsers, FiBox, FiBarChart2, FiArrowRight } from 'react-icons/fi'
+import { HiSparkles } from 'react-icons/hi2'
 import { getSupplierAnalytics } from '../services/supplierAnalyticsService.js'
 
 const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`
 
-const dateOptions = ['This Month (Sep 2026)', 'Last 3 months', 'This year']
+const dateOptions = ['This Month', 'Last 3 months', 'This year']
 const salesPeriodOptions = ['Last 6 months', 'Last 3 months', 'This year']
 const revenueOptions = ['This Month']
 
+const emptyAnalytics = {
+  isDemoData: false,
+  metrics: { sales: 0, orders: 0, customers: 0, productsSold: 0 },
+  salesTrend: {
+    'Last 6 months': { labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'], values: [0, 0, 0, 0, 0, 0] },
+    'Last 3 months': { labels: ['Jul', 'Aug', 'Sep'], values: [0, 0, 0] },
+    'This year': { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'], values: [0, 0, 0, 0, 0, 0, 0, 0, 0] }
+  },
+  revenueBreakdown: [],
+  topProducts: [],
+  topCustomers: []
+}
+
 function HeaderIcon({ type }) {
   const icons = {
-    calendar: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <rect x="3" y="5" width="18" height="16" rx="2" fill="none" stroke="currentColor" strokeWidth="1.8" />
-        <path d="M8 3v4M16 3v4M3 10h18" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      </svg>
-    ),
-    chevron: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M7 10l5 5 5-5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-    rupee: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M16 4H8.5A4.5 4.5 0 0 0 8.5 13H14a3 3 0 0 1 0 6H7M9 4h8M9 18h8M9 4v16" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-    order: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M7 4h10l3 3v12a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-        <path d="M9 9h6M9 13h6M9 17h3" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      </svg>
-    ),
-    customers: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M9 12a3 3 0 1 0 0-6 3 3 0 0 0 0 6Zm6 2a2.5 2.5 0 1 0 0-5 2.5 2.5 0 0 0 0 5ZM4 18c.4-2.1 2.7-3.5 5-3.5S12.6 15.9 13 18M15 18c.5-2.2 2.5-3.6 4.8-3.6" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-    product: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 3l8 4.5v9L12 21l-8-4.5v-9L12 3Z" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-        <path d="M12 3v9m8-4.5L12 12 4 8.5" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-      </svg>
-    ),
-    chart: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M4 18h16M6 15l4-4 3 3 5-8" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
-    spark: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M12 2v6M12 16v6M4.93 4.93l4.24 4.24M14.83 14.83l4.24 4.24M2 12h6M16 12h6M4.93 19.07l4.24-4.24M14.83 9.17l4.24-4.24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-      </svg>
-    ),
-    arrow: (
-      <svg viewBox="0 0 24 24" aria-hidden="true">
-        <path d="M5 12h14M13 5l7 7-7 7" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    ),
+    calendar: <FiCalendar />,
+    chevron: <FiChevronDown />,
+    rupee: <FiDollarSign />,
+    order: <FiShoppingBag />,
+    customers: <FiUsers />,
+    product: <FiBox />,
+    chart: <FiBarChart2 />,
+    spark: <HiSparkles />,
+    arrow: <FiArrowRight />,
   }
 
-  return <span className="analytics-icon" aria-hidden="true">{icons[type] || icons.chart}</span>
+  return <span className="analytics-icon" aria-hidden="true">{icons[type] || <FiBarChart2 />}</span>
 }
+
+
 
 function SalesTrendChart({ labels, values }) {
   const width = 640
@@ -122,7 +99,7 @@ export default function SupplierAnalyticsPage() {
   const [analytics, setAnalytics] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
-  const [dateFilter, setDateFilter] = useState('This Month (Sep 2026)')
+  const [dateFilter, setDateFilter] = useState('This Month')
   const [salesPeriod, setSalesPeriod] = useState('Last 6 months')
   const [revenuePeriod, setRevenuePeriod] = useState('This Month')
 
@@ -131,13 +108,13 @@ export default function SupplierAnalyticsPage() {
 
     getSupplierAnalytics()
       .then((response) => {
-        const payload = response?.data || response || listSupplierAnalyticsDemo()
+        const payload = response?.data || response
         if (isMounted) setAnalytics(payload)
       })
       .catch((requestError) => {
         if (isMounted) {
           setError(requestError.message)
-          setAnalytics(listSupplierAnalyticsDemo())
+          setAnalytics(emptyAnalytics)
         }
       })
       .finally(() => {
@@ -149,17 +126,18 @@ export default function SupplierAnalyticsPage() {
     }
   }, [])
 
-  const pageData = useMemo(() => analytics || listSupplierAnalyticsDemo(), [analytics])
+  const pageData = useMemo(() => analytics || emptyAnalytics, [analytics])
 
   const salesData = useMemo(() => {
-    const salesTrend = pageData.salesTrend || listSupplierAnalyticsDemo().salesTrend
-    return salesTrend[salesPeriod] || salesTrend['Last 6 months']
+    const salesTrend = pageData.salesTrend || emptyAnalytics.salesTrend
+    return salesTrend[salesPeriod] || salesTrend['Last 6 months'] || { labels: [], values: [] }
   }, [pageData, salesPeriod])
 
   const revenueSegments = useMemo(() => {
-    const total = pageData.revenueBreakdown?.reduce((sum, segment) => sum + Number(segment.value || 0), 0) || 100
+    const breakdown = pageData.revenueBreakdown || []
+    const total = breakdown.reduce((sum, segment) => sum + Number(segment.value || 0), 0) || 1
     let cursor = 0
-    return (pageData.revenueBreakdown || listSupplierAnalyticsDemo().revenueBreakdown).map((segment) => {
+    return breakdown.map((segment) => {
       const start = cursor
       const end = cursor + (segment.value / total) * 100
       cursor = end
@@ -168,6 +146,7 @@ export default function SupplierAnalyticsPage() {
   }, [pageData])
 
   const donutStyle = useMemo(() => {
+    if (!revenueSegments.length) return { background: '#e2e8f0' }
     const segments = revenueSegments
       .map((segment) => `${segment.color} ${segment.start}% ${segment.end}%`)
       .join(', ')
@@ -183,11 +162,12 @@ export default function SupplierAnalyticsPage() {
   }
 
   const metrics = [
-    { title: 'Total Sales', value: formatCurrency(pageData.metrics?.sales ?? 124580), delta: '↑ 12% from last month', icon: 'rupee', accent: 'green' },
-    { title: 'Total Orders', value: pageData.metrics?.orders ?? 86, delta: '↑ 8% from last month', icon: 'order', accent: 'blue' },
-    { title: 'Active Customers', value: pageData.metrics?.customers ?? 24, delta: '↑ 4% from last month', icon: 'customers', accent: 'amber' },
-    { title: 'Products Sold', value: (pageData.metrics?.productsSold ?? 1542).toLocaleString('en-IN'), delta: '↑ 15% from last month', icon: 'product', accent: 'purple' },
+    { title: 'Total Sales', value: formatCurrency(pageData.orderValue ?? pageData.metrics?.sales ?? 0), delta: 'Current month total', icon: 'rupee', accent: 'green' },
+    { title: 'Total Orders', value: pageData.ordersReceived ?? pageData.metrics?.orders ?? 0, delta: 'Total received', icon: 'order', accent: 'blue' },
+    { title: 'Pending Orders', value: pageData.orderStatus?.pending ?? 0, delta: 'Awaiting fulfillment', icon: 'customers', accent: 'amber' },
+    { title: 'Completed Orders', value: pageData.orderStatus?.completed ?? 0, delta: 'Successfully delivered', icon: 'product', accent: 'purple' },
   ]
+
 
   return (
     <section className="supplier-analytics-page">

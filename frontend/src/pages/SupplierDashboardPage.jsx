@@ -29,6 +29,13 @@ export default function SupplierDashboardPage() {
     date: order.createdAt,
   })), [dashboard])
 
+  const getDynamicGreeting = () => {
+    const hour = new Date().getHours()
+    if (hour < 12) return 'Good morning'
+    if (hour < 17) return 'Good afternoon'
+    return 'Good evening'
+  }
+
   if (isLoading) return <LoadingState message={t('loadingWorkspace')} />
   if (error) return <section className="supplier-dashboard-page"><p className="form-message error" role="alert">{error}</p></section>
   if (!dashboard) return <section className="supplier-dashboard-page"><p className="form-message error" role="alert">Supplier dashboard unavailable.</p></section>
@@ -37,11 +44,12 @@ export default function SupplierDashboardPage() {
     <section className="supplier-dashboard-page">
       <header className="supplier-dashboard-header">
         <div>
-          <p className="supplier-dashboard-greeting">{t('goodMorning')}</p>
+          <p className="supplier-dashboard-greeting">{getDynamicGreeting()}</p>
           <h1>{dashboard.businessName}</h1>
           <p className="supplier-dashboard-subtitle">Manage your orders, products and customers from one place.</p>
         </div>
       </header>
+
 
       <div className="supplier-summary-grid">
         {dashboard.metrics.map((metric) => (

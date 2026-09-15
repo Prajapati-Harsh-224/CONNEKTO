@@ -9965,6 +9965,46 @@ body.auth-no-scroll *::-webkit-scrollbar,
     background: #164b3b;
 }
 
+.spc-quantity-control {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    width: 100%;
+    min-height: 1.9rem;
+    margin-top: 0.35rem;
+    border: 1px solid #1d624d;
+    border-radius: 5px;
+    background: #1d624d;
+    color: #fff;
+    overflow: hidden;
+}
+
+.spc-qty-btn {
+    display: grid;
+    place-items: center;
+    width: 2rem;
+    height: 1.9rem;
+    border: 0;
+    background: transparent;
+    color: #fff;
+    font-size: 1rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.15s ease;
+}
+
+.spc-qty-btn:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.spc-qty-count {
+    font-size: 0.8rem;
+    font-weight: 700;
+    color: #fff;
+    padding: 0 0.35rem;
+}
+
+
 .spc-empty {
     padding: 2rem;
     border: 1px dashed #d4dfe0;

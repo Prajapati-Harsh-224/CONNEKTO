@@ -1,17 +1,21 @@
 import { Link } from 'react-router-dom'
+import { FiChevronRight } from 'react-icons/fi'
 
-export default function MetricCard({ label, value, detail, accent = '', icon, actionText = '›', actionTo }) {
+export default function MetricCard({ label, value, detail, accent = '', icon, actionText, actionTo }) {
   return (
     <article className={`metric-card ${accent}`}>
       <div className="metric-card-icon" aria-hidden="true">{icon || '•'}</div>
       <div className="metric-card-content">
         <span>{label}</span>
-        <strong>{value}</strong>
+        <strong className="num-font">{value}</strong>
         <small>{detail}</small>
       </div>
-      <Link className="metric-card-action" to={actionTo} aria-label={`Open ${label}`}>
-        {actionText}
-      </Link>
+      {actionTo && (
+        <Link className="metric-card-action" to={actionTo} aria-label={`Open ${label}`}>
+          {actionText || <FiChevronRight size={18} />}
+        </Link>
+      )}
     </article>
   )
 }
+

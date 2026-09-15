@@ -21,5 +21,23 @@ export default function ShopOwnerOrderDetailPage() {
   if (!order) return <EmptyState title="Order not found" message="This supplier order is not available." />
 
   const paymentLabels = { CASH_ON_DELIVERY: 'Cash on Delivery', PAY_LATER: 'Pay Later', REQUEST_ORDER: 'Request Order' }
-  return <section className="order-detail-page"><Link className="back-link" to="/dashboard/shop-owner/orders">← Back to orders</Link><div className="order-detail-card"><div className="eyebrow">Supplier order</div><div className="order-detail-heading"><div><h1>{order.id}</h1><p className="muted">{order.supplierName}</p></div><StatusBadge status={order.status} /></div><div className="order-detail-meta"><div><span>Order date</span><strong>{new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</strong></div><div><span>Subtotal</span><strong>Rs {Number(order.subtotal).toLocaleString('en-IN')}</strong></div><div><span>Delivery area</span><strong>{order.serviceArea || '—'}</strong></div><div><span>Payment method</span><strong>{paymentLabels[order.paymentMethod] || 'Request Order'}</strong></div></div><section className="order-items-panel"><span className="section-kicker">Products</span><h2>Supplier order details</h2>{order.items.map((item) => <div className="order-detail-item" key={item.productId}><div><strong>{item.productNameSnapshot}</strong><span>{item.quantity} × Rs {Number(String(item.unitPriceSnapshot).replace(/[^0-9.]/g, '')).toLocaleString('en-IN')}</span></div><strong>Rs {Number(item.lineTotal).toLocaleString('en-IN')}</strong></div>)}<div className="order-detail-total"><span>Supplier subtotal</span><strong>Rs {Number(order.subtotal).toLocaleString('en-IN')}</strong></div></section><section className="timeline-panel"><div className="section-kicker">Status timeline</div><h2>Order progress</h2><StatusTimeline currentStatus={order.status} /></section><p className="prototype-note">Status updates are managed by the supplier in a later workflow.</p></div></section>
+  return <section className="order-detail-page"><Link className="back-link" to="/dashboard/shop-owner/orders">← Back to orders</Link><div className="order-detail-card"><div className="eyebrow">Supplier order</div><div className="order-detail-heading"><div><h1>{order.id}</h1><p className="muted">{order.supplierName}</p></div><StatusBadge status={order.status} /></div><div className="order-detail-meta"><div><span>Order date</span><strong>{new Date(order.createdAt).toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })}</strong></div><div><span>Subtotal</span><strong>Rs {Number(order.subtotal).toLocaleString('en-IN')}</strong></div><div><span>Delivery area</span><strong>{order.serviceArea || '—'}</strong></div><div><span>Payment method</span><strong>{paymentLabels[order.paymentMethod] || 'Request Order'}</strong></div></div><section className="order-items-panel"><span className="section-kicker">Products</span><h2>Supplier order details</h2>{order.items.map((item) => {
+    const unitsPerBox = Number(item.unitsPerBoxSnapshot || item.unitsPerBox || 1)
+    const isBox = unitsPerBox > 1
+    const boxes = item.boxes || (isBox ? Math.floor(item.quantity / unitsPerBox) : item.quantity)
+    const unitPrice = Number(String(item.unitPriceSnapshot || item.unitPrice || 0).replace(/[^0-9.]/g, ''))
+    return (
+      <div className="order-detail-item" key={item.productId}>
+        <div>
+          <strong>{item.productNameSnapshot || item.name}</strong>
+          <span>
+            {isBox
+              ? `${boxes} ${boxes === 1 ? 'Box' : 'Boxes'} (${item.quantity} packets) × Rs ${unitPrice.toLocaleString('en-IN')}/packet`
+              : `${item.quantity} units × Rs ${unitPrice.toLocaleString('en-IN')}`}
+          </span>
+        </div>
+        <strong>Rs {Number(item.lineTotal).toLocaleString('en-IN')}</strong>
+      </div>
+    )
+  })}<div className="order-detail-total"><span>Supplier subtotal</span><strong>Rs {Number(order.subtotal).toLocaleString('en-IN')}</strong></div></section><section className="timeline-panel"><div className="section-kicker">Status timeline</div><h2>Order progress</h2><StatusTimeline currentStatus={order.status} /></section><p className="prototype-note">Status updates are managed by the supplier in a later workflow.</p></div></section>
 }

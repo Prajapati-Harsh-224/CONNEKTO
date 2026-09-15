@@ -156,20 +156,26 @@ export default function SupplierIncomingOrderDetailPage() {
                 <span>Total</span>
               </div>
 
-              {items.map((item, index) => (
-                <div className="supplier-items-table-row" key={`${item.sku || item.product}-${index}`}>
-                  <div className="supplier-product-cell">
-                    <span className="supplier-product-thumb" aria-hidden="true">{item.product?.slice(0, 2).toUpperCase() || 'PR'}</span>
-                    <div>
-                      <strong>{item.product || item.name || 'Product'}</strong>
+              {items.map((item, index) => {
+                const unitsPerBox = Number(item.unitsPerBoxSnapshot || item.unitsPerBox || 1)
+                const isBox = unitsPerBox > 1
+                const boxes = item.boxes || (isBox ? Math.floor(item.quantity / unitsPerBox) : item.quantity)
+                return (
+                  <div className="supplier-items-table-row" key={`${item.sku || item.product}-${index}`}>
+                    <div className="supplier-product-cell">
+                      <span className="supplier-product-thumb" aria-hidden="true">{item.product?.slice(0, 2).toUpperCase() || 'PR'}</span>
+                      <div>
+                        <strong>{item.product || item.name || 'Product'}</strong>
+                        {isBox && <small style={{ color: '#6b7280', display: 'block', fontSize: '0.78rem' }}>{boxes} {boxes === 1 ? 'box' : 'boxes'} ({item.quantity} packets)</small>}
+                      </div>
                     </div>
+                    <span>{item.sku || '—'}</span>
+                    <span>{isBox ? `${boxes} box (${item.quantity} pkts)` : item.quantity}</span>
+                    <span>{formatCurrency(item.unitPrice || 0)}/pkt</span>
+                    <span>{formatCurrency(item.total || Number(item.unitPrice || 0) * Number(item.quantity || 1))}</span>
                   </div>
-                  <span>{item.sku || '—'}</span>
-                  <span>{item.quantity || 1}</span>
-                  <span>{formatCurrency(item.unitPrice || 0)}</span>
-                  <span>{formatCurrency(item.total || Number(item.unitPrice || 0) * Number(item.quantity || 1))}</span>
-                </div>
-              ))}
+                )
+              })}
             </div>
 
             <div className="supplier-order-totals">

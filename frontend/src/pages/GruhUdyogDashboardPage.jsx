@@ -30,7 +30,6 @@ export default function GruhUdyogDashboardPage() {
           <h1>{dashboard.businessName}.</h1>
           <p className="muted">{t('gruhUdyogDashboardMessage')}</p>
         </div>
-        <span className="demo-label">{t('demoData')}</span>
       </div>
 
       <div className="metric-grid">

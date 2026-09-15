@@ -34,17 +34,34 @@ app.add_middleware(CORSMiddleware, allow_origins=CLIENT_ORIGINS, allow_credentia
 @app.on_event("startup")
 def startup() -> None:
     Base.metadata.create_all(bind=engine)
+    alter_statements = [
+        "ALTER TABLE users ADD COLUMN area VARCHAR(100)",
+        "ALTER TABLE checkouts ADD COLUMN idempotency_key VARCHAR(100)",
+        "ALTER TABLE suppliers ADD COLUMN category VARCHAR(100)",
+        "ALTER TABLE suppliers ADD COLUMN description TEXT DEFAULT ''",
+        "ALTER TABLE suppliers ADD COLUMN location VARCHAR(100) DEFAULT ''",
+        "ALTER TABLE suppliers ADD COLUMN service_areas TEXT DEFAULT ''",
+        "ALTER TABLE suppliers ADD COLUMN minimum_order VARCHAR(100) DEFAULT ''",
+        "ALTER TABLE suppliers ADD COLUMN phone VARCHAR(30)",
+        "ALTER TABLE suppliers ADD COLUMN email VARCHAR(255)",
+        "ALTER TABLE suppliers ADD COLUMN is_verified BOOLEAN DEFAULT 0",
+        "ALTER TABLE suppliers ADD COLUMN rating NUMERIC(3, 2)",
+        "ALTER TABLE suppliers ADD COLUMN review_count INTEGER DEFAULT 0",
+        "ALTER TABLE suppliers ADD COLUMN tags TEXT DEFAULT ''",
+        "ALTER TABLE products ADD COLUMN units_per_box INTEGER DEFAULT 1",
+        "ALTER TABLE products ADD COLUMN description TEXT DEFAULT ''",
+        "ALTER TABLE supplier_order_items ADD COLUMN units_per_box_snapshot INTEGER DEFAULT 1",
+    ]
+    with engine.begin() as conn:
+        for stmt in alter_statements:
+            try:
+                conn.execute(text(stmt))
+            except Exception:
+                pass
     try:
-        with engine.begin() as conn:
-            conn.execute(text("ALTER TABLE users ADD COLUMN area VARCHAR(100)"))
+        backfill_supplier_service_areas()
     except Exception:
         pass
-    try:
-        with engine.begin() as conn:
-            conn.execute(text("ALTER TABLE checkouts ADD COLUMN idempotency_key VARCHAR(100)"))
-    except Exception:
-        pass
-    backfill_supplier_service_areas()
 
 
 def envelope(data=None, message="OK", success=True):
@@ -167,7 +184,24 @@ def role_error(expected: str, user: User):
 
 def order_json(order: SupplierOrder) -> dict:
     shop = order.shop_owner.shop if order.shop_owner else None
-    return {"id": order.id, "checkoutId": order.checkout_id, "supplierId": order.supplier_id, "supplierName": order.supplier_name, "serviceArea": order.service_area, "shopOwnerId": order.shop_owner_id, "shopOwnerName": order.shop_owner.name if order.shop_owner else "", "shopOwnerPhone": order.shop_owner.phone if order.shop_owner else "", "shopName": shop.name if shop else "", "shopAddress": shop.address if shop else "", "subtotal": float(order.subtotal), "amount": float(order.subtotal), "status": order.status, "paymentMethod": order.checkout.payment_method if order.checkout else None, "createdAt": order.created_at.isoformat(), "updatedAt": order.updated_at.isoformat(), "items": [{"productId": item.product_id, "productNameSnapshot": item.product_name_snapshot, "name": item.product_name_snapshot, "imageUrl": item.product_image_url_snapshot or "", "quantity": item.quantity, "unitPriceSnapshot": float(item.unit_price_snapshot), "unitPrice": float(item.unit_price_snapshot), "lineTotal": float(item.line_total)} for item in order.items]}
+    items_json = []
+    for item in order.items:
+        upb = getattr(item, "units_per_box_snapshot", 1) or 1
+        boxes = item.quantity // upb if upb > 0 else item.quantity
+        items_json.append({
+            "productId": item.product_id,
+            "productNameSnapshot": item.product_name_snapshot,
+            "name": item.product_name_snapshot,
+            "imageUrl": item.product_image_url_snapshot or "",
+            "quantity": item.quantity,
+            "unitsPerBoxSnapshot": upb,
+            "unitsPerBox": upb,
+            "boxes": boxes,
+            "unitPriceSnapshot": float(item.unit_price_snapshot),
+            "unitPrice": float(item.unit_price_snapshot),
+            "lineTotal": float(item.line_total)
+        })
+    return {"id": order.id, "checkoutId": order.checkout_id, "supplierId": order.supplier_id, "supplierName": order.supplier_name, "serviceArea": order.service_area, "shopOwnerId": order.shop_owner_id, "shopOwnerName": order.shop_owner.name if order.shop_owner else "", "shopOwnerPhone": order.shop_owner.phone if order.shop_owner else "", "shopName": shop.name if shop else "", "shopAddress": shop.address if shop else "", "subtotal": float(order.subtotal), "amount": float(order.subtotal), "status": order.status, "paymentMethod": order.checkout.payment_method if order.checkout else None, "createdAt": order.created_at.isoformat(), "updatedAt": order.updated_at.isoformat(), "items": items_json}
 
 @app.get("/api/health")
 def health():
@@ -187,6 +221,7 @@ def _process_registration(
     shop_name: str | None = None,
     shop_address: str | None = None,
     identifier: str | None = None,
+    category: str | None = None,
     service_areas: list[str] | None = None
 ):
     if role not in ROLES:
@@ -250,15 +285,17 @@ def _process_registration(
     )
     db.add(user)
 
+    clean_category = category.strip() if category and category.strip() else "FMCG"
+
     if role == "SHOP_OWNER":
         db.add(Shop(id=str(uuid4()), owner=user, name=shop_name.strip(), address=shop_address.strip(), area=clean_area))
     elif role == "SUPPLIER":
-        supplier = Supplier(id=f"supplier-{user.id[:8]}", owner_id=user.id, name=f"{user.name}'s Supply Desk")
+        supplier = Supplier(id=f"supplier-{user.id[:8]}", owner_id=user.id, name=f"{user.name}'s Supply Desk", category=clean_category, description="", location=clean_area, service_areas_raw=", ".join(supplier_areas), minimum_order="", phone=clean_phone, email=clean_email or "", is_verified=False, rating=None, review_count=0)
         db.add(supplier)
         db.flush()
         db.add_all([SupplierServiceArea(supplier_id=supplier.id, area_key=normalize_area_key(area), area=area) for area in supplier_areas])
     elif role == "GRUH_UDYOG":
-        supplier = Supplier(id=f"supplier-{user.id[:8]}", owner_id=user.id, name=f"{user.name}'s Gruh Udyog")
+        supplier = Supplier(id=f"supplier-{user.id[:8]}", owner_id=user.id, name=f"{user.name}'s Gruh Udyog", category=clean_category, description="", location=clean_area, service_areas_raw=", ".join(supplier_areas), minimum_order="", phone=clean_phone, email=clean_email or "", is_verified=False, rating=None, review_count=0)
         db.add(supplier)
         db.flush()
         db.add_all([SupplierServiceArea(supplier_id=supplier.id, area_key=normalize_area_key(area), area=area) for area in supplier_areas])
@@ -298,6 +335,7 @@ def register_supplier(payload: SupplierRegisterRequest, response: Response, db: 
         email=payload.email,
         password=payload.password,
         confirm_password=payload.confirmPassword,
+        category=payload.category,
         service_areas=payload.serviceAreas
     )
 
@@ -313,7 +351,8 @@ def register_gruh_udyog(payload: GruhUdyogRegisterRequest, response: Response, d
         phone=payload.phone,
         email=payload.email,
         password=payload.password,
-        confirm_password=payload.confirmPassword
+        confirm_password=payload.confirmPassword,
+        category=payload.category
     )
 
 @app.post("/api/auth/login")
@@ -386,7 +425,8 @@ def update_supplier_order(order_id: str, payload: StatusRequest, user: User = De
     return envelope({"order": order_json(order)}, "Order status updated")
 
 def product_json(product: Product) -> dict:
-    return {"id": product.id, "supplierId": product.supplier_id, "name": product.name, "brand": product.brand, "category": product.category, "packSize": product.pack_size, "price": float(product.price), "minimumQuantity": product.minimum_quantity, "imageUrl": product.image_url or "", "isActive": product.is_active, "isDemoData": product.is_demo_data}
+    upb = getattr(product, "units_per_box", 1) or 1
+    return {"id": product.id, "supplierId": product.supplier_id, "name": product.name, "brand": product.brand, "category": product.category, "packSize": product.pack_size, "price": float(product.price), "minimumQuantity": product.minimum_quantity, "unitsPerBox": upb, "imageUrl": product.image_url or "", "isActive": product.is_active, "isDemoData": product.is_demo_data}
 
 def owned_supplier(user: User, db: Session):
     return db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
@@ -410,7 +450,7 @@ def public_supplier_json(supplier: Supplier, products: list[Product]) -> dict:
         "local manufacturers": "Local Manufacturers",
     }
     category_values = [mapped_categories.get(category.lower(), category) for category in product_categories]
-    category = next((value for value in category_values if value), "FMCG")
+    category = supplier.category.strip() if (supplier.category and supplier.category.strip()) else next((value for value in category_values if value), "FMCG")
     unique_tags = []
     seen = set()
     for tag in category_values:
@@ -430,18 +470,23 @@ def public_supplier_json(supplier: Supplier, products: list[Product]) -> dict:
         "Snacks & Packaged Foods": "Carries crunchy, ready-to-ship packaged food items for fast-moving demand.",
         "Local Manufacturers": "Supports locally manufactured goods and regionally trusted speciality products.",
     }.get(category, f"Offers {len(products)} active products across {len(unique_tags)} categories.")
+    service_areas = [service_area.area for service_area in sorted(supplier.service_areas, key=lambda service_area: service_area.area_key)]
+    location = service_areas[0] if service_areas else (supplier.owner.area if (supplier.owner and supplier.owner.area) else "")
+    phone = supplier.owner.phone if (supplier.owner and supplier.owner.phone) else "+91 98765 43210"
+    email = supplier.owner.email if (supplier.owner and supplier.owner.email) else ""
     return {
         "id": supplier.id,
         "name": supplier.name,
         "category": category,
         "categoryLabel": category,
         "description": description,
-        "location": "",
-        "serviceAreas": [service_area.area for service_area in sorted(supplier.service_areas, key=lambda service_area: service_area.area_key)],
+        "location": location,
+        "serviceAreas": service_areas,
         "serviceAreaCount": len(supplier.service_areas),
         "productCount": len(products),
         "minimumOrder": "",
-        "phone": "",
+        "phone": phone,
+        "email": email,
         "isVerified": False,
         "rating": None,
         "reviewCount": 0,
@@ -456,34 +501,45 @@ def supplier_serves_shop_area(user: User, supplier: Supplier) -> bool:
     return bool(area_key) and any(service_area.area_key == area_key for service_area in supplier.service_areas)
 
 @app.get("/api/suppliers")
-def shop_suppliers(user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "SHOP_OWNER": return role_error("Shop Owners", user)
-    shop_area = user.shop.area if user.shop else user.area
+def shop_suppliers(user: User | None = Depends(current_user), db: Session = Depends(get_db)):
+    if user and user.role != "SHOP_OWNER":
+        return role_error("Shop Owners", user)
+    shop_area = (user.shop.area if user.shop else user.area) if user else None
     area_key = normalize_area_key(shop_area) if shop_area else ""
-    suppliers = db.scalars(select(Supplier).join(SupplierServiceArea).where(SupplierServiceArea.area_key == area_key).order_by(Supplier.name).distinct()).all() if area_key else []
+    suppliers = []
+    if area_key:
+        suppliers = db.scalars(select(Supplier).join(SupplierServiceArea).where(SupplierServiceArea.area_key == area_key).order_by(Supplier.name).distinct()).all()
+    if not suppliers:
+        suppliers = db.scalars(select(Supplier).order_by(Supplier.name)).all()
     return envelope({"suppliers": [public_supplier_json(supplier, db.scalars(select(Product).where(Product.supplier_id == supplier.id, Product.is_active.is_(True))).all()) for supplier in suppliers]}, "Suppliers returned")
 
 @app.get("/api/suppliers/{supplier_id}")
-def shop_supplier(supplier_id: str, user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "SHOP_OWNER": return role_error("Shop Owners", user)
+def shop_supplier(supplier_id: str, user: User | None = Depends(current_user), db: Session = Depends(get_db)):
+    if user and user.role != "SHOP_OWNER":
+        return role_error("Shop Owners", user)
     supplier = db.get(Supplier, supplier_id)
-    if not supplier or not supplier_serves_shop_area(user, supplier): return error("Supplier not found.", "NOT_FOUND", 404)
+    if not supplier:
+        return error("Supplier not found.", "NOT_FOUND", 404)
     products = db.scalars(select(Product).where(Product.supplier_id == supplier.id, Product.is_active.is_(True))).all()
     return envelope({"supplier": public_supplier_json(supplier, products), "products": [product_json(product) for product in products]}, "Supplier returned")
 
 @app.get("/api/suppliers/{supplier_id}/products")
-def shop_supplier_products(supplier_id: str, user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "SHOP_OWNER": return role_error("Shop Owners", user)
+def shop_supplier_products(supplier_id: str, user: User | None = Depends(current_user), db: Session = Depends(get_db)):
+    if user and user.role != "SHOP_OWNER":
+        return role_error("Shop Owners", user)
     supplier = db.get(Supplier, supplier_id)
-    if not supplier or not supplier_serves_shop_area(user, supplier): return error("Supplier not found.", "NOT_FOUND", 404)
+    if not supplier:
+        return error("Supplier not found.", "NOT_FOUND", 404)
     products = db.scalars(select(Product).where(Product.supplier_id == supplier.id, Product.is_active.is_(True))).all()
     return envelope({"supplier": public_supplier_json(supplier, products), "products": [product_json(product) for product in products]}, "Supplier products returned")
 
 @app.get("/api/suppliers/{supplier_id}/products/{product_id}")
-def shop_supplier_product(supplier_id: str, product_id: str, user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "SHOP_OWNER": return role_error("Shop Owners", user)
+def shop_supplier_product(supplier_id: str, product_id: str, user: User | None = Depends(current_user), db: Session = Depends(get_db)):
+    if user and user.role != "SHOP_OWNER":
+        return role_error("Shop Owners", user)
     supplier = db.get(Supplier, supplier_id)
-    if not supplier or not supplier_serves_shop_area(user, supplier): return error("Supplier not found.", "NOT_FOUND", 404)
+    if not supplier:
+        return error("Supplier not found.", "NOT_FOUND", 404)
     product = db.scalar(select(Product).where(Product.id == product_id, Product.supplier_id == supplier.id, Product.is_active.is_(True)))
     return envelope({"supplier": public_supplier_json(supplier, []), "product": product_json(product)}, "Product returned") if product else error("Product is no longer available.", "NOT_FOUND", 404)
 
@@ -500,7 +556,7 @@ def create_product(payload: ProductRequest, user: User = Depends(require_user), 
     supplier = owned_supplier(user, db)
     if not supplier: return error("Supplier profile not found.", "NOT_FOUND", 404)
     image_url = payload.imageUrl.strip() if payload.imageUrl else ""
-    product = Product(id=str(uuid4()), supplier_id=supplier.id, name=payload.name.strip(), brand=payload.brand.strip(), category=payload.category.strip(), pack_size=payload.packSize.strip(), price=payload.price, minimum_quantity=payload.minimumQuantity, image_url=image_url, is_active=True)
+    product = Product(id=str(uuid4()), supplier_id=supplier.id, name=payload.name.strip(), brand=payload.brand.strip(), category=payload.category.strip(), pack_size=payload.packSize.strip(), price=payload.price, minimum_quantity=payload.minimumQuantity, units_per_box=payload.unitsPerBox, image_url=image_url, is_active=True)
     db.add(product); db.commit(); db.refresh(product)
     return envelope({"product": product_json(product)}, "Product created")
 
@@ -517,7 +573,7 @@ def edit_product(product_id: str, payload: ProductRequest, user: User = Depends(
     supplier = owned_supplier(user, db)
     product = db.scalar(select(Product).where(Product.id == product_id, Product.supplier_id == supplier.id)) if supplier else None
     if not product: return error("Product not found.", "NOT_FOUND", 404)
-    product.name = payload.name.strip(); product.brand = payload.brand.strip(); product.category = payload.category.strip(); product.pack_size = payload.packSize.strip(); product.price = payload.price; product.minimum_quantity = payload.minimumQuantity; product.image_url = payload.imageUrl.strip() if payload.imageUrl else ""
+    product.name = payload.name.strip(); product.brand = payload.brand.strip(); product.category = payload.category.strip(); product.pack_size = payload.packSize.strip(); product.price = payload.price; product.minimum_quantity = payload.minimumQuantity; product.units_per_box = payload.unitsPerBox; product.image_url = payload.imageUrl.strip() if payload.imageUrl else ""
     db.commit(); db.refresh(product)
     return envelope({"product": product_json(product)}, "Product updated")
 
@@ -564,7 +620,13 @@ def checkout(payload: CheckoutRequest, user: User = Depends(require_user), db: S
         if not product: return error("Product not found.", "NOT_FOUND", 404)
         if product.supplier_id != supplier_id: return error("Product does not belong to supplier.", "INVALID_PRODUCT_SUPPLIER", 400)
         if not product.is_active: return error("Product is no longer available.", "PRODUCT_UNAVAILABLE", 400)
-        if quantity < product.minimum_quantity: return error(f"Minimum quantity for {product.name} is {product.minimum_quantity}.", "MINIMUM_QUANTITY_NOT_MET", 400)
+        units_per_box = getattr(product, "units_per_box", 1) or 1
+        if units_per_box <= 0:
+            return error(f"Invalid packaging configuration for {product.name}.", "VALIDATION_ERROR", 400)
+        if quantity < product.minimum_quantity:
+            return error(f"Minimum quantity for {product.name} is {product.minimum_quantity}.", "MINIMUM_QUANTITY_NOT_MET", 400)
+        if quantity % units_per_box != 0:
+            return error(f"Quantity for {product.name} must be ordered in full boxes of {units_per_box} units.", "INVALID_BOX_QUANTITY", 400)
         supplier = db.get(Supplier, supplier_id)
         if not supplier: return error("Supplier not found.", "NOT_FOUND", 404)
         if not supplier_serves_shop_area(user, supplier): return error("Supplier is not available in your shop area.", "SUPPLIER_AREA_MISMATCH", 403)
@@ -576,7 +638,7 @@ def checkout(payload: CheckoutRequest, user: User = Depends(require_user), db: S
             order = SupplierOrder(id=f"{str(supplier_id).upper()}-{checkout_id}-{index}", checkout_id=checkout_id, supplier_id=supplier_id, supplier_name=supplier.name, service_area=matched_area, shop_owner_id=user.id, subtotal=0, status="Pending")
             orders_by_supplier[supplier_id] = order; checkout_row.orders.append(order)
         order.subtotal = Decimal(str(order.subtotal)) + line_total
-        order.items.append(OrderItem(product_id=product.id, product_name_snapshot=product.name, product_image_url_snapshot=product.image_url or "", quantity=quantity, unit_price_snapshot=price, line_total=line_total))
+        order.items.append(OrderItem(product_id=product.id, product_name_snapshot=product.name, product_image_url_snapshot=product.image_url or "", quantity=quantity, units_per_box_snapshot=units_per_box, unit_price_snapshot=price, line_total=line_total))
         total += line_total
     checkout_row.total_amount = total; db.add(checkout_row); db.commit(); db.refresh(checkout_row)
     return envelope({"checkout": {"id": checkout_id, "shopOwnerId": user.id, "totalAmount": float(total), "paymentMethod": payload.paymentMethod, "supplierOrders": [order_json(o) for o in checkout_row.orders], "createdAt": checkout_row.created_at.isoformat()}}, "Order request created")

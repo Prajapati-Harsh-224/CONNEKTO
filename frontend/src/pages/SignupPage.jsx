@@ -2,12 +2,13 @@ import { useState } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import FormField from '../components/FormField.jsx'
 import PasswordField from '../components/PasswordField.jsx'
+import CategoryCombobox from '../components/CategoryCombobox.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { register } from '../services/authService.js'
 import { getSelectedRole, saveSelectedRole } from '../utils/roleStorage.js'
 
 const roles = ['SHOP_OWNER', 'SUPPLIER', 'GRUH_UDYOG']
-const initialForm = { name: '', shopName: '', shopAddress: '', area: '', phone: '', email: '', password: '', confirmPassword: '' }
+const initialForm = { name: '', shopName: '', shopAddress: '', area: '', category: '', phone: '', email: '', password: '', confirmPassword: '' }
 
 function validateForm(form, role, hasConsent) {
   const errors = {}
@@ -71,7 +72,7 @@ export default function SignupPage() {
     try {
       const credentials = selectedRole === 'SHOP_OWNER'
         ? { name: form.name.trim(), shopName: form.shopName.trim(), shopAddress: form.shopAddress.trim(), area: form.area.trim(), phone: form.phone.trim(), email: form.email.trim(), password: form.password, confirmPassword: form.confirmPassword, role: selectedRole }
-        : { name: form.name.trim(), area: form.area.trim(), serviceAreas: form.area.split(',').map((value) => value.trim()).filter(Boolean), phone: form.phone.trim(), email: form.email.trim(), password: form.password, confirmPassword: form.confirmPassword, role: selectedRole }
+        : { name: form.name.trim(), area: form.area.trim(), category: form.category.trim(), serviceAreas: form.area.split(',').map((value) => value.trim()).filter(Boolean), phone: form.phone.trim(), email: form.email.trim(), password: form.password, confirmPassword: form.confirmPassword, role: selectedRole }
       await register(credentials)
       navigate('/login')
     } catch (error) {
@@ -121,6 +122,7 @@ export default function SignupPage() {
           <div className="signup-section"><div className="signup-field-grid">
             <FormField autoComplete="name" error={errors.name} label={`${t('fullName')} *`} name="name" onChange={updateField} placeholder={t('userName')} type="text" value={form.name} />
             <FormField autoComplete="address-level2" error={errors.area} label={`${t('area')} *`} name="area" onChange={updateField} placeholder={t('area')} type="text" value={form.area} />
+            <CategoryCombobox error={errors.category} label="Category" name="category" onChange={updateField} placeholder="Select or search category..." value={form.category} />
           </div></div>
           <div className="signup-section"><div className="signup-field-grid">
             <FormField autoComplete="tel" error={errors.phone} label={`${t('phoneNumber')} *`} name="phone" onChange={updateField} placeholder="+91 98765 43210" type="tel" value={form.phone} />

@@ -1,8 +1,9 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import EmptyState from '../components/EmptyState.jsx'
+import LoadingState from '../components/LoadingState.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
-import { listSupplierCustomersDemo } from '../data/supplierCustomersDemo.js'
+import { getSupplierOrders } from '../services/supplierOrderService.js'
 
 const pageSize = 8
 
@@ -26,13 +27,68 @@ function getInitials(value) {
 
 export default function SupplierCustomersPage() {
   const { t } = useLocale()
-  const [customers] = useState(listSupplierCustomersDemo())
+  const [customers, setCustomers] = useState([])
+  const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
   const [statusFilter, setStatusFilter] = useState('All status')
   const [locationFilter, setLocationFilter] = useState('All cities')
   const [page, setPage] = useState(1)
-  const [selectedCustomerId, setSelectedCustomerId] = useState(listSupplierCustomersDemo()[0]?.id || null)
+  const [selectedCustomerId, setSelectedCustomerId] = useState(null)
   const [menuCustomerId, setMenuCustomerId] = useState(null)
+
+  useEffect(() => {
+    let isMounted = true
+    setLoading(true)
+
+    getSupplierOrders()
+      .then((res) => {
+        if (!isMounted) return
+        const orders = res.data?.orders || []
+        const customerMap = {}
+
+        orders.forEach((order) => {
+          const id = order.shopOwnerId || order.shopName || order.shopOwnerName
+          if (!id) return
+          if (!customerMap[id]) {
+            customerMap[id] = {
+              id,
+              name: order.shopName || order.shopOwnerName || 'Retail Shop',
+              shopOwner: order.shopOwnerName || 'Shop Owner',
+              phone: order.shopOwnerPhone || '',
+              location: order.serviceArea || 'Ahmedabad',
+              totalOrders: 0,
+              totalSpent: 0,
+              lastOrder: order.createdAt,
+              status: 'Active',
+              category: 'Retail Store',
+              orders: []
+            }
+          }
+          customerMap[id].totalOrders += 1
+          customerMap[id].totalSpent += Number(order.subtotal || 0)
+          customerMap[id].orders.push(order)
+          if (new Date(order.createdAt) > new Date(customerMap[id].lastOrder)) {
+            customerMap[id].lastOrder = order.createdAt
+          }
+        })
+
+        const list = Object.values(customerMap)
+        setCustomers(list)
+        if (list.length > 0) {
+          setSelectedCustomerId(list[0].id)
+        }
+      })
+      .catch((err) => {
+        console.error('Failed to load supplier customers:', err)
+        if (isMounted) setCustomers([])
+      })
+      .finally(() => {
+        if (isMounted) setLoading(false)
+      })
+
+    return () => { isMounted = false }
+  }, [])
+
 
   const filteredCustomers = useMemo(() => {
     const query = search.trim().toLowerCase()
@@ -85,6 +141,8 @@ export default function SupplierCustomersPage() {
 
   const locationOptions = ['All cities', ...new Set(customers.map((customer) => customer.location).filter(Boolean))]
 
+  if (loading) return <LoadingState message="Loading customers..." />
+
   return (
     <section className="supplier-customers-page">
       <div className="orders-breadcrumb">
@@ -101,8 +159,9 @@ export default function SupplierCustomersPage() {
         </div>
 
         <div className="supplier-orders-header-actions">
-          <span className="demo-label">{t('demoData')}</span>
-          <button className="supplier-export-button" onClick={exportCustomers} type="button">Export</button>
+          <button className="so-btn-outline" type="button" onClick={exportCustomers} disabled={!filteredCustomers.length}>
+            {t('exportCSV')}
+          </button>
         </div>
       </div>
 
