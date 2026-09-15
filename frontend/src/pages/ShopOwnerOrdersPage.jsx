@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { FiCheckCircle, FiClock, FiPackage, FiXCircle } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
 import EmptyState from '../components/EmptyState.jsx'
 import LoadingState from '../components/LoadingState.jsx'
@@ -112,11 +113,10 @@ export default function ShopOwnerOrdersPage() {
   const selectedSupplier = selectedOrder ? getSupplierDetails(selectedOrder) : null
   const selectedItems = selectedOrder?.items || []
   const stats = [
-    { key: 'total', label: t('ordersTotalOrders'), value: counts.all, description: t('ordersAllTime'), icon: '▣' },
-    { key: 'pending', label: t('pending'), value: counts.pending, description: t('ordersAwaitingConfirmation'), icon: '⌛' },
-    { key: 'progress', label: t('ordersInProgress'), value: counts.progress, description: t('ordersBeingPrepared'), icon: '▣' },
-    { key: 'delivered', label: t('delivered'), value: counts.delivered, description: t('ordersCompleted'), icon: '✓' },
-    { key: 'cancelled', label: t('cancelled'), value: counts.cancelled, description: t('ordersCancelled'), icon: '×' },
+    { key: 'total', label: t('ordersTotalOrders'), value: counts.all, description: t('ordersAllTime'), icon: FiPackage },
+    { key: 'pending', label: t('pending'), value: counts.pending, description: t('ordersAwaitingConfirmation'), icon: FiClock },
+    { key: 'delivered', label: t('delivered'), value: counts.delivered, description: t('ordersCompleted'), icon: FiCheckCircle },
+    { key: 'cancelled', label: t('cancelled'), value: counts.cancelled, description: t('ordersCancelled'), icon: FiXCircle },
   ]
 
   if (isLoading) return <LoadingState message={t('loadingOrders')} />
@@ -126,7 +126,19 @@ export default function ShopOwnerOrdersPage() {
     <section className="orders-page">
       <div className="orders-breadcrumb"><span>{t('shopOwner')}</span><span>›</span><span>{t('orders')}</span></div>
       <div className="orders-heading"><div><h1>{t('yourOrders')}</h1><p>{t('ordersSubtitle')}</p></div></div>
-      <div className="orders-stat-grid">{stats.map((stat) => <article className={`orders-stat-card orders-stat-card--${stat.key}`} key={stat.key}><span className="orders-stat-icon" aria-hidden="true">{stat.icon}</span><div><strong>{stat.label}</strong><b>{stat.value}</b><small>{stat.description}</small></div></article>)}</div>
+      <div className="orders-stat-grid">{stats.map((stat) => {
+        const Icon = stat.icon
+        return (
+          <article className={`orders-stat-card orders-stat-card--${stat.key}`} key={stat.key}>
+            <span className="orders-stat-icon" aria-hidden="true"><Icon /></span>
+            <div>
+              <strong>{stat.label}</strong>
+              <b>{stat.value}</b>
+              <small>{stat.description}</small>
+            </div>
+          </article>
+        )
+      })}</div>
       <div className="orders-tabs" role="tablist">{tabs.map((tab) => { const count = tab.value === 'All' ? counts.all : tab.value === 'Pending' ? counts.pending : tab.value === 'In Progress' ? counts.progress : tab.value === 'Delivered' ? counts.delivered : counts.cancelled; return <button className={activeTab === tab.value ? 'active' : ''} key={tab.value} onClick={() => setActiveTab(tab.value)} role="tab" type="button">{t(tab.key)}{tab.value !== 'All' && <span>({count})</span>}</button> })}</div>
       <div className="orders-content-layout">
         <div className="orders-list-panel">
