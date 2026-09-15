@@ -5,12 +5,19 @@ from fastapi.testclient import TestClient
 # Ensure backend folder is in path
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from app.main import app
+import pytest
+from app.main import app, startup
 from app.database import Base, engine
 
+@pytest.fixture(autouse=True, scope="module")
 def reset_db():
     Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
+    try:
+        startup()
+    except Exception:
+        pass
+    yield
 
 client = TestClient(app)
 

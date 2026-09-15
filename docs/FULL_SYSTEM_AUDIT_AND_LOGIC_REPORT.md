@@ -539,7 +539,7 @@ These fallbacks confirm the backend response does not return these fields (the `
 
 ### Backend checkout logic — CODE-VERIFIED (`main.py` lines 480–510)
 1. Validates payment method (`CASH_ON_DELIVERY`, `PAY_LATER`, `REQUEST_ORDER`)
-2. For each cart item, validates: `product exists in DB`, `product.supplier_id == item.supplierId`, `product.is_active`, `quantity >= minimum_quantity`
+2. For each cart item, validates: `product exists in DB`, `product.supplier_id == item.supplierId`, `product.is_active`, `quantity >= minimum_quantity` AND `quantity % minimum_quantity == 0` (`minimum_quantity` defines units per box; ordering is strictly in full boxes)
 3. Groups items by `supplier_id`
 4. Creates one `Checkout` record
 5. Creates one `SupplierOrder` per distinct supplier (multi-supplier split is real and working)

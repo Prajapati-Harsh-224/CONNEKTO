@@ -1,4 +1,6 @@
+from __future__ import annotations
 from datetime import datetime
+from typing import List, Optional
 from sqlalchemy import Boolean, DateTime, ForeignKey, Integer, Numeric, String, Text
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 from .database import Base
@@ -7,14 +9,14 @@ class User(Base):
     __tablename__ = "users"
     id: Mapped[str] = mapped_column(String(36), primary_key=True)
     name: Mapped[str] = mapped_column(String(100))
-    email: Mapped[str | None] = mapped_column(String(255), unique=True, nullable=True)
-    phone: Mapped[str | None] = mapped_column(String(30), unique=True, nullable=True)
-    area: Mapped[str | None] = mapped_column(String(100), nullable=True)
+    email: Mapped[Optional[str]] = mapped_column(String(255), unique=True, nullable=True)
+    phone: Mapped[Optional[str]] = mapped_column(String(30), unique=True, nullable=True)
+    area: Mapped[Optional[str]] = mapped_column(String(100), nullable=True)
     login_identifier: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     password_hash: Mapped[str] = mapped_column(String(255))
     role: Mapped[str] = mapped_column(String(30), index=True)
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    shop: Mapped["Shop | None"] = relationship(back_populates="owner", uselist=False, cascade="all, delete-orphan")
+    shop: Mapped[Optional["Shop"]] = relationship(back_populates="owner", uselist=False, cascade="all, delete-orphan")
 
 class Shop(Base):
     __tablename__ = "shops"
@@ -35,20 +37,20 @@ class Supplier(Base):
     __tablename__ = "suppliers"
     id: Mapped[str] = mapped_column(String(80), primary_key=True)
     name: Mapped[str] = mapped_column(String(150))
-    category: Mapped[str | None] = mapped_column(String(100), nullable=True, default="")
-    description: Mapped[str | None] = mapped_column(Text, nullable=True, default="")
-    location: Mapped[str | None] = mapped_column(String(100), nullable=True, default="")
-    service_areas_raw: Mapped[str | None] = mapped_column("service_areas", Text, nullable=True, default="")
-    minimum_order: Mapped[str | None] = mapped_column(String(100), nullable=True, default="")
-    phone: Mapped[str | None] = mapped_column(String(30), nullable=True, default="")
-    email: Mapped[str | None] = mapped_column(String(255), nullable=True, default="")
+    category: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, default="")
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True, default="")
+    location: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, default="")
+    service_areas_raw: Mapped[Optional[str]] = mapped_column("service_areas", Text, nullable=True, default="")
+    minimum_order: Mapped[Optional[str]] = mapped_column(String(100), nullable=True, default="")
+    phone: Mapped[Optional[str]] = mapped_column(String(30), nullable=True, default="")
+    email: Mapped[Optional[str]] = mapped_column(String(255), nullable=True, default="")
     is_verified: Mapped[bool] = mapped_column(Boolean, default=False, server_default="0")
-    rating: Mapped[float | None] = mapped_column(Numeric(3, 2), nullable=True, default=None)
+    rating: Mapped[Optional[float]] = mapped_column(Numeric(3, 2), nullable=True, default=None)
     review_count: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
-    tags: Mapped[str | None] = mapped_column(Text, nullable=True, default="")
-    owner_id: Mapped[str | None] = mapped_column(ForeignKey("users.id"), nullable=True, unique=True)
-    owner: Mapped[User | None] = relationship(lazy="joined")
-    service_areas: Mapped[list["SupplierServiceArea"]] = relationship(cascade="all, delete-orphan", lazy="selectin")
+    tags: Mapped[Optional[str]] = mapped_column(Text, nullable=True, default="")
+    owner_id: Mapped[Optional[str]] = mapped_column(ForeignKey("users.id"), nullable=True, unique=True)
+    owner: Mapped[Optional[User]] = relationship(lazy="joined")
+    service_areas: Mapped[List["SupplierServiceArea"]] = relationship(cascade="all, delete-orphan", lazy="selectin")
 
 
 class SupplierServiceArea(Base):
@@ -68,7 +70,7 @@ class Product(Base):
     price: Mapped[float] = mapped_column(Numeric(10, 2))
     minimum_quantity: Mapped[int] = mapped_column(Integer)
     units_per_box: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
-    description: Mapped[str | None] = mapped_column(Text, nullable=True, default="")
+    description: Mapped[Optional[str]] = mapped_column(Text, nullable=True, default="")
     image_url: Mapped[str] = mapped_column(Text, default="")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
     is_demo_data: Mapped[bool] = mapped_column(Boolean, default=False)
@@ -76,12 +78,12 @@ class Product(Base):
 class Checkout(Base):
     __tablename__ = "checkouts"
     id: Mapped[str] = mapped_column(String(40), primary_key=True)
-    idempotency_key: Mapped[str | None] = mapped_column(String(100), unique=True, nullable=True)
+    idempotency_key: Mapped[Optional[str]] = mapped_column(String(100), unique=True, nullable=True)
     shop_owner_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
     total_amount: Mapped[float] = mapped_column(Numeric(10, 2))
     payment_method: Mapped[str] = mapped_column(String(40))
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
-    orders: Mapped[list["SupplierOrder"]] = relationship(cascade="all, delete-orphan")
+    orders: Mapped[List["SupplierOrder"]] = relationship(cascade="all, delete-orphan")
 
 class SupplierOrder(Base):
     __tablename__ = "supplier_orders"
@@ -97,7 +99,7 @@ class SupplierOrder(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     checkout: Mapped["Checkout"] = relationship(overlaps="orders")
     shop_owner: Mapped["User"] = relationship(foreign_keys=[shop_owner_id])
-    items: Mapped[list["OrderItem"]] = relationship(cascade="all, delete-orphan")
+    items: Mapped[List["OrderItem"]] = relationship(cascade="all, delete-orphan")
 
 class OrderItem(Base):
     __tablename__ = "supplier_order_items"
@@ -105,7 +107,7 @@ class OrderItem(Base):
     order_id: Mapped[str] = mapped_column(ForeignKey("supplier_orders.id"), index=True)
     product_id: Mapped[str] = mapped_column(String(36))
     product_name_snapshot: Mapped[str] = mapped_column(String(150))
-    product_image_url_snapshot: Mapped[str | None] = mapped_column(Text, default="")
+    product_image_url_snapshot: Mapped[Optional[str]] = mapped_column(Text, default="")
     quantity: Mapped[int] = mapped_column(Integer)
     units_per_box_snapshot: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
     unit_price_snapshot: Mapped[float] = mapped_column(Numeric(10, 2))

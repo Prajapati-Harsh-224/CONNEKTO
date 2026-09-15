@@ -1,9 +1,14 @@
-from typing import Any, Annotated, Literal, Union
+from __future__ import annotations
+try:
+    from typing import Annotated, Any, List, Literal, Optional, Union
+except ImportError:
+    from typing import Any, List, Literal, Optional, Union  # type: ignore
+    from typing_extensions import Annotated  # type: ignore
 from urllib.parse import urlparse
 from pydantic import BaseModel, ConfigDict, Field, field_validator
 
 
-def validate_http_image_url(value: str | None) -> str:
+def validate_http_image_url(value: Optional[str]) -> str:
     if value is None:
         return ""
     cleaned = value.strip()
@@ -13,8 +18,6 @@ def validate_http_image_url(value: str | None) -> str:
     if cleaned.startswith('//'):
         cleaned = f"https:{cleaned}"
     elif cleaned.startswith('www.'):
-        cleaned = f"https://{cleaned}"
-    elif '://' not in cleaned and '.' in cleaned:
         cleaned = f"https://{cleaned}"
 
     try:
@@ -30,7 +33,7 @@ class ShopOwnerRegisterRequest(BaseModel):
     role: Literal["SHOP_OWNER"] = "SHOP_OWNER"
     name: str
     password: str
-    confirmPassword: str | None = None
+    confirmPassword: Optional[str] = None
     shopName: str
     shopAddress: str
     area: str
@@ -42,23 +45,23 @@ class SupplierRegisterRequest(BaseModel):
     role: Literal["SUPPLIER"] = "SUPPLIER"
     name: str
     area: str
-    category: str | None = None
-    serviceAreas: list[str] = Field(default_factory=list)
+    category: Optional[str] = None
+    serviceAreas: List[str] = Field(default_factory=list)
     phone: str
     email: str = ""
     password: str
-    confirmPassword: str | None = None
+    confirmPassword: Optional[str] = None
 
 class GruhUdyogRegisterRequest(BaseModel):
     model_config = ConfigDict(extra="ignore")
     role: Literal["GRUH_UDYOG"] = "GRUH_UDYOG"
     name: str
     area: str
-    category: str | None = None
+    category: Optional[str] = None
     phone: str
     email: str = ""
     password: str
-    confirmPassword: str | None = None
+    confirmPassword: Optional[str] = None
 
 
 RegisterRequest = Annotated[Union[ShopOwnerRegisterRequest, SupplierRegisterRequest, GruhUdyogRegisterRequest], Field(discriminator="role")]
@@ -80,7 +83,7 @@ class ProductRequest(BaseModel):
 
     @field_validator('imageUrl')
     @classmethod
-    def validate_image_url(cls, value: str | None) -> str:
+    def validate_image_url(cls, value: Optional[str]) -> str:
         return validate_http_image_url(value)
 
 class CheckoutItem(BaseModel):
@@ -92,8 +95,8 @@ class CheckoutItem(BaseModel):
 class CheckoutRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     paymentMethod: str
-    items: list[CheckoutItem]
-    idempotencyKey: str | None = None
+    items: List[CheckoutItem]
+    idempotencyKey: Optional[str] = None
 
 class StatusRequest(BaseModel):
     status: str

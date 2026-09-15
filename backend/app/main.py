@@ -1,3 +1,4 @@
+from __future__ import annotations
 import hashlib
 import hmac
 import os
@@ -62,6 +63,12 @@ def startup() -> None:
         backfill_supplier_service_areas()
     except Exception:
         pass
+
+try:
+    startup()
+except Exception:
+    pass
+
 
 
 def envelope(data=None, message="OK", success=True):
@@ -425,7 +432,7 @@ def update_supplier_order(order_id: str, payload: StatusRequest, user: User = De
     return envelope({"order": order_json(order)}, "Order status updated")
 
 def product_json(product: Product) -> dict:
-    upb = getattr(product, "units_per_box", 1) or 1
+    upb = product.minimum_quantity or getattr(product, "units_per_box", 1) or 1
     return {"id": product.id, "supplierId": product.supplier_id, "name": product.name, "brand": product.brand, "category": product.category, "packSize": product.pack_size, "price": float(product.price), "minimumQuantity": product.minimum_quantity, "unitsPerBox": upb, "imageUrl": product.image_url or "", "isActive": product.is_active, "isDemoData": product.is_demo_data}
 
 def owned_supplier(user: User, db: Session):
@@ -501,45 +508,34 @@ def supplier_serves_shop_area(user: User, supplier: Supplier) -> bool:
     return bool(area_key) and any(service_area.area_key == area_key for service_area in supplier.service_areas)
 
 @app.get("/api/suppliers")
-def shop_suppliers(user: User | None = Depends(current_user), db: Session = Depends(get_db)):
-    if user and user.role != "SHOP_OWNER":
-        return role_error("Shop Owners", user)
-    shop_area = (user.shop.area if user.shop else user.area) if user else None
+def shop_suppliers(user: User = Depends(require_user), db: Session = Depends(get_db)):
+    if user.role != "SHOP_OWNER": return role_error("Shop Owners", user)
+    shop_area = user.shop.area if user.shop else user.area
     area_key = normalize_area_key(shop_area) if shop_area else ""
-    suppliers = []
-    if area_key:
-        suppliers = db.scalars(select(Supplier).join(SupplierServiceArea).where(SupplierServiceArea.area_key == area_key).order_by(Supplier.name).distinct()).all()
-    if not suppliers:
-        suppliers = db.scalars(select(Supplier).order_by(Supplier.name)).all()
+    suppliers = db.scalars(select(Supplier).join(SupplierServiceArea).where(SupplierServiceArea.area_key == area_key).order_by(Supplier.name).distinct()).all() if area_key else []
     return envelope({"suppliers": [public_supplier_json(supplier, db.scalars(select(Product).where(Product.supplier_id == supplier.id, Product.is_active.is_(True))).all()) for supplier in suppliers]}, "Suppliers returned")
 
 @app.get("/api/suppliers/{supplier_id}")
-def shop_supplier(supplier_id: str, user: User | None = Depends(current_user), db: Session = Depends(get_db)):
-    if user and user.role != "SHOP_OWNER":
-        return role_error("Shop Owners", user)
+def shop_supplier(supplier_id: str, user: User = Depends(require_user), db: Session = Depends(get_db)):
+    if user.role != "SHOP_OWNER": return role_error("Shop Owners", user)
     supplier = db.get(Supplier, supplier_id)
-    if not supplier:
-        return error("Supplier not found.", "NOT_FOUND", 404)
+    if not supplier or not supplier_serves_shop_area(user, supplier): return error("Supplier not found.", "NOT_FOUND", 404)
     products = db.scalars(select(Product).where(Product.supplier_id == supplier.id, Product.is_active.is_(True))).all()
     return envelope({"supplier": public_supplier_json(supplier, products), "products": [product_json(product) for product in products]}, "Supplier returned")
 
 @app.get("/api/suppliers/{supplier_id}/products")
-def shop_supplier_products(supplier_id: str, user: User | None = Depends(current_user), db: Session = Depends(get_db)):
-    if user and user.role != "SHOP_OWNER":
-        return role_error("Shop Owners", user)
+def shop_supplier_products(supplier_id: str, user: User = Depends(require_user), db: Session = Depends(get_db)):
+    if user.role != "SHOP_OWNER": return role_error("Shop Owners", user)
     supplier = db.get(Supplier, supplier_id)
-    if not supplier:
-        return error("Supplier not found.", "NOT_FOUND", 404)
+    if not supplier or not supplier_serves_shop_area(user, supplier): return error("Supplier not found.", "NOT_FOUND", 404)
     products = db.scalars(select(Product).where(Product.supplier_id == supplier.id, Product.is_active.is_(True))).all()
     return envelope({"supplier": public_supplier_json(supplier, products), "products": [product_json(product) for product in products]}, "Supplier products returned")
 
 @app.get("/api/suppliers/{supplier_id}/products/{product_id}")
-def shop_supplier_product(supplier_id: str, product_id: str, user: User | None = Depends(current_user), db: Session = Depends(get_db)):
-    if user and user.role != "SHOP_OWNER":
-        return role_error("Shop Owners", user)
+def shop_supplier_product(supplier_id: str, product_id: str, user: User = Depends(require_user), db: Session = Depends(get_db)):
+    if user.role != "SHOP_OWNER": return role_error("Shop Owners", user)
     supplier = db.get(Supplier, supplier_id)
-    if not supplier:
-        return error("Supplier not found.", "NOT_FOUND", 404)
+    if not supplier or not supplier_serves_shop_area(user, supplier): return error("Supplier not found.", "NOT_FOUND", 404)
     product = db.scalar(select(Product).where(Product.id == product_id, Product.supplier_id == supplier.id, Product.is_active.is_(True)))
     return envelope({"supplier": public_supplier_json(supplier, []), "product": product_json(product)}, "Product returned") if product else error("Product is no longer available.", "NOT_FOUND", 404)
 
@@ -620,7 +616,7 @@ def checkout(payload: CheckoutRequest, user: User = Depends(require_user), db: S
         if not product: return error("Product not found.", "NOT_FOUND", 404)
         if product.supplier_id != supplier_id: return error("Product does not belong to supplier.", "INVALID_PRODUCT_SUPPLIER", 400)
         if not product.is_active: return error("Product is no longer available.", "PRODUCT_UNAVAILABLE", 400)
-        units_per_box = getattr(product, "units_per_box", 1) or 1
+        units_per_box = product.minimum_quantity or getattr(product, "units_per_box", 1) or 1
         if units_per_box <= 0:
             return error(f"Invalid packaging configuration for {product.name}.", "VALIDATION_ERROR", 400)
         if quantity < product.minimum_quantity:

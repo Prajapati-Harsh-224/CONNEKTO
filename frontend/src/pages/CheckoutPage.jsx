@@ -52,21 +52,23 @@ export default function CheckoutPage() {
     return result
   }, []), [cart])
   const total = cart.reduce((sum, item) => sum + priceValue(item.unitPrice) * Number(item.quantity), 0)
-  const totalItems = cart.reduce((sum, item) => sum + Number(item.quantity), 0)
+  const totalBoxes = cart.reduce((sum, item) => sum + Number(item.boxes || 1), 0)
 
   function notifyCartUpdated() {
     window.dispatchEvent(new Event('connecto-cart-updated'))
   }
 
-  function changeQuantity(item, nextQuantity) {
-    const quantity = Number(nextQuantity)
-    const minimum = Number(item.minimumQuantity || 1)
-    if (!Number.isInteger(quantity) || quantity < minimum) {
-      setQuantityErrors((current) => ({ ...current, [item.productId]: t('wholeNumberAtLeast', { minimum }) }))
+  function changeQuantity(item, nextBoxesOrQuantity) {
+    const numericValue = Number(nextBoxesOrQuantity)
+    if (!Number.isInteger(numericValue) || numericValue < 1) {
+      setQuantityErrors((current) => ({
+        ...current,
+        [item.productId]: 'Minimum order is 1 box'
+      }))
       return
     }
     setQuantityErrors((current) => ({ ...current, [item.productId]: '' }))
-    setCart(updateCartItem(item.productId, item.supplierId, quantity))
+    setCart(updateCartItem(item.productId, item.supplierId, numericValue))
     notifyCartUpdated()
   }
 
@@ -136,11 +138,40 @@ export default function CheckoutPage() {
           const collapsed = collapsedSuppliers[group.supplierId]
           return <section className="checkout-supplier" key={group.supplierId}>
             <div className="checkout-supplier-header"><div className="checkout-supplier-identity"><div className="checkout-supplier-avatar" aria-hidden="true">{getInitials(group.name)}</div><div><div className="checkout-supplier-name"><h3>{group.name}</h3>{group.verified && <span>● Verified Supplier</span>}</div><p>{group.location} <b>|</b> {group.category}</p></div></div><div className="checkout-supplier-total"><small>Supplier subtotal</small><strong>{formatPrice(subtotal)}</strong></div><button className="checkout-collapse" type="button" aria-label={collapsed ? `Expand ${group.name}` : `Collapse ${group.name}`} aria-expanded={!collapsed} onClick={() => setCollapsedSuppliers((current) => ({ ...current, [group.supplierId]: !current[group.supplierId] }))}>{collapsed ? '⌄' : '⌃'}</button></div>
-            {!collapsed && <div className="checkout-supplier-items">{group.items.map((item) => <article className="checkout-item" key={`${item.supplierId}-${item.productId}`}><ProductImage alt={`${item.name} product`} className="checkout-item-image" fallbackText={(item.name || 'P').slice(0, 1).toUpperCase()} src={item.imageUrl || item.imageLabel || ''} /><div className="checkout-item-info"><strong>{item.name}</strong><span>{item.packSize} <b>|</b> {item.brand}</span><small>{formatPrice(priceValue(item.unitPrice))}</small></div><QuantitySelector error={quantityErrors[item.productId]} minimum={Number(item.minimumQuantity || 1)} onChange={(quantity) => changeQuantity(item, quantity)} value={item.quantity} /><strong className="checkout-item-total">{formatPrice(priceValue(item.unitPrice) * Number(item.quantity))}</strong><button className="checkout-remove" type="button" aria-label={`Remove ${item.name}`} onClick={() => removeItem(item)}>×</button></article>)}</div>}
+            {!collapsed && <div className="checkout-supplier-items">{group.items.map((item) => {
+              const unitsPerBox = Math.max(1, Number(item.unitsPerBox || item.minimumQuantity || 1))
+              const boxes = Number(item.boxes || Math.max(1, Math.round(Number(item.quantity || unitsPerBox) / unitsPerBox)))
+              const unitPrice = priceValue(item.unitPrice)
+              const boxPrice = unitPrice * unitsPerBox
+
+              return (
+                <article className="checkout-item" key={`${item.supplierId}-${item.productId}`}>
+                  <ProductImage alt={`${item.name} product`} className="checkout-item-image" fallbackText={(item.name || 'P').slice(0, 1).toUpperCase()} src={item.imageUrl || item.imageLabel || ''} />
+                  <div className="checkout-item-info">
+                    <strong>{item.name}</strong>
+                    <span>{item.packSize} <b>|</b> {item.brand}</span>
+                    <small>
+                      {formatPrice(unitPrice)}/packet
+                      <span style={{ display: 'block', color: '#047857', fontWeight: '600' }}>1 Box = {unitsPerBox} packets ({formatPrice(boxPrice)}/box)</span>
+                    </small>
+                    <div style={{ fontSize: '0.8rem', color: '#4b5563', marginTop: '0.2rem', fontWeight: '500' }}>{item.quantity} packets</div>
+                  </div>
+                  <QuantitySelector
+                    error={quantityErrors[item.productId]}
+                    isBox={true}
+                    minimum={1}
+                    onChange={(val) => changeQuantity(item, val)}
+                    value={boxes}
+                  />
+                  <strong className="checkout-item-total">{formatPrice(unitPrice * Number(item.quantity))}</strong>
+                  <button className="checkout-remove" type="button" aria-label={`Remove ${item.name}`} onClick={() => removeItem(item)}>×</button>
+                </article>
+              )
+            })}</div>}
             <div className="checkout-supplier-footer"><span>{group.items.length} {group.items.length === 1 ? t('itemCount') : t('itemsCount')}</span><button type="button" onClick={() => clearSupplier(group)}>Clear supplier items</button></div>
           </section>
         })}<Link className="checkout-back-link" to="/dashboard/shop-owner/cart">← {t('backToCart')}</Link></div>
-        <div className="checkout-side-column"><form className="checkout-summary-card" onSubmit={submitRequest}><div className="checkout-card-title"><span aria-hidden="true">▣</span><h2>{t('orderSummary')}</h2></div><div className="checkout-summary-row"><span>Total Suppliers</span><strong>{groups.length}</strong></div><div className="checkout-summary-row"><span>Total Items</span><strong>{totalItems}</strong></div><div className="checkout-summary-total"><span>Total Amount</span><strong>{formatPrice(total)}</strong></div>{error && <p className="form-message error" role="alert">{error}</p>}<button className="checkout-place-order" disabled={isSubmitting} type="submit">{isSubmitting ? t('sendingRequest') : 'Place Order →'}</button><small className="checkout-prototype-note">This will create separate orders for each supplier.</small></form><div className="checkout-method-card"><h2>{t('howHandleIt')}</h2><div className="checkout-method-list">{methods.map((method) => <label className={`checkout-method${paymentMethod === method.value ? ' selected' : ''}`} key={method.value}><input checked={paymentMethod === method.value} name="paymentMethod" onChange={() => setPaymentMethod(method.value)} type="radio" value={method.value} /><span><strong>{method.label}</strong><small>{method.description}</small></span></label>)}</div><div className="checkout-secure-note"><span aria-hidden="true">✓</span><div><strong>Secure & split payments</strong><small>Your payment will be securely processed and split with each supplier.</small></div></div></div></div>
+        <div className="checkout-side-column"><form className="checkout-summary-card" onSubmit={submitRequest}><div className="checkout-card-title"><span aria-hidden="true">▣</span><h2>{t('orderSummary')}</h2></div><div className="checkout-summary-row"><span>Total Suppliers</span><strong>{groups.length}</strong></div><div className="checkout-summary-row"><span>Total Boxes</span><strong>{totalBoxes}</strong></div><div className="checkout-summary-total"><span>Total Amount</span><strong>{formatPrice(total)}</strong></div>{error && <p className="form-message error" role="alert">{error}</p>}<button className="checkout-place-order" disabled={isSubmitting} type="submit">{isSubmitting ? t('sendingRequest') : 'Place Order →'}</button><small className="checkout-prototype-note">This will create separate orders for each supplier.</small></form><div className="checkout-method-card"><h2>{t('howHandleIt')}</h2><div className="checkout-method-list">{methods.map((method) => <label className={`checkout-method${paymentMethod === method.value ? ' selected' : ''}`} key={method.value}><input checked={paymentMethod === method.value} name="paymentMethod" onChange={() => setPaymentMethod(method.value)} type="radio" value={method.value} /><span><strong>{method.label}</strong><small>{method.description}</small></span></label>)}</div><div className="checkout-secure-note"><span aria-hidden="true">✓</span><div><strong>Secure & split payments</strong><small>Your payment will be securely processed and split with each supplier.</small></div></div></div></div>
       </div>
     </section>
   )

@@ -48,27 +48,18 @@ export default function ShopOwnerCartPage() {
   }, []), [cart])
 
   const total = cart.reduce((sum, item) => sum + parsePrice(item.unitPrice) * Number(item.quantity), 0)
-  const totalItems = cart.reduce((sum, item) => sum + Number(item.quantity), 0)
+  const totalBoxes = cart.reduce((sum, item) => sum + Number(item.boxes || 1), 0)
 
   function notifyCartUpdated() {
     window.dispatchEvent(new Event('connecto-cart-updated'))
   }
 
   function changeQuantity(item, nextValue) {
-    const unitsPerBox = Math.max(1, Number(item.unitsPerBox || 1))
     const numericValue = Number(nextValue)
-    const minQty = Number(item.minimumQuantity || 1)
-    const minBoxes = Math.ceil(minQty / unitsPerBox)
-
-    const isBox = unitsPerBox > 1
-    const minimumAllowed = isBox ? minBoxes : minQty
-
-    if (!Number.isInteger(numericValue) || numericValue < minimumAllowed) {
+    if (!Number.isInteger(numericValue) || numericValue < 1) {
       setQuantityErrors((current) => ({
         ...current,
-        [item.productId]: isBox
-          ? `Minimum order is ${minBoxes} ${minBoxes === 1 ? 'box' : 'boxes'} (${minQty} packets)`
-          : t('wholeNumberAtLeast', { minimum: minQty })
+        [item.productId]: 'Minimum order is 1 box'
       }))
       return
     }
@@ -87,7 +78,7 @@ export default function ShopOwnerCartPage() {
   return (
     <section className="cart-page">
       <div className="cart-breadcrumb"><span>{t('shopOwner')}</span><span>›</span><span>{t('cart')}</span></div>
-      <div className="cart-heading"><div><h1>{t('yourCart')}</h1><p>{t('cartReview')}</p></div><div className="cart-heading-art" aria-hidden="true">▱</div></div>
+      <div className="cart-heading"><div><h1>{t('yourCart')}</h1><p>{t('cartReview')}</p></div></div>
       <div className="cart-layout">
         <div className="cart-groups">
           {groups.map((group) => {
@@ -99,10 +90,8 @@ export default function ShopOwnerCartPage() {
                 <button className="cart-collapse-button" type="button" aria-label={isCollapsed ? `Expand ${group.name}` : `Collapse ${group.name}`} aria-expanded={!isCollapsed} onClick={() => setCollapsedSuppliers((current) => ({ ...current, [group.supplierId]: !current[group.supplierId] }))}>{isCollapsed ? '⌄' : '⌃'}</button>
               </div>
               {!isCollapsed && <div className="cart-group-items">{group.items.map((item) => {
-                const unitsPerBox = Math.max(1, Number(item.unitsPerBox || 1))
-                const isBox = unitsPerBox > 1
-                const boxes = Number(item.boxes || Math.ceil(item.quantity / unitsPerBox))
-                const minBoxes = Math.ceil(Number(item.minimumQuantity || 1) / unitsPerBox)
+                const unitsPerBox = Math.max(1, Number(item.unitsPerBox || item.minimumQuantity || 1))
+                const boxes = Number(item.boxes || Math.max(1, Math.round(Number(item.quantity || unitsPerBox) / unitsPerBox)))
                 return (
                   <article className="cart-item" key={`${item.supplierId}-${item.productId}`}>
                     <ProductImage alt={`${item.name} cart item`} aria-hidden="true" className="cart-item-art" fallbackText={(item.name || 'P').slice(0, 1).toUpperCase()} src={item.imageUrl || item.imageLabel || ''} />
@@ -111,15 +100,16 @@ export default function ShopOwnerCartPage() {
                       <span>{item.packSize} <b>|</b> {item.brand}</span>
                       <small>
                         {formatPrice(parsePrice(item.unitPrice))}/packet
-                        {isBox && <span style={{ display: 'block', color: '#047857', fontWeight: '600' }}>1 Box = {unitsPerBox} packets ({formatPrice(parsePrice(item.unitPrice) * unitsPerBox)}/box)</span>}
+                        <span style={{ display: 'block', color: '#047857', fontWeight: '600' }}>1 Box = {unitsPerBox} packets ({formatPrice(parsePrice(item.unitPrice) * unitsPerBox)}/box)</span>
                       </small>
-                      {isBox && <div style={{ fontSize: '0.78rem', color: '#4b5563', marginTop: '0.2rem' }}>Total: {item.quantity} packets</div>}
+                      <div style={{ fontSize: '0.82rem', color: '#4b5563', marginTop: '0.25rem', fontWeight: '500' }}>{item.quantity} packets</div>
                     </div>
                     <QuantitySelector
                       error={quantityErrors[item.productId]}
-                      minimum={isBox ? minBoxes : Number(item.minimumQuantity || 1)}
+                      isBox={true}
+                      minimum={1}
                       onChange={(val) => changeQuantity(item, val)}
-                      value={isBox ? boxes : item.quantity}
+                      value={boxes}
                     />
                     <strong className="cart-item-subtotal">{formatPrice(parsePrice(item.unitPrice) * Number(item.quantity))}</strong>
                     <button className="remove-item" onClick={() => removeItem(item)} type="button" aria-label={`Remove ${item.name}`}>×</button>
@@ -130,7 +120,7 @@ export default function ShopOwnerCartPage() {
             </section>
           })}
         </div>
-        <aside className="cart-total-panel"><div className="cart-summary-heading"><span className="cart-summary-icon" aria-hidden="true">▣</span><h2>{t('orderSummary')}</h2></div><div className="cart-summary-stat"><span>Total Suppliers</span><strong>{groups.length}</strong></div><div className="cart-summary-stat"><span>Total Items</span><strong>{totalItems}</strong></div><div className="cart-summary-total"><span>Total Amount</span><strong>{formatPrice(total)}</strong></div><Link className="button primary" to="/dashboard/shop-owner/checkout">{t('continueToCheckout')} <span aria-hidden="true">→</span></Link><div className="cart-trust-note"><strong>Secure & split payments</strong><span>Your payment will be securely processed for each supplier.</span></div><Link className="cart-continue-shopping" to="/dashboard/shop-owner/suppliers">‹&nbsp; Continue Shopping</Link></aside>
+        <aside className="cart-total-panel"><div className="cart-summary-heading"><span className="cart-summary-icon" aria-hidden="true">▣</span><h2>{t('orderSummary')}</h2></div><div className="cart-summary-stat"><span>Total Suppliers</span><strong>{groups.length}</strong></div><div className="cart-summary-stat"><span>Total Boxes</span><strong>{totalBoxes}</strong></div><div className="cart-summary-total"><span>Total Amount</span><strong>{formatPrice(total)}</strong></div><Link className="button primary" to="/dashboard/shop-owner/checkout">{t('continueToCheckout')} <span aria-hidden="true">→</span></Link><div className="cart-trust-note"><strong>Secure & split payments</strong><span>Your payment will be securely processed for each supplier.</span></div><Link className="cart-continue-shopping" to="/dashboard/shop-owner/suppliers">‹&nbsp; Continue Shopping</Link></aside>
       </div>
     </section>
   )

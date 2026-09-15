@@ -1,5 +1,5 @@
 import os
-from collections.abc import Generator
+from typing import Generator
 from pathlib import Path
 from dotenv import load_dotenv
 from sqlalchemy import create_engine, text

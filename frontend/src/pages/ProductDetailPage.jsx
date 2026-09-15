@@ -30,10 +30,7 @@ export default function ProductDetailPage() {
         setSupplier(response.data?.supplier || null)
         setProduct(nextProduct)
         if (nextProduct) {
-          const upb = Math.max(1, Number(nextProduct.unitsPerBox || 1))
-          const minQty = Math.max(1, Number(nextProduct.minimumQuantity || 1))
-          const minB = Math.ceil(minQty / upb)
-          setBoxes(minB)
+          setBoxes(1)
         }
       })
       .catch((requestError) => {
@@ -48,10 +45,9 @@ export default function ProductDetailPage() {
   if (error) return <section className="product-detail-page"><p className="form-message error" role="alert">{error}</p></section>
   if (!supplier || !product) return <EmptyState title={t('productUnavailable')} message={t('productUnavailableMessage')} />
 
-  const unitsPerBox = Math.max(1, Number(product.unitsPerBox || 1))
-  const isBox = unitsPerBox > 1
-  const minQty = Math.max(1, Number(product.minimumQuantity || 1))
-  const minBoxes = Math.ceil(minQty / unitsPerBox)
+  const unitsPerBox = Math.max(1, Number(product.unitsPerBox || product.minimumQuantity || 1))
+  const isBox = true
+  const minBoxes = 1
   const unitPrice = Number(product.price || 0)
   const boxPrice = unitPrice * unitsPerBox
   const totalQuantity = boxes * unitsPerBox
@@ -59,13 +55,9 @@ export default function ProductDetailPage() {
   function updateBoxes(nextValue) {
     const numericBoxes = Number(nextValue)
     setSuccessMessage('')
-    if (!Number.isInteger(numericBoxes) || numericBoxes < minBoxes) {
+    if (!Number.isInteger(numericBoxes) || numericBoxes < 1) {
       setBoxes(nextValue)
-      setQuantityError(
-        isBox
-          ? `Minimum order is ${minBoxes} ${minBoxes === 1 ? 'box' : 'boxes'} (${minQty} packets)`
-          : t('wholeNumberAtLeast', { minimum: minQty })
-      )
+      setQuantityError('Minimum order is 1 box')
       return
     }
     setBoxes(numericBoxes)
@@ -73,12 +65,8 @@ export default function ProductDetailPage() {
   }
 
   function handleAddToCart() {
-    if (!Number.isInteger(Number(boxes)) || Number(boxes) < minBoxes) {
-      setQuantityError(
-        isBox
-          ? `Minimum order is ${minBoxes} ${minBoxes === 1 ? 'box' : 'boxes'} (${minQty} packets)`
-          : t('wholeNumberAtLeast', { minimum: minQty })
-      )
+    if (!Number.isInteger(Number(boxes)) || Number(boxes) < 1) {
+      setQuantityError('Minimum order is 1 box')
       return
     }
     addToCart({
@@ -91,7 +79,7 @@ export default function ProductDetailPage() {
       brand: product.brand,
       packSize: product.packSize,
       imageUrl: product.imageUrl || '',
-      minimumQuantity: minQty,
+      minimumQuantity: unitsPerBox,
       unitsPerBox: unitsPerBox,
       boxes: Number(boxes),
       quantity: totalQuantity,
@@ -99,9 +87,7 @@ export default function ProductDetailPage() {
     })
     window.dispatchEvent(new Event('connecto-cart-updated'))
     setSuccessMessage(
-      isBox
-        ? `${product.name} added to cart (${boxes} ${boxes === 1 ? 'Box' : 'Boxes'} = ${totalQuantity} packets)`
-        : t('addedToCartMessage', { product: product.name })
+      `${product.name} added to cart (${boxes} ${boxes === 1 ? 'Box' : 'Boxes'} = ${totalQuantity} packets)`
     )
   }
 
@@ -116,15 +102,15 @@ export default function ProductDetailPage() {
         <p className="product-detail-brand">{product.brand}</p>
         <div className="detail-spec-grid">
           <div><span>{t('packSize')}</span><strong>{product.packSize}</strong></div>
-          <div><span>{t('minimumQuantity')}</span><strong>{isBox ? `${minBoxes} ${minBoxes === 1 ? 'Box' : 'Boxes'} (${minQty} pkts)` : `${minQty} units`}</strong></div>
-          {isBox && <div><span>Packaging</span><strong>1 Box = {unitsPerBox} packets</strong></div>}
+          <div><span>{t('minimumQuantity')}</span><strong>1 Box ({unitsPerBox} pkts)</strong></div>
+          <div><span>Packaging</span><strong>1 Box = {unitsPerBox} packets</strong></div>
         </div>
         <div style={{ margin: '0.75rem 0' }}>
-          <strong className="detail-price">Rs {unitPrice.toLocaleString('en-IN')} <small style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#6b7280' }}>/ packet</small></strong>
-          {isBox && <div style={{ color: '#047857', fontWeight: '600', fontSize: '0.9rem', marginTop: '0.2rem' }}>Rs {boxPrice.toLocaleString('en-IN')} / box</div>}
+          <strong className="detail-price">₹{unitPrice.toLocaleString('en-IN')} <small style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#6b7280' }}>/ packet</small></strong>
+          <div style={{ color: '#047857', fontWeight: '600', fontSize: '0.9rem', marginTop: '0.2rem' }}>1 Box = {unitsPerBox} packets (₹{boxPrice.toLocaleString('en-IN')} / box)</div>
         </div>
-        <QuantitySelector error={quantityError} minimum={minBoxes} onChange={updateBoxes} value={boxes} />
-        {isBox && <div style={{ fontSize: '0.85rem', color: '#4b5563', margin: '0.4rem 0' }}>Total: {totalQuantity} packets (Rs {(boxPrice * boxes).toLocaleString('en-IN')})</div>}
+        <QuantitySelector error={quantityError} isBox={isBox} minimum={minBoxes} onChange={updateBoxes} value={boxes} />
+        <div style={{ fontSize: '0.85rem', color: '#4b5563', margin: '0.4rem 0' }}>Total: {totalQuantity} packets (₹{(boxPrice * boxes).toLocaleString('en-IN')})</div>
         {successMessage && <p className="form-message success" role="status">{successMessage}</p>}
         <button className="button primary detail-cart-button" onClick={handleAddToCart} type="button">{t('addToCart')}</button>
       </div>

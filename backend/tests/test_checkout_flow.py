@@ -64,14 +64,14 @@ def test_checkout_creates_one_checkout_and_separate_supplier_orders():
             "items": [
                 {"supplierId": supplier_a, "productId": product_a1, "quantity": 2},
                 {"supplierId": supplier_a, "productId": product_a2, "quantity": 1},
-                {"supplierId": supplier_b, "productId": product_b1, "quantity": 3},
+                {"supplierId": supplier_b, "productId": product_b1, "quantity": 4},
             ],
         }
         response = client.post("/api/checkout", json=checkout_payload)
 
         assert response.status_code == 201, response.json()
         checkout = response.json()["data"]["checkout"]
-        assert checkout["totalAmount"] == 46.0
+        assert checkout["totalAmount"] == 53.0
         assert len(checkout["supplierOrders"]) == 2
         assert {order["supplierId"] for order in checkout["supplierOrders"]} == {supplier_a, supplier_b}
         assert all(order["serviceArea"] == "Maninagar" for order in checkout["supplierOrders"])
@@ -84,7 +84,7 @@ def test_checkout_creates_one_checkout_and_separate_supplier_orders():
             orders = db.scalars(select(SupplierOrder).where(SupplierOrder.checkout_id == checkout["id"])).all()
             assert len(orders) == 2
             assert {order.supplier_id for order in orders} == {supplier_a, supplier_b}
-            assert sorted(float(order.subtotal) for order in orders) == [21.0, 25.0]
+            assert sorted(float(order.subtotal) for order in orders) == [25.0, 28.0]
             assert sorted(len(order.items) for order in orders) == [1, 2]
 
 

@@ -5,7 +5,7 @@ import LoadingState from '../components/LoadingState.jsx'
 import ProductImage from '../components/ProductImage.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { getSupplierProducts } from '../services/catalogService.js'
-import { addToCart, getCart, removeFromCart, updateCartItem } from '../utils/cartStorage.js'
+import { addToCart, getCart, updateCartItem } from '../utils/cartStorage.js'
 
 const categoryOrder = ['All Products', 'Staples', 'Cooking Essentials', 'Beverages', 'Snacks & Biscuits', 'Personal Care', 'Cleaning & Household', 'Packaged Foods', 'Dairy & Bakery', 'More']
 
@@ -22,14 +22,11 @@ function SearchIcon() {
 }
 
 function SupplierCatalogCard({ product, supplier, favorite, onFavorite, onAdd, onIncrement, onDecrement, cartItem }) {
-  const unitsPerBox = Number(product.unitsPerBox || 1)
-  const isBox = unitsPerBox > 1
+  const unitsPerBox = Number(product.unitsPerBox || product.minimumQuantity || 1)
   const unitPrice = Number(product.price || 0)
   const boxPrice = unitPrice * unitsPerBox
-  const minimumQuantity = Number(product.minimumQuantity || 1)
-  const minimumBoxes = Math.ceil(minimumQuantity / unitsPerBox)
 
-  const cartBoxes = cartItem ? Number(cartItem.boxes || Math.ceil(cartItem.quantity / unitsPerBox)) : 0
+  const cartBoxes = cartItem ? Number(cartItem.boxes || Math.max(1, Math.round(Number(cartItem.quantity || unitsPerBox) / unitsPerBox))) : 0
 
   return (
     <article className="spc-product-card">
@@ -44,32 +41,31 @@ function SupplierCatalogCard({ product, supplier, favorite, onFavorite, onAdd, o
         <h3>{product.name}</h3>
         <span className="spc-pack">{product.packSize}</span>
         
-        {isBox ? (
-          <div style={{ display: 'grid', gap: '0.15rem', margin: '0.2rem 0' }}>
-            <strong className="spc-price">{formatPrice(unitPrice)} <small style={{ fontSize: '0.72rem', fontWeight: 'normal', color: '#6b7280' }}>/ packet</small></strong>
-            <span style={{ fontSize: '0.75rem', color: '#047857', fontWeight: '600' }}>1 Box = {unitsPerBox} packets ({formatPrice(boxPrice)}/box)</span>
-            <span className="spc-minimum">Min. order: {minimumBoxes} {minimumBoxes === 1 ? 'box' : 'boxes'} ({minimumQuantity} pkts)</span>
-          </div>
-        ) : (
-          <div style={{ display: 'grid', gap: '0.15rem', margin: '0.2rem 0' }}>
-            <strong className="spc-price">{formatPrice(unitPrice)}</strong>
-            <span className="spc-minimum">Min. qty: {minimumQuantity} units</span>
-          </div>
-        )}
+        <div style={{ display: 'grid', gap: '0.15rem', margin: '0.2rem 0' }}>
+          <strong className="spc-price">{formatPrice(unitPrice)} <small style={{ fontSize: '0.72rem', fontWeight: 'normal', color: '#6b7280' }}>/ packet</small></strong>
+          <span style={{ fontSize: '0.75rem', color: '#047857', fontWeight: '600' }}>1 Box = {unitsPerBox} packets ({formatPrice(boxPrice)}/box)</span>
+          <span className="spc-minimum">Min. order: 1 Box</span>
+        </div>
 
         {cartBoxes > 0 ? (
           <div className="spc-quantity-control">
-            <button className="spc-qty-btn minus" type="button" onClick={() => onDecrement(product)} aria-label={`Decrease quantity of ${product.name}`}>
+            <button
+              className="spc-qty-btn minus"
+              disabled={cartBoxes <= 1}
+              type="button"
+              onClick={() => onDecrement(product)}
+              aria-label={`Decrease quantity of ${product.name}`}
+            >
               −
             </button>
-            <span className="spc-qty-count">{isBox ? `${cartBoxes} ${cartBoxes === 1 ? 'Box' : 'Boxes'}` : cartBoxes}</span>
+            <span className="spc-qty-count">{`${cartBoxes} ${cartBoxes === 1 ? 'Box' : 'Boxes'}`}</span>
             <button className="spc-qty-btn plus" type="button" onClick={() => onIncrement(product)} aria-label={`Increase quantity of ${product.name}`}>
               +
             </button>
           </div>
         ) : (
           <button className="spc-add-button" type="button" onClick={() => onAdd(product)}>
-            <span aria-hidden="true">[+]</span> {isBox ? `Add ${minimumBoxes} ${minimumBoxes === 1 ? 'Box' : 'Boxes'} (${minimumQuantity} pkts)` : 'Add to cart'}
+            <span aria-hidden="true">[+]</span> Add 1 Box ({unitsPerBox} pkts)
           </button>
         )}
       </div>
@@ -332,10 +328,9 @@ export default function SupplierCatalogPage() {
   }
 
   function handleAdd(product) {
-    const unitsPerBox = Math.max(1, Number(product.unitsPerBox || 1))
-    const minQty = Math.max(1, Number(product.minimumQuantity || 1))
-    const minBoxes = Math.ceil(minQty / unitsPerBox)
-    const actualQuantity = minBoxes * unitsPerBox
+    const unitsPerBox = Math.max(1, Number(product.unitsPerBox || product.minimumQuantity || 1))
+    const minBoxes = 1
+    const actualQuantity = unitsPerBox
 
     addToCart({
       productId: product.id,
@@ -347,16 +342,14 @@ export default function SupplierCatalogPage() {
       brand: product.brand,
       packSize: product.packSize,
       imageUrl: product.imageUrl || '',
-      minimumQuantity: minQty,
+      minimumQuantity: unitsPerBox,
       unitsPerBox: unitsPerBox,
       boxes: minBoxes,
       quantity: actualQuantity,
       unitPrice: product.price
     })
     notifyCartUpdated()
-    const msg = unitsPerBox > 1
-      ? `${product.name} added to cart (${minBoxes} ${minBoxes === 1 ? 'Box' : 'Boxes'} = ${actualQuantity} packets)`
-      : `${product.name} added to cart (${actualQuantity} units)`
+    const msg = `${product.name} added to cart (1 Box = ${actualQuantity} packets)`
     setCartMessage(msg)
     setTimeout(() => setCartMessage(''), 3000)
   }
@@ -376,20 +369,13 @@ export default function SupplierCatalogPage() {
   function handleDecrement(product) {
     const cartItem = cart.find((item) => item.productId === product.id && item.supplierId === supplier.id)
     if (!cartItem) return
-    const unitsPerBox = Math.max(1, Number(product.unitsPerBox || 1))
-    const minQty = Math.max(1, Number(product.minimumQuantity || 1))
-    const minBoxes = Math.ceil(minQty / unitsPerBox)
 
     const currentBoxes = Number(cartItem.boxes || 1)
-    const nextBoxes = currentBoxes - 1
-
-    if (nextBoxes < minBoxes) {
-      removeFromCart(product.id, supplier.id)
-      setCartMessage(`${product.name} removed from cart`)
-      setTimeout(() => setCartMessage(''), 3000)
-    } else {
-      updateCartItem(product.id, supplier.id, nextBoxes)
+    if (currentBoxes <= 1) {
+      return
     }
+    const nextBoxes = currentBoxes - 1
+    updateCartItem(product.id, supplier.id, nextBoxes)
     notifyCartUpdated()
   }
 

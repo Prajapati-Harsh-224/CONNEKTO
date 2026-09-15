@@ -1,14 +1,34 @@
+import { catalogProducts } from './supplierCatalogDemoData.js'
+
 const cartKey = 'connecto.demoCart'
 
 export function normalizeCartItem(item) {
-  const unitsPerBox = Math.max(1, Number(item.unitsPerBox || 1))
-  const minimumQuantity = Math.max(1, Number(item.minimumQuantity || 1))
-  const minBoxes = Math.ceil(minimumQuantity / unitsPerBox)
+  let boxUnits = Number(item.unitsPerBox || item.minimumQuantity)
+
+  if (!boxUnits || boxUnits <= 0) {
+    const found = catalogProducts.find((product) => product.id === item.productId)
+    if (found) {
+      boxUnits = Number(found.minimumQuantity || found.unitsPerBox || 1)
+    } else {
+      boxUnits = 1
+    }
+  }
+
+  const unitsPerBox = Math.max(1, boxUnits)
+  const minimumQuantity = unitsPerBox
 
   let boxes = Number(item.boxes)
   if (!Number.isInteger(boxes) || boxes < 1) {
-    const rawQuantity = Number(item.quantity || minimumQuantity)
-    boxes = Math.max(minBoxes, Math.ceil(rawQuantity / unitsPerBox))
+    const rawQuantity = Number(item.quantity)
+    if (Number.isInteger(rawQuantity) && rawQuantity > 0) {
+      // Legacy cart item where quantity represented individual units
+      // E.g., rawQuantity = 5 and unitsPerBox = 5 -> boxes = 1
+      boxes = Math.max(1, Math.round(rawQuantity / unitsPerBox))
+    } else {
+      boxes = 1
+    }
+  } else {
+    boxes = Math.max(1, boxes)
   }
 
   const quantity = boxes * unitsPerBox

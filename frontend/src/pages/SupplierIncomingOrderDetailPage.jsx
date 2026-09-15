@@ -166,12 +166,16 @@ export default function SupplierIncomingOrderDetailPage() {
                       <span className="supplier-product-thumb" aria-hidden="true">{item.product?.slice(0, 2).toUpperCase() || 'PR'}</span>
                       <div>
                         <strong>{item.product || item.name || 'Product'}</strong>
-                        {isBox && <small style={{ color: '#6b7280', display: 'block', fontSize: '0.78rem' }}>{boxes} {boxes === 1 ? 'box' : 'boxes'} ({item.quantity} packets)</small>}
+                        {isBox ? (
+                          <small style={{ color: '#4b5563', display: 'block', fontSize: '0.78rem', marginTop: '0.15rem' }}>
+                            Boxes: {boxes} | Packets: {item.quantity} | Unit price: {formatCurrency(item.unitPrice || 0)}
+                          </small>
+                        ) : null}
                       </div>
                     </div>
                     <span>{item.sku || '—'}</span>
-                    <span>{isBox ? `${boxes} box (${item.quantity} pkts)` : item.quantity}</span>
-                    <span>{formatCurrency(item.unitPrice || 0)}/pkt</span>
+                    <span>{isBox ? `${boxes} ${boxes === 1 ? 'box' : 'boxes'} (${item.quantity} pkts)` : `${item.quantity} units`}</span>
+                    <span>{formatCurrency(item.unitPrice || 0)}{isBox ? '/pkt' : ''}</span>
                     <span>{formatCurrency(item.total || Number(item.unitPrice || 0) * Number(item.quantity || 1))}</span>
                   </div>
                 )
