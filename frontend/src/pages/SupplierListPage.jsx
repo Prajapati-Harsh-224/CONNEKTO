@@ -422,6 +422,14 @@ export default function SupplierListPage() {
         </div>
       </div>
 
+      {/* ── Results header ── */}
+      <div className="sdc-results-header">
+        <h2 className="sdc-results-heading">
+          {activeCategoryLabel}
+          <span className="sdc-results-count">({filteredSuppliers.length} suppliers)</span>
+        </h2>
+      </div>
+
       {/* ── Search toolbar ── */}
       <div className="sdc-toolbar">
         <label className="sdc-search-field" htmlFor="sdc-search">
@@ -437,14 +445,6 @@ export default function SupplierListPage() {
             placeholder={t('searchSuppliersByName')}
           />
         </label>
-      </div>
-
-      {/* ── Results header ── */}
-      <div className="sdc-results-header">
-        <h2 className="sdc-results-heading">
-          {activeCategoryLabel}
-          <span className="sdc-results-count">({filteredSuppliers.length} suppliers)</span>
-        </h2>
       </div>
 
       {/* ── Error state ── */}

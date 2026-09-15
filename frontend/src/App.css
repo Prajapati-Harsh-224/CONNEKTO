@@ -2266,6 +2266,96 @@ p {
     }
 }
 
+/* Content-aware refinements for the Shop Owner work surfaces. */
+.shop-owner-layout .sdc-grid,
+.shop-owner-layout .supplier-cards-grid {
+    grid-template-columns: repeat(auto-fill, minmax(300px, 350px));
+    justify-content: start;
+    align-items: start;
+}
+
+.shop-owner-layout .spc-product-grid {
+    grid-template-columns: repeat(auto-fill, minmax(205px, 1fr));
+    align-items: start;
+}
+
+.shop-owner-layout .product-detail-layout {
+    grid-template-columns: minmax(260px, 0.9fr) minmax(0, 1.1fr);
+    align-items: start;
+    max-width: 960px;
+    gap: 1.5rem;
+}
+
+.shop-owner-layout .product-detail-image {
+    min-height: 22rem;
+    border-radius: var(--so-card-radius);
+    border: 1px solid var(--so-card-border);
+    box-shadow: var(--so-card-shadow);
+}
+
+.shop-owner-layout .product-detail-content {
+    min-width: 0;
+    padding: 0.35rem 0;
+}
+
+.shop-owner-layout .supplier-profile-panel {
+    gap: 0.9rem;
+}
+
+.shop-owner-layout .supplier-profile-grid {
+    align-items: start;
+}
+
+.shop-owner-layout .analytics-product-list {
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+@media (max-width: 760px) {
+    .shop-owner-layout .product-detail-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .shop-owner-layout .product-detail-image {
+        min-height: 14rem;
+    }
+
+    .shop-owner-layout .sdc-grid,
+    .shop-owner-layout .supplier-cards-grid,
+    .shop-owner-layout .spc-product-grid,
+    .shop-owner-layout .analytics-product-list {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* Keep the supplier discovery page compact when only one supplier is available. */
+.shop-owner-layout .sdc-page {
+    display: grid;
+    gap: 0.85rem;
+    max-width: 1120px;
+}
+
+.shop-owner-layout .sdc-page .sdc-category-section {
+    margin-bottom: 0.4rem;
+}
+
+.shop-owner-layout .sdc-page .sdc-results-header {
+    margin-top: 0.15rem;
+    margin-bottom: 0.1rem;
+}
+
+.shop-owner-layout .sdc-page .sdc-toolbar {
+    margin-bottom: 0.35rem;
+}
+
+.shop-owner-layout .sdc-page .sdc-grid,
+.shop-owner-layout .sdc-page .sdc-empty-state {
+    margin-top: 0.1rem;
+}
+
+.shop-owner-layout .sdc-card {
+    width: 100%;
+}
+
 .workspace-shell {
     min-height: 100vh;
 }
@@ -13143,7 +13233,7 @@ body.auth-no-scroll *::-webkit-scrollbar,
 }
 
 .shop-owner-layout .workspace-content {
-    padding: 1.75rem clamp(1rem, 2.4vw, 2rem) 4rem;
+    padding: 1.75rem clamp(1rem, 1.5vw, 1.5rem) 4rem;
 }
 
 .shop-owner-layout .workspace-content > section,
@@ -13159,7 +13249,7 @@ body.auth-no-scroll *::-webkit-scrollbar,
 .shop-owner-layout .analytics-redesign,
 .shop-owner-layout .profile-page {
     width: 100%;
-    max-width: var(--so-page-width);
+    max-width: none;
     margin-right: auto;
     margin-left: auto;
 }
@@ -13315,7 +13405,7 @@ body.auth-no-scroll *::-webkit-scrollbar,
 }
 
 .shop-owner-layout .profile-page {
-    max-width: 960px;
+    max-width: 1120px;
 }
 
 @media (max-width: 1024px) {
