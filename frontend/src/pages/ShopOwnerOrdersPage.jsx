@@ -5,7 +5,6 @@ import LoadingState from '../components/LoadingState.jsx'
 import ProductImage from '../components/ProductImage.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { getOrders } from '../services/orderService.js'
-import { findDemoSupplier } from '../utils/supplierDiscoveryData.js'
 
 const tabs = [
   { value: 'All', key: 'ordersAll' },
@@ -60,10 +59,9 @@ function OrderStatus({ status }) {
 }
 
 function getSupplierDetails(order) {
-  const supplier = findDemoSupplier(order.supplierId)
   return {
-    category: supplier?.type || 'Local wholesale supplier',
-    location: supplier?.location || order.serviceArea || 'Ahmedabad, Gujarat',
+    category: '',
+    location: order.serviceArea || '—',
   }
 }
 

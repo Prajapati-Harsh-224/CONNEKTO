@@ -6,8 +6,6 @@ import QuantitySelector from '../components/QuantitySelector.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { createCheckoutRequest } from '../services/checkoutService.js'
 import { getCart, clearCart, removeFromCart, updateCartItem } from '../utils/cartStorage.js'
-import { findSupplier } from '../utils/supplierDemoData.js'
-import { findDemoSupplier } from '../utils/supplierDiscoveryData.js'
 
 function priceValue(value) {
   return Number(String(value).replace(/[^0-9.]/g, '')) || 0
@@ -21,14 +19,12 @@ function getInitials(name = '') {
   return name.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'S'
 }
 
-function getSupplierDetails(supplierId, fallbackName) {
-  const supplier = findDemoSupplier(supplierId)
-  const legacy = findSupplier(supplierId)
+function getSupplierDetails(fallbackName) {
   return {
-    name: fallbackName || supplier?.name || legacy?.name || 'Supplier',
-    category: supplier?.type || legacy?.category || 'Local wholesale supplier',
-    location: supplier?.location || 'Ahmedabad, Gujarat',
-    verified: supplier?.isVerified ?? true,
+    name: fallbackName || 'Supplier',
+    category: '',
+    location: '',
+    verified: false,
   }
 }
 
@@ -41,6 +37,7 @@ export default function CheckoutPage() {
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
   const [checkout, setCheckout] = useState(null)
+  const [checkoutRequestKey] = useState(() => globalThis.crypto?.randomUUID?.() || `checkout-${Date.now()}-${Math.random().toString(36).slice(2)}`)
   const methods = [
     { value: 'CASH_ON_DELIVERY', label: t('cashOnDelivery'), description: t('payWhenSupplierDelivers') },
     { value: 'PAY_LATER', label: t('payLater'), description: t('requestAgreedSupplierTerms') },
@@ -48,7 +45,7 @@ export default function CheckoutPage() {
   ]
 
   const groups = useMemo(() => cart.reduce((result, item) => {
-    const details = getSupplierDetails(item.supplierId, item.supplierName)
+    const details = { ...getSupplierDetails(item.supplierName), category: item.category || '', location: item.serviceArea || '' }
     const group = result.find((entry) => entry.supplierId === item.supplierId)
     if (group) group.items.push(item)
     else result.push({ supplierId: item.supplierId, ...details, items: [item] })
@@ -89,21 +86,9 @@ export default function CheckoutPage() {
     if (!cart.length) return
     setIsSubmitting(true)
     try {
-      const response = await createCheckoutRequest(paymentMethod, cart)
+      const response = await createCheckoutRequest(paymentMethod, cart, checkoutRequestKey)
       const createdCheckout = response.data.checkout
-      const supplierOrders = (createdCheckout.supplierOrders || []).map((order) => {
-        const group = groups.find((entry) => entry.supplierId === order.supplierId || entry.name === order.supplierName)
-        return {
-          ...order,
-          supplierId: order.supplierId || group?.supplierId,
-          supplierName: order.supplierName || group?.name || t('supplier'),
-          category: group?.category || 'Local wholesale supplier',
-          location: group?.location || 'Ahmedabad, Gujarat',
-          verified: group?.verified ?? true,
-          items: group?.items || [],
-        }
-      })
-      setCheckout({ ...createdCheckout, supplierOrders })
+      setCheckout(createdCheckout)
       clearCart()
       notifyCartUpdated()
     } catch (requestError) {

@@ -36,6 +36,13 @@ class Supplier(Base):
     id: Mapped[str] = mapped_column(String(80), primary_key=True)
     name: Mapped[str] = mapped_column(String(150))
     owner_id: Mapped[str | None] = mapped_column(ForeignKey("users.id"), nullable=True, unique=True)
+    service_areas: Mapped[list["SupplierServiceArea"]] = relationship(cascade="all, delete-orphan", lazy="selectin")
+
+class SupplierServiceArea(Base):
+    __tablename__ = "supplier_service_areas"
+    supplier_id: Mapped[str] = mapped_column(ForeignKey("suppliers.id"), primary_key=True)
+    area_key: Mapped[str] = mapped_column(String(100), primary_key=True)
+    area: Mapped[str] = mapped_column(String(100))
 
 class Product(Base):
     __tablename__ = "products"
@@ -54,6 +61,7 @@ class Product(Base):
 class Checkout(Base):
     __tablename__ = "checkouts"
     id: Mapped[str] = mapped_column(String(40), primary_key=True)
+    idempotency_key: Mapped[str | None] = mapped_column(String(100), unique=True, nullable=True)
     shop_owner_id: Mapped[str] = mapped_column(ForeignKey("users.id"), index=True)
     total_amount: Mapped[float] = mapped_column(Numeric(10, 2))
     payment_method: Mapped[str] = mapped_column(String(40))
@@ -72,6 +80,8 @@ class SupplierOrder(Base):
     status: Mapped[str] = mapped_column(String(30), index=True, default="Pending")
     created_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow)
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
+    checkout: Mapped["Checkout"] = relationship(overlaps="orders")
+    shop_owner: Mapped["User"] = relationship(foreign_keys=[shop_owner_id])
     items: Mapped[list["OrderItem"]] = relationship(cascade="all, delete-orphan")
 
 class OrderItem(Base):

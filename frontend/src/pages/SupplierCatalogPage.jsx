@@ -1,10 +1,11 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import EmptyState from '../components/EmptyState.jsx'
+import LoadingState from '../components/LoadingState.jsx'
 import ProductImage from '../components/ProductImage.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
+import { getSupplierProducts } from '../services/catalogService.js'
 import { addToCart } from '../utils/cartStorage.js'
-import { findDemoSupplier } from '../utils/supplierDiscoveryData.js'
-import { getSupplierCatalogProducts } from '../utils/supplierCatalogDemoData.js'
 
 const categoryOrder = ['All Products', 'Staples', 'Cooking Essentials', 'Beverages', 'Snacks & Biscuits', 'Personal Care', 'Cleaning & Household', 'Packaged Foods', 'Dairy & Bakery', 'More']
 
@@ -44,14 +45,45 @@ function SupplierCatalogCard({ product, supplier, favorite, onFavorite, onAdd })
 export default function SupplierCatalogPage() {
   const { supplierId } = useParams()
   const { t } = useLocale()
-  const supplier = findDemoSupplier(supplierId)
-  const products = useMemo(() => getSupplierCatalogProducts(supplierId), [supplierId])
+  const [supplier, setSupplier] = useState(null)
+  const [products, setProducts] = useState([])
+  const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
+  const [notFound, setNotFound] = useState(false)
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('All Products')
   const [brand, setBrand] = useState('All Brands')
   const [sortBy, setSortBy] = useState('popular')
   const [favorites, setFavorites] = useState({})
   const [cartMessage, setCartMessage] = useState('')
+
+  useEffect(() => {
+    let isMounted = true
+    setIsLoading(true)
+    setError('')
+    setNotFound(false)
+    setSupplier(null)
+    setProducts([])
+
+    getSupplierProducts(supplierId)
+      .then((response) => {
+        if (!isMounted) return
+        setSupplier(response.data?.supplier || null)
+        setProducts((response.data?.products || []).filter((product) => product.supplierId === supplierId))
+      })
+      .catch((requestError) => {
+        if (!isMounted) return
+        if (requestError.status === 404) setNotFound(true)
+        else setError(requestError.message)
+      })
+      .finally(() => {
+        if (isMounted) setIsLoading(false)
+      })
+
+    return () => {
+      isMounted = false
+    }
+  }, [supplierId])
 
   const categories = useMemo(() => ['All Categories', ...new Set(products.map((product) => product.category))], [products])
   const brands = useMemo(() => ['All Brands', ...new Set(products.map((product) => product.brand))], [products])
@@ -71,19 +103,21 @@ export default function SupplierCatalogPage() {
   }, [brand, category, products, query, sortBy])
 
   function handleAdd(product) {
-    addToCart({ productId: product.id, supplierId: supplier.id, supplierName: supplier.name, serviceArea: supplier.serviceAreas.join(', '), name: product.name, brand: product.brand, packSize: product.packSize, imageUrl: product.imageUrl || '', minimumQuantity: product.minimumQuantity, quantity: product.minimumQuantity, unitPrice: product.price })
+    addToCart({ productId: product.id, supplierId: supplier.id, supplierName: supplier.name, serviceArea: (supplier.serviceAreas || []).join(', '), category: product.category, name: product.name, brand: product.brand, packSize: product.packSize, imageUrl: product.imageUrl || '', minimumQuantity: product.minimumQuantity, quantity: product.minimumQuantity, unitPrice: product.price })
     window.dispatchEvent(new Event('connecto-cart-updated'))
     setCartMessage(`${product.name} added to cart`)
   }
 
-  if (!supplier) return <section className="spc-page"><p className="form-message error" role="alert">{t('supplierNotFound')}</p><Link className="button primary" to="/dashboard/shop-owner/suppliers">{t('browseSuppliers')}</Link></section>
+  if (isLoading) return <LoadingState message={t('loadingSupplierCatalog')} />
+  if (error) return <section className="spc-page"><p className="form-message error" role="alert">{error}</p></section>
+  if (notFound || !supplier) return <EmptyState title={t('supplierNotFound')} message={t('supplierCatalogMessage')} />
 
   return (
     <section className="spc-page">
       <div className="spc-breadcrumb"><Link to="/dashboard/shop-owner/suppliers">Shop Owner</Link><span>›</span><Link to="/dashboard/shop-owner/suppliers">Suppliers</Link><span>›</span><span>{supplier.name}</span></div>
       <header className="spc-supplier-header">
         <div className="spc-supplier-avatar" aria-hidden="true">{getInitials(supplier.name)}</div>
-        <div className="spc-supplier-copy"><div className="spc-name-row"><h1>{supplier.name}</h1>{supplier.isVerified && <span className="spc-verified">● Verified Supplier</span>}</div><div className="spc-supplier-meta"><strong>{supplier.type}</strong><span>|</span><span>{supplier.location}</span><span>|</span><span>{supplier.serviceAreaCount} service areas</span></div><p>{supplier.description}</p></div>
+        <div className="spc-supplier-copy"><div className="spc-name-row"><h1>{supplier.name}</h1>{supplier.isVerified && <span className="spc-verified">● Verified Supplier</span>}</div><div className="spc-supplier-meta"><strong>{supplier.category}</strong><span>|</span><span>{supplier.location || '—'}</span><span>|</span><span>{supplier.serviceAreaCount ?? supplier.serviceAreas?.length ?? 0} service areas</span></div><p>{supplier.description}</p></div>
         <div className="spc-supplier-actions"><button className="spc-outline-button" type="button">Contact</button><Link className="spc-primary-button" to={`/dashboard/shop-owner/suppliers/${supplier.id}`}>View Profile</Link></div>
       </header>
       <nav className="spc-tabs" aria-label="Supplier sections"><button className="active" type="button">Products</button><button type="button">About</button><button type="button">Service Areas</button><button type="button">Reviews</button></nav>

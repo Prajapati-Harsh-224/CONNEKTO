@@ -2,7 +2,43 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import LoadingState from '../components/LoadingState.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
-import { demoSuppliers, categoryDescriptions } from '../utils/supplierDiscoveryData.js'
+import { getSuppliers } from '../services/catalogService.js'
+
+const categoryDescriptions = {
+  FMCG: 'Everyday essentials and quick-turn replenishment.',
+  'Grocery & Staples': 'Core groceries and staple goods for repeat demand.',
+  Beverages: 'Refreshment and household drinks with local appeal.',
+  'Personal Care': 'Daily personal care basics and repeat-purchase items.',
+  'Cleaning & Household': 'Household products for regular store restocking.',
+  'Dairy & Bakery': 'Fresh dairy, bakery, and daily essentials.',
+  'Snacks & Packaged Foods': 'Fast-moving packaged and impulse snack favourites.',
+  'Local Manufacturers': 'Locally produced goods and regional speciality products.',
+}
+
+function normalizeSupplier(supplier = {}) {
+  const category = supplier.category || supplier.categoryLabel || 'FMCG'
+  const serviceAreas = Array.isArray(supplier.serviceAreas) ? supplier.serviceAreas : []
+
+  return {
+    ...supplier,
+    id: supplier.id,
+    name: supplier.name,
+    type: supplier.type || category,
+    category,
+    categoryLabel: supplier.categoryLabel || category,
+    description: supplier.description || '',
+    location: supplier.location || '',
+    serviceAreas,
+    serviceAreaCount: Number(supplier.serviceAreaCount ?? serviceAreas.length ?? 0),
+    productCount: supplier.productCount || 0,
+    minimumOrder: supplier.minimumOrder || '',
+    phone: supplier.phone || '',
+    isVerified: Boolean(supplier.isVerified),
+    rating: supplier.rating == null ? null : Number(supplier.rating),
+    reviewCount: Number(supplier.reviewCount ?? 0),
+    tags: Array.isArray(supplier.tags) && supplier.tags.length ? supplier.tags : [category],
+  }
+}
 
 // ---------------------------------------------------------------------------
 // Category definitions
@@ -155,11 +191,17 @@ function VerifiedBadge() {
 function StarRating({ rating, reviewCount }) {
   return (
     <div className="sdc-rating-row">
-      <svg viewBox="0 0 16 16" fill="#F59E0B" aria-hidden="true" width="14" height="14">
-        <path d="M8 1l1.854 3.756L14 5.528l-3 2.924.708 4.133L8 10.5l-3.708 2.085L5 8.452 2 5.528l4.146-.772L8 1z" />
-      </svg>
-      <span className="sdc-rating-value">{rating.toFixed(1)}</span>
-      <span className="sdc-review-count">({reviewCount} reviews)</span>
+      {rating == null ? (
+        <span className="sdc-review-count">Not rated</span>
+      ) : (
+        <>
+          <svg viewBox="0 0 16 16" fill="#F59E0B" aria-hidden="true" width="14" height="14">
+            <path d="M8 1l1.854 3.756L14 5.528l-3 2.924.708 4.133L8 10.5l-3.708 2.085L5 8.452 2 5.528l4.146-.772L8 1z" />
+          </svg>
+          <span className="sdc-rating-value">{rating.toFixed(1)}</span>
+          <span className="sdc-review-count">({reviewCount} reviews)</span>
+        </>
+      )}
     </div>
   )
 }
@@ -227,7 +269,7 @@ function SupplierCard({ supplier, isFavorite, onToggleFavorite }) {
 
       <div className="sdc-meta-row">
         <LocationPinIcon />
-        <span className="sdc-location">{supplier.location}</span>
+        <span className="sdc-location">{supplier.location || '—'}</span>
         <span className="sdc-dot" aria-hidden="true">|</span>
         <span className="sdc-service-areas">{supplier.serviceAreaCount} service areas</span>
       </div>
@@ -245,7 +287,7 @@ function SupplierCard({ supplier, isFavorite, onToggleFavorite }) {
       <div className="sdc-card-footer">
         <Link
           className="sdc-view-btn"
-          to={`/dashboard/shop-owner/suppliers/${supplier.id}/products`}
+          to={`/dashboard/shop-owner/suppliers/${supplier.id}`}
           aria-label={`View ${supplier.name} supplier details`}
         >
           View Supplier <span aria-hidden="true">→</span>
@@ -268,9 +310,37 @@ export default function SupplierListPage() {
   const [favorites, setFavorites] = useState({})
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
+  const [suppliers, setSuppliers] = useState([])
 
-  // Use demo data; in production replace demoSuppliers with API response
-  const suppliers = demoSuppliers
+  useEffect(() => {
+    let isMounted = true
+
+    async function fetchSuppliers() {
+      setIsLoading(true)
+      setError('')
+
+      try {
+        const response = await getSuppliers()
+        const records = Array.isArray(response?.data?.suppliers) ? response.data.suppliers : []
+        if (isMounted) {
+          setSuppliers(records.map(normalizeSupplier))
+        }
+      } catch (requestError) {
+        if (isMounted) {
+          setSuppliers([])
+          setError(requestError.message)
+        }
+      } finally {
+        if (isMounted) setIsLoading(false)
+      }
+    }
+
+    fetchSuppliers()
+
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   const toggleFavorite = useCallback((id) => {
     setFavorites((prev) => ({ ...prev, [id]: !prev[id] }))
@@ -282,7 +352,7 @@ export default function SupplierListPage() {
       .filter((s) => {
         if (selectedCategory !== 'all' && s.category !== selectedCategory) return false
         if (q && ![s.name, s.type, s.category, s.location, s.description, ...(s.tags || [])].some((v) => String(v).toLowerCase().includes(q))) return false
-        if (locationFilter !== 'all' && !s.location.toLowerCase().includes(locationFilter.toLowerCase())) return false
+        if (locationFilter !== 'all' && !(s.location || '').toLowerCase().includes(locationFilter.toLowerCase()) && !(s.serviceAreas || []).some((area) => area.toLowerCase().includes(locationFilter.toLowerCase()))) return false
         if (serviceAreaFilter !== 'all') {
           const count = s.serviceAreaCount || s.serviceAreas?.length || 0
           if (serviceAreaFilter === '1-3' && !(count >= 1 && count <= 3)) return false
@@ -446,6 +516,10 @@ export default function SupplierListPage() {
       {/* ── Error state ── */}
       {error && (
         <p className="form-message error sdc-error" role="alert">{error}</p>
+      )}
+
+      {!error && !isLoading && suppliers.length === 0 && (
+        <p className="form-message info sdc-empty-message">No suppliers are available right now.</p>
       )}
 
       {/* ── Supplier grid ── */}

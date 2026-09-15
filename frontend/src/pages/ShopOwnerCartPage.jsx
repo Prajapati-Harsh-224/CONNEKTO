@@ -5,8 +5,6 @@ import ProductImage from '../components/ProductImage.jsx'
 import QuantitySelector from '../components/QuantitySelector.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { getCart, removeFromCart, updateCartItem } from '../utils/cartStorage.js'
-import { findSupplier } from '../utils/supplierDemoData.js'
-import { findDemoSupplier } from '../utils/supplierDiscoveryData.js'
 
 function parsePrice(value) {
   return Number(String(value).replace(/[^0-9.]/g, '')) || 0
@@ -20,15 +18,13 @@ function getInitials(name = '') {
   return name.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'S'
 }
 
-function getSupplierDetails(supplierId, fallbackName) {
-  const richSupplier = findDemoSupplier(supplierId)
-  const legacySupplier = findSupplier(supplierId)
+function getSupplierDetails(fallbackName) {
   return {
-    name: fallbackName || richSupplier?.name || legacySupplier?.name || 'Supplier',
-    category: richSupplier?.type || legacySupplier?.category || 'Local wholesale supplier',
-    location: richSupplier?.location || 'Ahmedabad, Gujarat',
-    serviceAreas: richSupplier?.serviceAreas || legacySupplier?.serviceAreas || [],
-    verified: richSupplier?.isVerified ?? true,
+    name: fallbackName || 'Supplier',
+    category: '',
+    location: '',
+    serviceAreas: [],
+    verified: false,
   }
 }
 
@@ -39,7 +35,7 @@ export default function ShopOwnerCartPage() {
   const [collapsedSuppliers, setCollapsedSuppliers] = useState({})
 
   const groups = useMemo(() => cart.reduce((supplierGroups, item) => {
-    const details = getSupplierDetails(item.supplierId, item.supplierName)
+    const details = { ...getSupplierDetails(item.supplierName), category: item.category || '', location: item.serviceArea || '' }
     const group = supplierGroups.find((entry) => entry.supplierId === item.supplierId)
     if (group) {
       group.items.push(item)

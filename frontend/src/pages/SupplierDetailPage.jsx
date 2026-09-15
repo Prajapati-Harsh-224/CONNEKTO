@@ -22,16 +22,25 @@ export default function SupplierDetailPage() {
   const [products, setProducts] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+  const [notFound, setNotFound] = useState(false)
   const [query, setQuery] = useState('')
   const [category, setCategory] = useState('All categories')
 
   useEffect(() => {
+    setIsLoading(true)
+    setError('')
+    setNotFound(false)
+    setSupplier(null)
+    setProducts([])
     getSupplier(supplierId)
       .then((response) => {
-        setSupplier(response.data.supplier)
-        setProducts(response.data.products)
+        setSupplier(response.data?.supplier || null)
+        setProducts(Array.isArray(response.data?.products) ? response.data.products : [])
       })
-      .catch((requestError) => setError(requestError.message))
+      .catch((requestError) => {
+        if (requestError.status === 404) setNotFound(true)
+        else setError(requestError.message)
+      })
       .finally(() => setIsLoading(false))
   }, [supplierId])
 
@@ -47,6 +56,7 @@ export default function SupplierDetailPage() {
 
   if (isLoading) return <LoadingState message={t('loadingSupplierCatalog')} />
   if (error) return <section className="supplier-detail-page"><p className="form-message error" role="alert">{error}</p></section>
+  if (notFound) return <EmptyState title={t('supplierNotFound')} message={t('supplierCatalogMessage')} />
   if (!supplier) return <EmptyState title={t('supplierNotFound')} message={t('supplierCatalogMessage')} />
 
   const initials = getSupplierInitials(supplier.name)
@@ -71,9 +81,9 @@ export default function SupplierDetailPage() {
             <p>{supplier.description}</p>
 
             <div className="supplier-profile-meta-row">
-              <span className="supplier-meta-pill">📍 {supplier.location || 'Ahmedabad, Gujarat'}</span>
-              <span className="supplier-meta-pill">{supplier.serviceAreaCount || supplier.serviceAreas?.length || 0} service areas</span>
-              <span className="supplier-meta-pill">⭐ {Number(supplier.rating || 4.5).toFixed(1)} ({supplier.reviewCount || 120} reviews)</span>
+              <span className="supplier-meta-pill">📍 {supplier.location || '—'}</span>
+              <span className="supplier-meta-pill">{supplier.serviceAreaCount ?? supplier.serviceAreas?.length ?? 0} service areas</span>
+              <span className="supplier-meta-pill">{supplier.rating == null ? 'Not rated' : `⭐ ${Number(supplier.rating).toFixed(1)} (${supplier.reviewCount || 0} reviews)`}</span>
             </div>
           </div>
         </div>
@@ -95,7 +105,7 @@ export default function SupplierDetailPage() {
         </div>
         <div className="supplier-stat-box">
           <span>Rating</span>
-          <strong>{Number(supplier.rating || 4.5).toFixed(1)}</strong>
+          <strong>{supplier.rating == null ? '—' : Number(supplier.rating).toFixed(1)}</strong>
         </div>
         <div className="supplier-stat-box">
           <span>Service area</span>
@@ -103,7 +113,7 @@ export default function SupplierDetailPage() {
         </div>
         <div className="supplier-stat-box">
           <span>Minimum order</span>
-          <strong>{supplier.minimumOrder || '₹1,500'}</strong>
+          <strong>{supplier.minimumOrder || '—'}</strong>
         </div>
       </div>
 
@@ -119,11 +129,11 @@ export default function SupplierDetailPage() {
             </div>
             <div>
               <span>Location</span>
-              <strong>{supplier.location || 'Ahmedabad, Gujarat'}</strong>
+              <strong>{supplier.location || '—'}</strong>
             </div>
             <div>
               <span>Minimum order</span>
-              <strong>{supplier.minimumOrder || '₹1,500'}</strong>
+              <strong>{supplier.minimumOrder || '—'}</strong>
             </div>
           </div>
         </section>
@@ -132,9 +142,10 @@ export default function SupplierDetailPage() {
           <div className="supplier-card-label">Service coverage</div>
           <h2>Local delivery areas</h2>
           <div className="service-area-list">
-            {(supplier.serviceAreas?.length ? supplier.serviceAreas : ['Ahmedabad', 'Gandhinagar', 'Bopal', 'Vastrapur']).map((area) => (
+            {(supplier.serviceAreas || []).map((area) => (
               <span key={area}>{area}</span>
             ))}
+            {!supplier.serviceAreas?.length && <span>—</span>}
           </div>
         </section>
       </div>

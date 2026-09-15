@@ -1,18 +1,37 @@
-import { useMemo } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import LoadingState from '../components/LoadingState.jsx'
 import MetricCard from '../components/MetricCard.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
-import { supplierDashboardDemoData } from '../utils/supplierDashboardDemoData.js'
+import { getSupplierDashboard } from '../services/supplierDashboardService.js'
 
 export default function SupplierDashboardPage() {
   const { t } = useLocale()
   const navigate = useNavigate()
-  const dashboard = supplierDashboardDemoData
-  const recentOrders = useMemo(() => dashboard.recentOrders.map((order) => ({
+  const [dashboard, setDashboard] = useState(null)
+  const [error, setError] = useState('')
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    getSupplierDashboard()
+      .then((response) => setDashboard(response?.data || null))
+      .catch((requestError) => setError(requestError.message))
+      .finally(() => setIsLoading(false))
+  }, [])
+
+  const recentOrders = useMemo(() => (dashboard?.recentOrders || []).map((order) => ({
     ...order,
-    amountLabel: `₹${Number(order.amount).toLocaleString('en-IN')}`,
+    shopOwner: order.shopOwnerName || order.shopOwnerId || 'Shop owner',
+    location: order.serviceArea || '—',
+    items: (order.items || []).length,
+    amountLabel: `₹${Number(order.amount || order.subtotal || 0).toLocaleString('en-IN')}`,
+    date: order.createdAt,
   })), [dashboard])
+
+  if (isLoading) return <LoadingState message={t('loadingWorkspace')} />
+  if (error) return <section className="supplier-dashboard-page"><p className="form-message error" role="alert">{error}</p></section>
+  if (!dashboard) return <section className="supplier-dashboard-page"><p className="form-message error" role="alert">Supplier dashboard unavailable.</p></section>
 
   return (
     <section className="supplier-dashboard-page">
@@ -22,7 +41,6 @@ export default function SupplierDashboardPage() {
           <h1>{dashboard.businessName}</h1>
           <p className="supplier-dashboard-subtitle">Manage your orders, products and customers from one place.</p>
         </div>
-        <span className="demo-label">{t('demoData')}</span>
       </header>
 
       <div className="supplier-summary-grid">

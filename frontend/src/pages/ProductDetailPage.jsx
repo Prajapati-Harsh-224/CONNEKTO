@@ -14,12 +14,29 @@ export default function ProductDetailPage() {
   const [supplier, setSupplier] = useState(null)
   const [product, setProduct] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
+  const [error, setError] = useState('')
   const [quantity, setQuantity] = useState(1)
   const [quantityError, setQuantityError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
 
   useEffect(() => {
-    getSupplierProduct(supplierId, productId).then((response) => { setSupplier(response.data.supplier); setProduct(response.data.product); setQuantity(Number(response.data.product.minimumQuantity)) }).catch(() => { setSupplier(null); setProduct(null) }).finally(() => setIsLoading(false))
+    setIsLoading(true)
+    setError('')
+    setSupplier(null)
+    setProduct(null)
+    getSupplierProduct(supplierId, productId)
+      .then((response) => {
+        const nextProduct = response.data?.product || null
+        setSupplier(response.data?.supplier || null)
+        setProduct(nextProduct)
+        if (nextProduct) setQuantity(Number(nextProduct.minimumQuantity))
+      })
+      .catch((requestError) => {
+        setSupplier(null)
+        setProduct(null)
+        if (requestError.status !== 404) setError(requestError.message)
+      })
+      .finally(() => setIsLoading(false))
   }, [productId, supplierId])
 
   function updateQuantity(nextQuantity) {
@@ -40,11 +57,12 @@ export default function ProductDetailPage() {
       setQuantityError(t('wholeNumberAtLeast', { minimum: minimumQuantity }))
       return
     }
-    addToCart({ productId: product.id, supplierId: supplier.id, supplierName: supplier.name, serviceArea: supplier.serviceAreas.join(', '), name: product.name, brand: product.brand, packSize: product.packSize, imageUrl: product.imageUrl || '', minimumQuantity: minimumQuantity, quantity: Number(quantity), unitPrice: product.price })
+    addToCart({ productId: product.id, supplierId: supplier.id, supplierName: supplier.name, serviceArea: (supplier.serviceAreas || []).join(', '), category: product.category, name: product.name, brand: product.brand, packSize: product.packSize, imageUrl: product.imageUrl || '', minimumQuantity: minimumQuantity, quantity: Number(quantity), unitPrice: product.price })
     setSuccessMessage(t('addedToCartMessage', { product: product.name }))
   }
 
   if (isLoading) return <LoadingState message={t('loadingProductDetails')} />
+  if (error) return <section className="product-detail-page"><p className="form-message error" role="alert">{error}</p></section>
   if (!supplier || !product) return <EmptyState title={t('productUnavailable')} message={t('productUnavailableMessage')} />
 
   return <section className="product-detail-page">
@@ -56,7 +74,6 @@ export default function ProductDetailPage() {
         <span className="product-category">{product.category}</span>
         <h1>{product.name}</h1>
         <p className="product-detail-brand">{product.brand}</p>
-        <p className="product-description">{t('dependableCategoryOption', { category: product.category.toLowerCase() })}</p>
         <div className="detail-spec-grid"><div><span>{t('packSize')}</span><strong>{product.packSize}</strong></div><div><span>{t('minimumQuantity')}</span><strong>{product.minimumQuantity}</strong></div></div>
         <strong className="detail-price">{product.price}</strong>
         <QuantitySelector error={quantityError} minimum={Number(product.minimumQuantity)} onChange={updateQuantity} value={quantity} />

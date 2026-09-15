@@ -4,28 +4,23 @@ import EmptyState from '../components/EmptyState.jsx'
 import LoadingState from '../components/LoadingState.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
-import { listDemoOrders } from '../data/supplierOrdersDemo.js'
 import { getSupplierOrders, updateSupplierOrderStatus } from '../services/supplierOrderService.js'
 
 const pageSize = 8
 
-const demoOrders = [
-  { id: 'ORD-1024', customer: 'Shree General Store', area: 'Ahmedabad', status: 'New', amount: 2450, date: '2026-09-09T10:42:00', items: [{ name: 'Fortune Oil', color: 'amber', qty: 2 }, { name: 'Aashirvaad Atta', color: 'green', qty: 3 }, { name: 'Basmati Rice', color: 'blue', qty: 3 }] },
-  { id: 'ORD-1023', customer: 'Patel Kirana', area: 'Ahmedabad', status: 'Processing', amount: 1280, date: '2026-09-09T09:15:00', items: [{ name: 'Fortune Oil', color: 'amber', qty: 2 }, { name: 'Rice', color: 'blue', qty: 2 }] },
-  { id: 'ORD-1022', customer: 'Jain Provision Store', area: 'Ahmedabad', status: 'Confirmed', amount: 3120, date: '2026-09-08T18:30:00', items: [{ name: 'Wheat', color: 'green', qty: 2 }, { name: 'Sugar', color: 'purple', qty: 2 }, { name: 'Tea', color: 'red', qty: 2 }] },
-  { id: 'ORD-1021', customer: 'Mehta Mart', area: 'Ahmedabad', status: 'Ready', amount: 980, date: '2026-09-08T16:12:00', items: [{ name: 'Tea', color: 'red', qty: 1 }, { name: 'Oil', color: 'amber', qty: 2 }] },
-  { id: 'ORD-1020', customer: 'Shakti Stores', area: 'Ahmedabad', status: 'Pending', amount: 2200, date: '2026-09-07T19:18:00', items: [{ name: 'Rice', color: 'blue', qty: 3 }, { name: 'Flour', color: 'green', qty: 2 }] },
-  { id: 'ORD-1019', customer: 'Gujarat Provision', area: 'Ahmedabad', status: 'Completed', amount: 760, date: '2026-09-06T11:24:00', items: [{ name: 'Tea', color: 'red', qty: 1 }, { name: 'Oil', color: 'amber', qty: 1 }] },
-  { id: 'ORD-1018', customer: 'Patel Super Mart', area: 'Ahmedabad', status: 'Processing', amount: 3890, date: '2026-09-06T09:10:00', items: [{ name: 'Rice', color: 'blue', qty: 6 }, { name: 'Soap', color: 'rose', qty: 1 }, { name: 'Masala', color: 'purple', qty: 3 }] },
-  { id: 'ORD-1017', customer: 'Shree Balaji Store', area: 'Ahmedabad', status: 'Cancelled', amount: 1540, date: '2026-09-05T17:45:00', items: [{ name: 'Rice', color: 'blue', qty: 2 }, { name: 'Flour', color: 'green', qty: 4 }] },
-  { id: 'ORD-1016', customer: 'Vishwakarma Mart', area: 'Ahmedabad', status: 'New', amount: 1765, date: '2026-09-04T13:20:00', items: [{ name: 'Tea', color: 'red', qty: 2 }, { name: 'Oil', color: 'amber', qty: 1 }, { name: 'Sugar', color: 'purple', qty: 2 }] },
-  { id: 'ORD-1015', customer: 'Bharat Foods', area: 'Ahmedabad', status: 'Confirmed', amount: 2440, date: '2026-09-03T08:45:00', items: [{ name: 'Rice', color: 'blue', qty: 4 }, { name: 'Oil', color: 'amber', qty: 2 }] },
-  { id: 'ORD-1014', customer: 'Rajasthan Stores', area: 'Ahmedabad', status: 'Ready', amount: 1350, date: '2026-09-02T15:30:00', items: [{ name: 'Soap', color: 'rose', qty: 3 }, { name: 'Tea', color: 'red', qty: 1 }] },
-  { id: 'ORD-1013', customer: 'Nirmal Traders', area: 'Ahmedabad', status: 'Completed', amount: 980, date: '2026-09-01T12:10:00', items: [{ name: 'Flour', color: 'green', qty: 2 }, { name: 'Rice', color: 'blue', qty: 2 }] },
-]
+const tabs = ['All Orders', 'Pending', 'Accepted', 'Preparing', 'Out for Delivery', 'Delivered', 'Cancelled']
+const statusValues = ['All Statuses', 'Pending', 'Accepted', 'Preparing', 'Out for Delivery', 'Delivered', 'Cancelled']
 
-const tabs = ['All Orders', 'New', 'Confirmed', 'Processing', 'Ready', 'Completed', 'Cancelled']
-const statusValues = ['All Statuses', 'New', 'Pending', 'Confirmed', 'Processing', 'Ready', 'Completed', 'Cancelled']
+function normalizeOrder(order) {
+  return {
+    ...order,
+    customer: order.shopOwnerName || order.shopOwnerId || 'Shop owner',
+    area: order.serviceArea || '',
+    date: order.createdAt,
+    amount: order.subtotal,
+    items: (order.items || []).map((item) => ({ ...item, name: item.name || item.productNameSnapshot || 'Product' })),
+  }
+}
 
 function formatCurrency(value) {
   return `₹${Number(value || 0).toLocaleString('en-IN')}`
@@ -43,7 +38,7 @@ function getInitials(value) {
 
 export default function SupplierIncomingOrdersPage() {
   const { t } = useLocale()
-  const [orders, setOrders] = useState(listDemoOrders())
+  const [orders, setOrders] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [activeTab, setActiveTab] = useState('All Orders')
@@ -60,13 +55,12 @@ export default function SupplierIncomingOrdersPage() {
     getSupplierOrders()
       .then((response) => {
         if (isMounted) {
-          const nextOrders = response?.data?.orders?.length ? response.data.orders : listDemoOrders()
-          setOrders(nextOrders)
+          setOrders((response?.data?.orders || []).map(normalizeOrder))
         }
       })
       .catch((requestError) => {
         if (isMounted) {
-          setOrders(listDemoOrders())
+          setOrders([])
           setError(requestError.message)
         }
       })
@@ -87,11 +81,11 @@ export default function SupplierIncomingOrdersPage() {
 
   const counts = useMemo(() => ({
     'All Orders': orders.length,
-    New: orders.filter((order) => order.status === 'New').length,
-    Confirmed: orders.filter((order) => order.status === 'Confirmed').length,
-    Processing: orders.filter((order) => order.status === 'Processing').length,
-    Ready: orders.filter((order) => order.status === 'Ready').length,
-    Completed: orders.filter((order) => order.status === 'Completed').length,
+    Pending: orders.filter((order) => order.status === 'Pending').length,
+    Accepted: orders.filter((order) => order.status === 'Accepted').length,
+    Preparing: orders.filter((order) => order.status === 'Preparing').length,
+    'Out for Delivery': orders.filter((order) => order.status === 'Out for Delivery').length,
+    Delivered: orders.filter((order) => order.status === 'Delivered').length,
     Cancelled: orders.filter((order) => order.status === 'Cancelled').length,
   }), [orders])
 
@@ -143,9 +137,13 @@ export default function SupplierIncomingOrdersPage() {
     if (!selectedIds.length) return
     setIsUpdating(true)
     try {
-      const updated = orders.map((order) => selectedIds.includes(order.id) ? { ...order, status: nextStatus } : order)
-      setOrders(updated)
+      const selectedOrders = orders.filter((order) => selectedIds.includes(order.id))
+      const responses = await Promise.all(selectedOrders.map((order) => updateSupplierOrderStatus(order.id, nextStatus)))
+      const updatedStatuses = new Map(responses.map((response) => [response.data.order.id, response.data.order.status]))
+      setOrders((current) => current.map((order) => updatedStatuses.has(order.id) ? { ...order, status: updatedStatuses.get(order.id) } : order))
       setSelectedIds([])
+    } catch (requestError) {
+      setError(requestError.message)
     } finally {
       setIsUpdating(false)
     }
@@ -197,10 +195,10 @@ export default function SupplierIncomingOrdersPage() {
               event.target.value = ''
             }}>
               <option value="">Bulk Actions</option>
-              <option value="Confirmed">Mark as confirmed</option>
-              <option value="Processing">Mark as processing</option>
-              <option value="Ready">Mark as ready</option>
-              <option value="Completed">Mark as completed</option>
+              <option value="Accepted">Mark as accepted</option>
+              <option value="Preparing">Mark as preparing</option>
+              <option value="Out for Delivery">Mark as out for delivery</option>
+              <option value="Delivered">Mark as delivered</option>
               <option value="Cancelled">Cancel orders</option>
             </select>
           </div>

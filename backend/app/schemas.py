@@ -42,6 +42,7 @@ class SupplierRegisterRequest(BaseModel):
     role: Literal["SUPPLIER"] = "SUPPLIER"
     name: str
     area: str
+    serviceAreas: list[str] = Field(default_factory=list)
     phone: str
     email: str = ""
     password: str
@@ -88,6 +89,7 @@ class CheckoutRequest(BaseModel):
     model_config = ConfigDict(extra="forbid")
     paymentMethod: str
     items: list[CheckoutItem]
+    idempotencyKey: str | None = None
 
 class StatusRequest(BaseModel):
     status: str

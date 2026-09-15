@@ -71,7 +71,7 @@ export default function SignupPage() {
     try {
       const credentials = selectedRole === 'SHOP_OWNER'
         ? { name: form.name.trim(), shopName: form.shopName.trim(), shopAddress: form.shopAddress.trim(), area: form.area.trim(), phone: form.phone.trim(), email: form.email.trim(), password: form.password, confirmPassword: form.confirmPassword, role: selectedRole }
-        : { name: form.name.trim(), area: form.area.trim(), phone: form.phone.trim(), email: form.email.trim(), password: form.password, confirmPassword: form.confirmPassword, role: selectedRole }
+        : { name: form.name.trim(), area: form.area.trim(), serviceAreas: form.area.split(',').map((value) => value.trim()).filter(Boolean), phone: form.phone.trim(), email: form.email.trim(), password: form.password, confirmPassword: form.confirmPassword, role: selectedRole }
       await register(credentials)
       navigate('/login')
     } catch (error) {
