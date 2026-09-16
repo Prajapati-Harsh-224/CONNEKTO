@@ -12400,7 +12400,7 @@ body.auth-no-scroll *::-webkit-scrollbar,
 .orders-table-head,
 .orders-row {
     display: grid;
-    grid-template-columns: minmax(6rem, 1.1fr) minmax(7.5rem, 1.35fr) 4.2rem 5.2rem 5.5rem 6.2rem 1.2rem;
+    grid-template-columns: minmax(6rem, 1.1fr) minmax(7.5rem, 1.35fr) 4.2rem 5.2rem 5.5rem 6.2rem;
     align-items: center;
     gap: 0.45rem;
     min-width: 0;

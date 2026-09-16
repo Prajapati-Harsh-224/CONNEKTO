@@ -404,7 +404,7 @@ def logout(request: Request, response: Response, db: Session = Depends(get_db)):
 def supplier_dashboard(user: User = Depends(require_user), db: Session = Depends(get_db)):
     if user.role != "SUPPLIER": return role_error("Suppliers", user)
     supplier = db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
-    orders = db.scalars(select(SupplierOrder).where(SupplierOrder.supplier_id == supplier.id).options(joinedload(SupplierOrder.items))).all() if supplier else []
+    orders = db.scalars(select(SupplierOrder).where(SupplierOrder.supplier_id == supplier.id).options(joinedload(SupplierOrder.items))).unique().all() if supplier else []
     return envelope({"businessName": supplier.name if supplier else f"{user.name}'s Supply Desk", "supplierId": supplier.id if supplier else None, "metrics": [{"label": "New orders", "value": str(sum(o.status == "Pending" for o in orders)).zfill(2), "detail": "Received this week", "accent": "metric-primary"}, {"label": "Pending orders", "value": str(sum(o.status not in {"Delivered", "Cancelled"} for o in orders)).zfill(2), "detail": "Awaiting fulfilment", "accent": "metric-warning"}, {"label": "Completed orders", "value": str(sum(o.status == "Delivered" for o in orders)).zfill(2), "detail": "Delivered successfully", "accent": "metric-success"}], "valueSummary": {"value": f"Rs {sum(float(o.subtotal) for o in orders):,.0f}", "detail": "Estimated incoming order value this month"}, "recentOrders": [order_json(o) for o in orders], "isDemoData": not bool(orders)}, "Supplier dashboard returned")
 
 @app.get("/api/supplier/orders")
