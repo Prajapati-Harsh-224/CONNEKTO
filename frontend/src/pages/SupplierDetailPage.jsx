@@ -43,7 +43,7 @@ export default function SupplierDetailPage() {
   if (notFound || !supplier) return <EmptyState title={t('supplierNotFound')} message={t('supplierCatalogMessage')} />
 
   const initials = getSupplierInitials(supplier.name)
-  const displayLocation = supplier.location || supplier.serviceAreas?.[0] || ''
+  const displayLocation = (Array.isArray(supplier.serviceAreas) && supplier.serviceAreas.length > 0) ? supplier.serviceAreas.join(', ') : (supplier.location || '')
 
   return (
     <section className="supplier-detail-page">

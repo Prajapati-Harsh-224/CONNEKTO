@@ -398,7 +398,7 @@ export default function SupplierCatalogPage() {
             <span>|</span>
             <span>{supplier.location || '—'}</span>
             <span>|</span>
-            <span>{supplier.serviceAreaCount ?? supplier.serviceAreas?.length ?? 0} service areas</span>
+            <span>{Array.isArray(supplier.serviceAreas) && supplier.serviceAreas.length > 0 ? supplier.serviceAreas.join(', ') : (supplier.serviceAreaCount ? `${supplier.serviceAreaCount} service areas` : '—')}</span>
           </div>
           <p>{supplier.description}</p>
           <div className="spc-supplier-contact" style={{ display: 'flex', alignItems: 'center', gap: '1.25rem', marginTop: '0.45rem', fontSize: '0.85rem', color: '#4b5563', fontWeight: '500' }}>

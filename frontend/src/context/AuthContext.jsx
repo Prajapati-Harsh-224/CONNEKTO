@@ -1,5 +1,6 @@
 import { createContext, useContext, useEffect, useState } from 'react'
 import { getCurrentUser, login, logout } from '../services/authService.js'
+import { clearCart } from '../utils/cartStorage.js'
 import { saveSelectedRole } from '../utils/roleStorage.js'
 
 const AuthContext = createContext(null)
@@ -24,6 +25,8 @@ export function AuthProvider({ children }) {
     const realUser = response?.data?.user || null
     setUser(realUser)
     if (realUser?.role) saveSelectedRole(realUser.role)
+    clearCart()
+    window.dispatchEvent(new Event('connecto-cart-updated'))
     return realUser
   }
 

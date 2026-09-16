@@ -264,9 +264,9 @@ function SupplierCard({ supplier, isFavorite, onToggleFavorite }) {
             {supplier.isVerified && <VerifiedBadge />}
           </div>
           <span className="sdc-type">{supplier.type}</span>
-          {(supplier.location || supplier.serviceAreas?.[0]) && (
+          {(supplier.serviceAreas?.length > 0 || supplier.location) && (
             <div className="sdc-location-sub" style={{ fontSize: '0.82rem', color: '#6b7280', marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              📍 {supplier.location || supplier.serviceAreas?.[0]}
+              📍 {supplier.serviceAreas?.length > 0 ? supplier.serviceAreas.join(', ') : supplier.location}
             </div>
           )}
         </div>
