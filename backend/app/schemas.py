@@ -79,6 +79,7 @@ class ProductRequest(BaseModel):
     price: float = Field(gt=0)
     minimumQuantity: int = Field(gt=0)
     unitsPerBox: int = Field(default=1, gt=0)
+    availableStock: int = Field(default=0, ge=0)
     imageUrl: str = ""
 
     @field_validator('imageUrl')

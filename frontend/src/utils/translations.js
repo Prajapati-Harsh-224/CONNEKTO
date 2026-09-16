@@ -1,4 +1,4 @@
-﻿export const supportedLocales = [
+export const supportedLocales = [
   { code: 'en', label: 'English' },
   { code: 'hi', label: 'हिन्दी' },
   { code: 'gu', label: 'ગુજરાતી' },
@@ -52,6 +52,7 @@ const english = {
   hide: 'Hide',
   quantity: 'Quantity',
   minimumQuantity: 'Minimum quantity',
+  availableStock: 'Available stock',
   product: 'Product',
   noItems: 'No items added yet',
   browseSuppliers: 'Browse suppliers',
@@ -592,6 +593,7 @@ const hindi = {
   hide: 'छिपाएँ',
   quantity: 'मात्रा',
   minimumQuantity: 'न्यूनतम मात्रा',
+  availableStock: 'उपलब्ध स्टॉक',
   product: 'उत्पाद',
   noItems: 'अभी कोई आइटम नहीं जोड़ा गया',
   browseSuppliers: 'सप्लायर देखें',
@@ -1077,6 +1079,7 @@ const gujarati = {
   hide: 'છુપાવો',
   quantity: 'જથ્થો',
   minimumQuantity: 'ન્યૂનતમ જથ્થો',
+  availableStock: 'ઉપલબ્ધ સ્ટોક',
   product: 'ઉત્પાદન',
   noItems: 'હજુ સુધી કોઈ વસ્તુ ઉમેરેલી નથી',
   browseSuppliers: 'સપ્લાયર શોધો',

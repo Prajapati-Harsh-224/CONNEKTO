@@ -1,9 +1,25 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { FiPackage, FiClock, FiCheckCircle } from 'react-icons/fi'
 import LoadingState from '../components/LoadingState.jsx'
 import MetricCard from '../components/MetricCard.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { getGruhUdyogDashboard } from '../services/gruhUdyogService.js'
+
+const metricIcons = {
+  'New orders': <FiPackage size={20} />,
+  'Pending orders': <FiClock size={20} />,
+  'Completed orders': <FiCheckCircle size={20} />,
+}
+
+function getMetricIcon(label = '') {
+  if (metricIcons[label]) return metricIcons[label]
+  const normalized = label.toLowerCase().trim()
+  if (normalized.includes('new') || normalized.includes('received')) return <FiPackage size={20} />
+  if (normalized.includes('pending') || normalized.includes('awaiting')) return <FiClock size={20} />
+  if (normalized.includes('complete') || normalized.includes('delivered')) return <FiCheckCircle size={20} />
+  return <FiPackage size={20} />
+}
 
 export default function GruhUdyogDashboardPage() {
   const { t } = useLocale()
@@ -34,7 +50,12 @@ export default function GruhUdyogDashboardPage() {
 
       <div className="metric-grid">
         {dashboard.metrics.map((metric) => (
-          <MetricCard key={metric.label} {...metric} label={t(metric.label.toLowerCase().replace(/\s+/g, '')) || metric.label} />
+          <MetricCard
+            key={metric.label}
+            {...metric}
+            icon={metric.icon || getMetricIcon(metric.label)}
+            label={t(metric.label.toLowerCase().replace(/\s+/g, '')) || metric.label}
+          />
         ))}
       </div>
 

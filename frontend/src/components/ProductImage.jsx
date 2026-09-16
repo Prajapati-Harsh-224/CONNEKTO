@@ -1,30 +1,19 @@
-import { useState } from 'react'
-
-function normalizeImageUrl(value) {
-  if (!value || typeof value !== 'string') return ''
-  const trimmed = value.trim()
-  if (!trimmed) return ''
-  if (trimmed.startsWith('//')) return `https:${trimmed}`
-  if (trimmed.startsWith('www.')) return `https://${trimmed}`
-  if (!/^https?:\/\//i.test(trimmed) && trimmed.includes('.')) return `https://${trimmed}`
-  return trimmed
-}
-
-function isSafeImageUrl(value) {
-  const normalized = normalizeImageUrl(value)
-  if (!normalized) return false
-
-  try {
-    const parsed = new URL(normalized)
-    return parsed.protocol === 'http:' || parsed.protocol === 'https:'
-  } catch {
-    return false
-  }
-}
+import { useEffect, useState } from 'react'
+import { normalizeImageUrl, isSafeImageUrl } from '../utils/imageUrl.js'
 
 export default function ProductImage({ src, alt, className = '', fallbackText = 'Product image unavailable', ...props }) {
-  const [hasError, setHasError] = useState(false)
   const imageUrl = normalizeImageUrl(typeof src === 'string' ? src : '')
+  const [hasError, setHasError] = useState(false)
+  const [isLoading, setIsLoading] = useState(false)
+
+  useEffect(() => {
+    setHasError(false)
+    if (imageUrl && isSafeImageUrl(imageUrl)) {
+      setIsLoading(true)
+    } else {
+      setIsLoading(false)
+    }
+  }, [imageUrl])
 
   if (!imageUrl || !isSafeImageUrl(imageUrl) || hasError) {
     return (
@@ -38,10 +27,19 @@ export default function ProductImage({ src, alt, className = '', fallbackText = 
     <img
       {...props}
       alt={alt || 'Product image'}
-      className={`product-image-asset ${className}`.trim()}
+      className={`product-image-asset ${isLoading ? 'product-image-loading ' : ''}${className}`.trim()}
       loading="lazy"
-      onError={() => setHasError(true)}
+      onError={() => {
+        setHasError(true)
+        setIsLoading(false)
+      }}
+      onLoad={() => {
+        setIsLoading(false)
+        setHasError(false)
+      }}
+      referrerPolicy="no-referrer"
       src={imageUrl}
     />
   )
 }
+

@@ -1,12 +1,13 @@
-﻿import { useEffect, useMemo, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import EmptyState from '../components/EmptyState.jsx'
 import LoadingState from '../components/LoadingState.jsx'
 import ProductImage from '../components/ProductImage.jsx'
 import ProductManagementForm from '../components/ProductManagementForm.jsx'
+import { normalizeImageUrl } from '../utils/imageUrl.js'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { createSupplierProduct, deactivateSupplierProduct, getSupplierProducts, updateSupplierProduct } from '../services/supplierProductService.js'
 
-const emptyForm = { name: '', brand: '', category: '', packSize: '', price: '', minimumQuantity: '1', imageUrl: '' }
+const emptyForm = { name: '', brand: '', category: '', packSize: '', price: '', minimumQuantity: '1', availableStock: '0', imageUrl: '' }
 
 function formatPrice(value) {
   return `Rs ${Number(value || 0).toLocaleString('en-IN')}`
@@ -71,6 +72,7 @@ export default function SupplierProductManagementPage() {
       packSize: product.packSize,
       price: String(product.price),
       minimumQuantity: String(product.minimumQuantity),
+      availableStock: String(product.availableStock ?? 0),
       imageUrl: product.imageUrl || ''
     })
     setFormError('')
@@ -79,6 +81,12 @@ export default function SupplierProductManagementPage() {
 
   function updateField(event) {
     const { name, value } = event.target
+    if (name === 'availableStock') {
+      const sanitized = value.replace(/\D/g, '')
+      setForm((current) => ({ ...current, [name]: sanitized }))
+      setFormError('')
+      return
+    }
     setForm((current) => ({ ...current, [name]: value }))
     setFormError('')
   }
@@ -88,7 +96,15 @@ export default function SupplierProductManagementPage() {
     setFormError('')
     setFeedback('')
     setIsSaving(true)
-    const payload = { ...form, price: Number(form.price), minimumQuantity: Number(form.minimumQuantity) }
+    const cleanedImageUrl = normalizeImageUrl(form.imageUrl)
+    const parsedStock = form.availableStock === '' ? 0 : parseInt(form.availableStock, 10)
+    const payload = {
+      ...form,
+      imageUrl: cleanedImageUrl,
+      price: Number(form.price),
+      minimumQuantity: Number(form.minimumQuantity),
+      availableStock: isNaN(parsedStock) ? 0 : Math.max(0, parsedStock)
+    }
     try {
       const response = editingId === 'new' ? await createSupplierProduct(payload) : await updateSupplierProduct(editingId, payload)
       setProducts((current) => editingId === 'new'
@@ -234,19 +250,21 @@ export default function SupplierProductManagementPage() {
                       </span>
                     </div>
 
-                    <h3>{product.name}</h3>
-                    <p className="supplier-product-brand">{product.brand} · {product.packSize}</p>
+                    <h3 title={product.name}>{product.name}</h3>
+                    <p className="supplier-product-brand" title={`${product.brand} · ${product.packSize}`}>{product.brand} · {product.packSize}</p>
                     <div className="supplier-product-meta">
-                      <span>Min qty: {product.minimumQuantity}</span>
+                      <span>Min: {product.minimumQuantity} · Stock: {product.availableStock ?? 0}</span>
                       <span>{product.isActive ? 'Live' : 'Hidden'}</span>
                     </div>
-                    <strong className="supplier-product-price">{formatPrice(product.price)}</strong>
 
-                    <div className="supplier-product-actions">
-                      <button className="button secondary" onClick={() => startEdit(product)} type="button">{t('edit')}</button>
-                      {product.isActive && (
-                        <button className="text-action" onClick={() => deactivateProduct(product)} type="button">{t('deactivate')}</button>
-                      )}
+                    <div className="supplier-product-footer">
+                      <strong className="supplier-product-price">{formatPrice(product.price)}</strong>
+                      <div className="supplier-product-actions">
+                        <button className="button secondary" onClick={() => startEdit(product)} type="button">{t('edit')}</button>
+                        {product.isActive && (
+                          <button className="text-action" onClick={() => deactivateProduct(product)} type="button">{t('deactivate')}</button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </article>

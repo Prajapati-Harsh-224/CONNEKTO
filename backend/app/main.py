@@ -50,6 +50,7 @@ def startup() -> None:
         "ALTER TABLE suppliers ADD COLUMN review_count INTEGER DEFAULT 0",
         "ALTER TABLE suppliers ADD COLUMN tags TEXT DEFAULT ''",
         "ALTER TABLE products ADD COLUMN units_per_box INTEGER DEFAULT 1",
+        "ALTER TABLE products ADD COLUMN available_stock INTEGER DEFAULT 0",
         "ALTER TABLE products ADD COLUMN description TEXT DEFAULT ''",
         "ALTER TABLE supplier_order_items ADD COLUMN units_per_box_snapshot INTEGER DEFAULT 1",
     ]
@@ -433,7 +434,7 @@ def update_supplier_order(order_id: str, payload: StatusRequest, user: User = De
 
 def product_json(product: Product) -> dict:
     upb = product.minimum_quantity or getattr(product, "units_per_box", 1) or 1
-    return {"id": product.id, "supplierId": product.supplier_id, "name": product.name, "brand": product.brand, "category": product.category, "packSize": product.pack_size, "price": float(product.price), "minimumQuantity": product.minimum_quantity, "unitsPerBox": upb, "imageUrl": product.image_url or "", "isActive": product.is_active, "isDemoData": product.is_demo_data}
+    return {"id": product.id, "supplierId": product.supplier_id, "name": product.name, "brand": product.brand, "category": product.category, "packSize": product.pack_size, "price": float(product.price), "minimumQuantity": product.minimum_quantity, "unitsPerBox": upb, "availableStock": getattr(product, "available_stock", 0) or 0, "imageUrl": product.image_url or "", "isActive": product.is_active, "isDemoData": product.is_demo_data}
 
 def owned_supplier(user: User, db: Session):
     return db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
@@ -552,7 +553,7 @@ def create_product(payload: ProductRequest, user: User = Depends(require_user), 
     supplier = owned_supplier(user, db)
     if not supplier: return error("Supplier profile not found.", "NOT_FOUND", 404)
     image_url = payload.imageUrl.strip() if payload.imageUrl else ""
-    product = Product(id=str(uuid4()), supplier_id=supplier.id, name=payload.name.strip(), brand=payload.brand.strip(), category=payload.category.strip(), pack_size=payload.packSize.strip(), price=payload.price, minimum_quantity=payload.minimumQuantity, units_per_box=payload.unitsPerBox, image_url=image_url, is_active=True)
+    product = Product(id=str(uuid4()), supplier_id=supplier.id, name=payload.name.strip(), brand=payload.brand.strip(), category=payload.category.strip(), pack_size=payload.packSize.strip(), price=payload.price, minimum_quantity=payload.minimumQuantity, units_per_box=payload.unitsPerBox, available_stock=payload.availableStock or 0, image_url=image_url, is_active=True)
     db.add(product); db.commit(); db.refresh(product)
     return envelope({"product": product_json(product)}, "Product created")
 
@@ -569,7 +570,7 @@ def edit_product(product_id: str, payload: ProductRequest, user: User = Depends(
     supplier = owned_supplier(user, db)
     product = db.scalar(select(Product).where(Product.id == product_id, Product.supplier_id == supplier.id)) if supplier else None
     if not product: return error("Product not found.", "NOT_FOUND", 404)
-    product.name = payload.name.strip(); product.brand = payload.brand.strip(); product.category = payload.category.strip(); product.pack_size = payload.packSize.strip(); product.price = payload.price; product.minimum_quantity = payload.minimumQuantity; product.units_per_box = payload.unitsPerBox; product.image_url = payload.imageUrl.strip() if payload.imageUrl else ""
+    product.name = payload.name.strip(); product.brand = payload.brand.strip(); product.category = payload.category.strip(); product.pack_size = payload.packSize.strip(); product.price = payload.price; product.minimum_quantity = payload.minimumQuantity; product.units_per_box = payload.unitsPerBox; product.available_stock = payload.availableStock or 0; product.image_url = payload.imageUrl.strip() if payload.imageUrl else ""
     db.commit(); db.refresh(product)
     return envelope({"product": product_json(product)}, "Product updated")
 

@@ -60,6 +60,7 @@ function normalizeProduct(product, fallbackId = null) {
     packSize: product.packSize || '1 unit',
     price: Number(product.price ?? 0),
     minimumQuantity: Number(product.minimumQuantity ?? 1),
+    availableStock: Number(product.availableStock ?? 0),
     imageUrl: product.imageUrl || '',
     isActive: typeof product.isActive === 'boolean' ? product.isActive : true,
   }

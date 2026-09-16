@@ -1,10 +1,26 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
+import { FiPackage, FiClock, FiCheckCircle } from 'react-icons/fi'
 import LoadingState from '../components/LoadingState.jsx'
 import MetricCard from '../components/MetricCard.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { getSupplierDashboard } from '../services/supplierDashboardService.js'
+
+const metricIcons = {
+  'New orders': <FiPackage size={20} />,
+  'Pending orders': <FiClock size={20} />,
+  'Completed orders': <FiCheckCircle size={20} />,
+}
+
+function getMetricIcon(label = '') {
+  if (metricIcons[label]) return metricIcons[label]
+  const normalized = label.toLowerCase().trim()
+  if (normalized.includes('new') || normalized.includes('received')) return <FiPackage size={20} />
+  if (normalized.includes('pending') || normalized.includes('awaiting')) return <FiClock size={20} />
+  if (normalized.includes('complete') || normalized.includes('delivered')) return <FiCheckCircle size={20} />
+  return <FiPackage size={20} />
+}
 
 export default function SupplierDashboardPage() {
   const { t } = useLocale()
@@ -58,7 +74,7 @@ export default function SupplierDashboardPage() {
             accent={metric.accent}
             actionTo={metric.actionTo}
             detail={metric.detail}
-            icon={metric.icon}
+            icon={metric.icon || getMetricIcon(metric.label)}
             label={metric.label}
             value={metric.value}
           />

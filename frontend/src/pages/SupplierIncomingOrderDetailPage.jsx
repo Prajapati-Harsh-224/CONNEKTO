@@ -2,6 +2,8 @@ import { useEffect, useMemo, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import EmptyState from '../components/EmptyState.jsx'
 import LoadingState from '../components/LoadingState.jsx'
+import StatusBadge from '../components/StatusBadge.jsx'
+import StatusTimeline from '../components/StatusTimeline.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { getSupplierOrder, updateSupplierOrderStatus } from '../services/supplierOrderService.js'
 
@@ -10,6 +12,12 @@ const statusTransitions = {
   Accepted: ['Preparing', 'Cancelled'],
   Preparing: ['Out for Delivery', 'Cancelled'],
   'Out for Delivery': ['Delivered'],
+}
+
+const paymentLabels = {
+  CASH_ON_DELIVERY: 'Cash on Delivery',
+  PAY_LATER: 'Pay Later',
+  REQUEST_ORDER: 'Request Order',
 }
 
 function normalizeOrder(order) {
@@ -43,18 +51,6 @@ function formatDate(dateValue) {
     day: 'numeric',
     month: 'short',
     year: 'numeric',
-  })
-}
-
-function formatDateTime(dateValue) {
-  const date = new Date(dateValue)
-  if (Number.isNaN(date.getTime())) return '—'
-  return date.toLocaleString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: 'numeric',
-    minute: '2-digit',
   })
 }
 
@@ -117,180 +113,208 @@ export default function SupplierIncomingOrderDetailPage() {
   const customerName = order.customer || order.shopOwner || 'Shop owner'
 
   return (
-    <section className="supplier-order-detail-page">
-      <div className="orders-breadcrumb">
-        <span>{t('supplier')}</span>
-        <span>›</span>
-        <span>{t('orders')}</span>
-        <span>›</span>
+    <section className="order-detail-page">
+      <div className="order-detail-breadcrumb">
+        <Link to="/dashboard/supplier/orders">{t('orders') || 'Orders'}</Link>
+        <span aria-hidden="true">›</span>
         <span>Order #{order.id || order.orderId}</span>
       </div>
 
-      <div className="supplier-detail-header-row">
-        <div className="supplier-detail-header-copy">
-          <p className="supplier-detail-eyebrow">Supplier {t('orders')}</p>
+      <div className="order-detail-heading">
+        <div>
+          <span className="section-kicker">Supplier order</span>
           <h1>Order #{order.id || order.orderId}</h1>
-          <p className="supplier-detail-subtitle">Received from {customerName}</p>
-          <div className="supplier-detail-meta-row">
-            <span>{formatDate(order.date)}</span>
-            <span>{order.time || '10:42 AM'}</span>
-            <span>Status: {order.status || 'New'}</span>
-          </div>
+          <p className="order-detail-supplier">Customer: {customerName}</p>
+        </div>
+        <StatusBadge status={order.status} />
+      </div>
+
+      <div className="order-detail-meta">
+        <div>
+          <span>Order date</span>
+          <strong>{formatDate(order.date)}</strong>
+        </div>
+        <div>
+          <span>Total amount</span>
+          <strong>{formatCurrency(total)}</strong>
+        </div>
+        <div>
+          <span>Delivery area</span>
+          <strong>{order.area || order.serviceArea || '—'}</strong>
+        </div>
+        <div>
+          <span>Payment method</span>
+          <strong>{paymentLabels[order.paymentMethod] || order.paymentMethod || 'Cash on Delivery'}</strong>
         </div>
       </div>
 
-      <div className="supplier-detail-content">
-        <div className="supplier-detail-main-col">
-          <div className="supplier-detail-card supplier-items-card">
-            <div className="supplier-card-header">
-              <h2>Order Items</h2>
-              <span>{items.length} items</span>
+      <div className="order-detail-layout">
+        <main className="order-detail-main">
+          <section className="order-items-panel">
+            <div className="order-detail-section-heading">
+              <div>
+                <span className="section-kicker">Products</span>
+                <h2>Order Items</h2>
+              </div>
+              <span className="order-detail-item-count">
+                {items.length} {items.length === 1 ? 'item' : 'items'}
+              </span>
             </div>
 
-            <div className="supplier-items-table">
-              <div className="supplier-items-table-head">
-                <span>Product</span>
-                <span>SKU</span>
-                <span>Qty</span>
-                <span>Unit Price</span>
-                <span>Total</span>
-              </div>
+            <div className="order-detail-items-heading">
+              <span>Product</span>
+              <span>Amount</span>
+            </div>
 
-              {items.map((item, index) => {
-                const unitsPerBox = Number(item.unitsPerBoxSnapshot || item.unitsPerBox || 1)
-                const isBox = unitsPerBox > 1
-                const boxes = item.boxes || (isBox ? Math.floor(item.quantity / unitsPerBox) : item.quantity)
-                return (
-                  <div className="supplier-items-table-row" key={`${item.sku || item.product}-${index}`}>
-                    <div className="supplier-product-cell">
-                      <span className="supplier-product-thumb" aria-hidden="true">{item.product?.slice(0, 2).toUpperCase() || 'PR'}</span>
-                      <div>
-                        <strong>{item.product || item.name || 'Product'}</strong>
-                        {isBox ? (
-                          <small style={{ color: '#4b5563', display: 'block', fontSize: '0.78rem', marginTop: '0.15rem' }}>
-                            Boxes: {boxes} | Packets: {item.quantity} | Unit price: {formatCurrency(item.unitPrice || 0)}
-                          </small>
-                        ) : null}
-                      </div>
-                    </div>
-                    <span>{item.sku || '—'}</span>
-                    <span>{isBox ? `${boxes} ${boxes === 1 ? 'box' : 'boxes'} (${item.quantity} pkts)` : `${item.quantity} units`}</span>
-                    <span>{formatCurrency(item.unitPrice || 0)}{isBox ? '/pkt' : ''}</span>
-                    <span>{formatCurrency(item.total || Number(item.unitPrice || 0) * Number(item.quantity || 1))}</span>
+            {items.map((item, index) => {
+              const unitsPerBox = Number(item.unitsPerBoxSnapshot || item.unitsPerBox || 1)
+              const isBox = unitsPerBox > 1
+              const boxes = item.boxes || (isBox ? Math.floor(item.quantity / unitsPerBox) : item.quantity)
+              const unitPrice = Number(String(item.unitPriceSnapshot || item.unitPrice || 0).replace(/[^0-9.]/g, ''))
+              return (
+                <div className="order-detail-item" key={`${item.sku || item.product}-${index}`}>
+                  <div>
+                    <strong>{item.product || item.name || 'Product'}</strong>
+                    <span>
+                      {isBox
+                        ? `${boxes} ${boxes === 1 ? 'Box' : 'Boxes'} (${item.quantity} packets) × ${formatCurrency(unitPrice)}/packet`
+                        : `${item.quantity} units × ${formatCurrency(unitPrice)}`}
+                    </span>
                   </div>
-                )
-              })}
-            </div>
-
-            <div className="supplier-order-totals">
-              <div><span>Subtotal</span><strong>{formatCurrency(subtotal)}</strong></div>
-              <div><span>Delivery</span><strong>—</strong></div>
-              <div><span>Discount</span><strong>—</strong></div>
-              <div className="supplier-total-row"><span>Total</span><strong>{formatCurrency(total)}</strong></div>
-            </div>
-          </div>
-        </div>
-
-        <aside className="supplier-detail-side-col">
-          <div className="supplier-detail-card supplier-customer-card">
-            <div className="supplier-card-header">
-              <h2>Customer / Shop</h2>
-            </div>
-            <div className="supplier-customer-card-body">
-              <div className="supplier-customer-name-row">
-                <span className="supplier-customer-avatar">{customerName.slice(0, 2).toUpperCase()}</span>
-                <div>
-                  <strong>{customerName}</strong>
-                  <small>{order.area || order.serviceArea || '—'}</small>
+                  <strong>{formatCurrency(item.total || unitPrice * (item.quantity || 1))}</strong>
                 </div>
+              )
+            })}
+
+            <div className="order-detail-total">
+              <span>Supplier subtotal</span>
+              <strong>{formatCurrency(subtotal)}</strong>
+            </div>
+            {total !== subtotal && (
+              <div className="order-detail-total" style={{ borderTop: 'none', paddingTop: '0.4rem' }}>
+                <span>Supplier total</span>
+                <strong>{formatCurrency(total)}</strong>
               </div>
-              <div className="supplier-detail-info-block">
-                <label>Shop owner</label>
-                <strong>{order.shopOwner || '—'}</strong>
+            )}
+          </section>
+
+          <section className="customer-info-panel" style={{ marginTop: '1rem' }}>
+            <div className="order-detail-section-heading">
+              <div>
+                <span className="section-kicker">Customer Information</span>
+                <h2>Customer &amp; Delivery Details</h2>
               </div>
-              <div className="supplier-detail-info-block">
-                <label>Phone</label>
-                <strong>{order.phone || '+91 98XXXXXX45'}</strong>
+            </div>
+
+            <div className="customer-info-grid">
+              <div className="customer-info-item">
+                <label>Shop / Customer</label>
+                <strong>{customerName}</strong>
+                <small>{order.area || order.serviceArea || '—'}</small>
               </div>
-              <div className="supplier-detail-info-block">
+              <div className="customer-info-item">
+                <label>Shop Owner</label>
+                <strong>{order.shopOwner || customerName}</strong>
+              </div>
+              <div className="customer-info-item">
+                <label>Phone Number</label>
+                <strong>{order.phone || '—'}</strong>
+              </div>
+              <div className="customer-info-item">
                 <label>Delivery Address</label>
-                <strong>{order.address || '—'}</strong>
-              </div>
-              <div className="supplier-customer-actions">
-                <button className="supplier-detail-primary" type="button">Call Customer</button>
-                <button className="supplier-detail-secondary" type="button">View Customer</button>
+                <strong>{order.address || order.area || '—'}</strong>
               </div>
             </div>
-          </div>
 
-          <div className="supplier-detail-card supplier-payment-card">
-            <div className="supplier-card-header">
-              <h2>Payment Details</h2>
+            <div className="customer-actions-row">
+              {order.phone && (
+                <a
+                  className="supplier-detail-primary"
+                  href={`tel:${order.phone}`}
+                  style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+                >
+                  Call Customer
+                </a>
+              )}
+              <Link
+                className="supplier-detail-secondary"
+                to="/dashboard/supplier/customers"
+                style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
+              >
+                View Customers
+              </Link>
             </div>
-            <div className="supplier-detail-info-block">
-              <label>Payment Method</label>
-              <strong>{order.paymentMethod || '—'}</strong>
-            </div>
-            <div className="supplier-detail-info-block">
-              <label>Payment Status</label>
-              <strong>—</strong>
-            </div>
-            <div className="supplier-detail-info-block">
-              <label>Order Total</label>
-              <strong>{formatCurrency(total)}</strong>
-            </div>
-          </div>
+          </section>
+        </main>
 
-          <div className="supplier-detail-card supplier-delivery-card">
-            <div className="supplier-card-header">
-              <h2>Delivery Details</h2>
+        <aside className="order-detail-side">
+          <section className="timeline-panel">
+            <div className="order-detail-section-heading">
+              <div>
+                <span className="section-kicker">Status timeline</span>
+                <h2>Order progress</h2>
+              </div>
+              <StatusBadge status={order.status} />
             </div>
-            <div className="supplier-detail-info-block">
-              <label>Delivery Address</label>
-              <strong>{order.address || '—'}</strong>
-            </div>
-            <div className="supplier-detail-info-block">
-              <label>Expected Delivery</label>
-              <strong>—</strong>
-            </div>
-            <div className="supplier-detail-info-block">
-              <label>Delivery Status</label>
-              <strong>{order.status || '—'}</strong>
-            </div>
-            <div className="supplier-detail-info-block">
-              <label>Delivery Type</label>
-              <strong>—</strong>
-            </div>
-          </div>
+            <StatusTimeline currentStatus={order.status} />
+          </section>
 
-          <div className="supplier-detail-card supplier-summary-card">
-            <div className="supplier-card-header">
-              <h2>Order Summary</h2>
+          <section className="supplier-actions-panel">
+            <div className="order-detail-section-heading">
+              <div>
+                <span className="section-kicker">Action Required</span>
+                <h2>Supplier Actions</h2>
+              </div>
             </div>
-            <div className="supplier-summary-list">
-              <div><span>Order ID</span><strong>#{order.id || order.orderId}</strong></div>
-              <div><span>Customer</span><strong>{customerName}</strong></div>
-              <div><span>Total Items</span><strong>{items.length}</strong></div>
-              <div><span>Order Total</span><strong>{formatCurrency(total)}</strong></div>
-              <div><span>Payment</span><strong>{order.paymentMethod || '—'}</strong></div>
-              <div><span>Status</span><strong>{order.status || 'New'}</strong></div>
-              <div><span>Order Date</span><strong>{formatDateTime(order.date)}</strong></div>
-            </div>
-          </div>
+
+            {(statusTransitions[order.status] || []).length > 0 ? (
+              <div className="supplier-action-buttons-stack">
+                {(statusTransitions[order.status] || []).map((nextStatus) => {
+                  const isDestructive = nextStatus === 'Cancelled'
+                  const label = nextStatus === 'Accepted'
+                    ? 'Accept Order'
+                    : nextStatus === 'Preparing'
+                      ? 'Mark as Preparing'
+                      : nextStatus === 'Out for Delivery'
+                        ? 'Mark as Out for Delivery'
+                        : nextStatus === 'Delivered'
+                          ? 'Mark as Delivered'
+                          : 'Cancel Order'
+
+                  return (
+                    <button
+                      className={isDestructive ? 'supplier-detail-destructive' : 'supplier-detail-primary'}
+                      disabled={isUpdating}
+                      key={nextStatus}
+                      onClick={() => updateStatus({ target: { value: nextStatus } })}
+                      type="button"
+                    >
+                      {label}
+                    </button>
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="order-detail-note">
+                <strong>No Actions Needed</strong>
+                <p>Order is currently {order.status?.toLowerCase()}. No further status transitions available.</p>
+              </div>
+            )}
+
+            {statusError && (
+              <p className="form-message error" role="alert" style={{ marginTop: '0.6rem' }}>
+                {statusError}
+              </p>
+            )}
+          </section>
         </aside>
       </div>
 
-      <div className="supplier-action-panel">
-        <div className="supplier-card-header">
-          <h2>Supplier Actions</h2>
-        </div>
-        <div className="supplier-action-buttons">
-          {(statusTransitions[order.status] || []).map((nextStatus) => <button className={nextStatus === 'Cancelled' ? 'supplier-detail-destructive' : 'supplier-detail-secondary'} disabled={isUpdating} key={nextStatus} onClick={() => updateStatus({ target: { value: nextStatus } })} type="button">{nextStatus === 'Accepted' ? 'Accept Order' : nextStatus === 'Preparing' ? 'Mark as Preparing' : nextStatus === 'Out for Delivery' ? 'Mark as Out for Delivery' : nextStatus === 'Delivered' ? 'Mark as Delivered' : 'Cancel Order'}</button>)}
-          {statusError && <p className="form-message error" role="alert">{statusError}</p>}
-        </div>
+      <div style={{ marginTop: '1.5rem' }}>
+        <Link className="supplier-back-link" to="/dashboard/supplier/orders">
+          ← Back to Incoming Orders
+        </Link>
       </div>
-
-      <Link className="supplier-back-link" to="/dashboard/supplier/orders">← Back to Orders</Link>
     </section>
   )
 }

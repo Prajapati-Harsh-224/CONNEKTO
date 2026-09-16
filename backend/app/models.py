@@ -70,6 +70,7 @@ class Product(Base):
     price: Mapped[float] = mapped_column(Numeric(10, 2))
     minimum_quantity: Mapped[int] = mapped_column(Integer)
     units_per_box: Mapped[int] = mapped_column(Integer, default=1, server_default="1")
+    available_stock: Mapped[int] = mapped_column(Integer, default=0, server_default="0")
     description: Mapped[Optional[str]] = mapped_column(Text, nullable=True, default="")
     image_url: Mapped[str] = mapped_column(Text, default="")
     is_active: Mapped[bool] = mapped_column(Boolean, default=True)
