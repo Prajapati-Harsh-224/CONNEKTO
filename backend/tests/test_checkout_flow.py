@@ -2,6 +2,7 @@ import sys
 from pathlib import Path
 from uuid import uuid4
 
+import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import select
 
@@ -51,6 +52,24 @@ def create_catalog(suffix):
 def register_owner(client, suffix):
     response = client.post("/api/auth/register/shop-owner", json=owner_payload(suffix))
     assert response.status_code == 201, response.json()
+
+
+@pytest.mark.parametrize("payment_method", ["CASH_ON_DELIVERY", "PAY_LATER", "REQUEST_ORDER"])
+def test_checkout_preserves_payment_method_on_checkout_and_supplier_orders(payment_method):
+    suffix = uuid4().hex[:10]
+    with TestClient(app) as client:
+        register_owner(client, suffix)
+        supplier_a, _, product_a1, _, _ = create_catalog(suffix)
+        response = client.post("/api/checkout", json={
+            "paymentMethod": payment_method,
+            "idempotencyKey": f"method-{payment_method.lower()}-{suffix}",
+            "items": [{"supplierId": supplier_a, "productId": product_a1, "quantity": 2}],
+        })
+
+        assert response.status_code == 201, response.json()
+        checkout = response.json()["data"]["checkout"]
+        assert checkout["paymentMethod"] == payment_method
+        assert [order["paymentMethod"] for order in checkout["supplierOrders"]] == [payment_method]
 
 
 def test_checkout_creates_one_checkout_and_separate_supplier_orders():

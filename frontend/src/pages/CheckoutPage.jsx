@@ -28,6 +28,56 @@ function getSupplierDetails(fallbackName) {
   }
 }
 
+function normalizePaymentMethod(value) {
+  const normalized = String(value || '').trim().toUpperCase().replaceAll('-', '_').replaceAll(' ', '_')
+  return ['CASH_ON_DELIVERY', 'PAY_LATER', 'REQUEST_ORDER'].includes(normalized) ? normalized : ''
+}
+
+function getCheckoutPaymentMethod(checkout) {
+  const candidates = [
+    checkout.paymentMethod,
+    checkout.payment_method,
+    ...(checkout.supplierOrders || []).flatMap((order) => [order.paymentMethod, order.payment_method]),
+  ]
+  return candidates.map(normalizePaymentMethod).find(Boolean) || ''
+}
+
+function getConfirmationContent(paymentMethod, t, orderId) {
+  const normalizedPaymentMethod = normalizePaymentMethod(paymentMethod)
+  if (normalizedPaymentMethod === 'CASH_ON_DELIVERY' || normalizedPaymentMethod === 'PAY_LATER') {
+    const isCashOnDelivery = normalizedPaymentMethod === 'CASH_ON_DELIVERY'
+    return {
+      breadcrumb: t('order'),
+      badge: t('orderPlacedSuccessfully'),
+      heading: t('orderPlaced', { id: orderId }),
+      description: isCashOnDelivery ? t('cashOnDeliveryConfirmation') : t('payLaterConfirmation'),
+      sentTitle: t('orderConfirmationTitle'),
+      sentDescription: isCashOnDelivery ? t('cashOnDeliveryConfirmationDescription') : t('payLaterConfirmationDescription'),
+      status: t('orderPlacedStatus'),
+      summary: t('orderSummary'),
+      currentNext: t('orderPlacedStatus'),
+      suppliersNext: t('confirmationSuppliersPrepare'),
+      updatesNext: t('confirmationDeliveryUpdates'),
+      note: t('orderConfirmationNote'),
+    }
+  }
+
+  return {
+    breadcrumb: t('orderRequest'),
+    badge: t('orderRequestCreated'),
+    heading: t('requestReceived', { id: orderId }),
+    description: t('prototypeOrderRequest'),
+    sentTitle: t('confirmationSentTitle'),
+    sentDescription: t('confirmationSentDescription'),
+    status: t('confirmationRequestSent'),
+    summary: t('requestSummary'),
+    currentNext: t('confirmationRequestSent'),
+    suppliersNext: t('confirmationSuppliersReview'),
+    updatesNext: t('confirmationUpdatesOrders'),
+    note: t('confirmationPrototypeNote'),
+  }
+}
+
 export default function CheckoutPage() {
   const { t } = useLocale()
   const [cart, setCart] = useState(getCart)
@@ -101,26 +151,29 @@ export default function CheckoutPage() {
   }
 
   if (checkout) {
+    const checkoutPaymentMethod = getCheckoutPaymentMethod(checkout)
+    const confirmation = getConfirmationContent(checkoutPaymentMethod, t, checkout.id)
     const checkoutOrders = checkout.supplierOrders || []
     const checkoutTotal = checkoutOrders.reduce((sum, order) => sum + priceValue(order.subtotal), 0)
     const checkoutItemCount = checkoutOrders.reduce((sum, order) => sum + (order.items || []).length, 0)
     return (
       <section className="confirmation-page">
-        <div className="confirmation-breadcrumb"><span>{t('shopOwner')}</span><span>›</span><span>{t('orderRequest')}</span></div>
+        <div className="confirmation-breadcrumb"><span>{t('shopOwner')}</span><span>›</span><span>{confirmation.breadcrumb}</span></div>
         <div className="confirmation-layout">
           <main className="confirmation-main">
-            <div className="confirmation-hero"><div className="confirmation-mark" aria-hidden="true">✓</div><div><span className="confirmation-badge">{t('orderRequestCreated')}</span><h1>{t('requestReceived', { id: checkout.id })}</h1><p>{t('prototypeOrderRequest')}</p></div></div>
-            <div className="confirmation-info-card"><span className="confirmation-info-icon" aria-hidden="true">✓</span><div><strong>{t('confirmationSentTitle')}</strong><p>{t('confirmationSentDescription')}</p><p>{t('confirmationTrackMessage')}</p></div></div>
+            <div className="confirmation-hero"><div className="confirmation-mark" aria-hidden="true">✓</div><div><span className="confirmation-badge">{confirmation.badge}</span><h1>{confirmation.heading}</h1><p>{confirmation.description}</p></div></div>
+            <div className="confirmation-info-card"><span className="confirmation-info-icon" aria-hidden="true">✓</span><div><strong>{confirmation.sentTitle}</strong><p>{confirmation.sentDescription}</p><p>{t('confirmationTrackMessage')}</p></div></div>
             <div className="confirmation-orders-heading"><h2>{t('confirmationSupplierOrders')} <span>({checkoutOrders.length})</span></h2><Link to="/dashboard/shop-owner/orders">{t('confirmationViewOrders')} →</Link></div>
             <div className="supplier-order-list">{checkoutOrders.map((order) => {
               const orderItems = order.items || []
               const itemCount = orderItems.length
               const productNames = orderItems.map((item) => item.name).filter(Boolean).join(', ') || t('confirmationItemsPending')
-              return <article className="supplier-order-row" key={order.id}><div className="confirmation-order-header"><div className="confirmation-order-identity"><span className="confirmation-order-avatar" aria-hidden="true">{getInitials(order.supplierName)}</span><div><div className="confirmation-order-name"><h3>{order.supplierName}</h3><span>{order.verified ? `● ${t('confirmationRequestSent')}` : t('confirmationRequestSent')}</span></div><p>{order.location} <b>|</b> {order.category}</p></div></div><div className="confirmation-order-total"><span>{order.id}</span><strong>{formatPrice(priceValue(order.subtotal))}</strong></div></div><div className="confirmation-order-details"><div><span>{t('confirmationItems')}</span><strong>{itemCount}</strong></div><div><span>{t('confirmationProducts')}</span><strong>{productNames}</strong></div><Link className="confirmation-view-order" to={`/dashboard/shop-owner/orders/${encodeURIComponent(order.id)}`}>{t('confirmationViewOrder')} →</Link></div></article>
+              const orderConfirmation = getConfirmationContent(order.paymentMethod || order.payment_method || checkoutPaymentMethod, t, checkout.id)
+              return <article className="supplier-order-row" key={order.id}><div className="confirmation-order-header"><div className="confirmation-order-identity"><span className="confirmation-order-avatar" aria-hidden="true">{getInitials(order.supplierName)}</span><div><div className="confirmation-order-name"><h3>{order.supplierName}</h3><span>{orderConfirmation.status}</span></div><p>{order.location} <b>|</b> {order.category}</p></div></div><div className="confirmation-order-total"><span>{order.id}</span><strong>{formatPrice(priceValue(order.subtotal))}</strong></div></div><div className="confirmation-order-details"><div><span>{t('confirmationItems')}</span><strong>{itemCount}</strong></div><div><span>{t('confirmationProducts')}</span><strong>{productNames}</strong></div><Link className="confirmation-view-order" to={`/dashboard/shop-owner/orders/${encodeURIComponent(order.id)}`}>{t('confirmationViewOrder')} →</Link></div></article>
             })}</div>
             <Link className="confirmation-back-dashboard" to="/dashboard/shop-owner">← {t('backToDashboard')}</Link>
           </main>
-          <aside className="confirmation-side-column"><section className="confirmation-summary-card"><div className="confirmation-side-title"><span aria-hidden="true">▣</span><h2>{t('confirmationSummary')}</h2></div><div className="confirmation-summary-row"><span>{t('confirmationTotalSuppliers')}</span><strong>{checkoutOrders.length}</strong></div><div className="confirmation-summary-row"><span>{t('confirmationTotalItems')}</span><strong>{checkoutItemCount}</strong></div><div className="confirmation-summary-total"><span>{t('confirmationTotalAmount')}</span><strong>{formatPrice(checkoutTotal)}</strong></div></section><section className="confirmation-next-card"><h2>{t('confirmationWhatNext')}</h2><div className="confirmation-timeline"><div className="current"><span>●</span><div><strong>{t('confirmationRequestSent')}</strong><small>{t('confirmationSuppliersReview')}</small></div></div><div><span>○</span><div><strong>{t('confirmationSuppliersConfirm')}</strong><small>{t('confirmationUpdatesOrders')}</small></div></div><div><span>○</span><div><strong>{t('confirmationTrackManage')}</strong><small>{t('confirmationTrackDetails')}</small></div></div></div></section><aside className="confirmation-note"><strong>{t('confirmationNote')}</strong><p>{t('confirmationPrototypeNote')}</p></aside></aside>
+          <aside className="confirmation-side-column"><section className="confirmation-summary-card"><div className="confirmation-side-title"><span aria-hidden="true">▣</span><h2>{confirmation.summary}</h2></div><div className="confirmation-summary-row"><span>{t('confirmationTotalSuppliers')}</span><strong>{checkoutOrders.length}</strong></div><div className="confirmation-summary-row"><span>{t('confirmationTotalItems')}</span><strong>{checkoutItemCount}</strong></div><div className="confirmation-summary-total"><span>{t('confirmationTotalAmount')}</span><strong>{formatPrice(checkoutTotal)}</strong></div></section><section className="confirmation-next-card"><h2>{t('confirmationWhatNext')}</h2><div className="confirmation-timeline"><div className="current"><span>●</span><div><strong>{confirmation.currentNext}</strong><small>{confirmation.sentDescription}</small></div></div><div><span>○</span><div><strong>{confirmation.suppliersNext}</strong><small>{confirmation.updatesNext}</small></div></div><div><span>○</span><div><strong>{t('confirmationTrackManage')}</strong><small>{t('confirmationTrackDetails')}</small></div></div></div></section><aside className="confirmation-note"><strong>{t('confirmationNote')}</strong><p>{confirmation.note}</p></aside></aside>
         </div>
       </section>
     )
