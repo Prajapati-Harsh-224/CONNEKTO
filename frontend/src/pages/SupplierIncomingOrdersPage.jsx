@@ -32,8 +32,14 @@ function formatDateTime(dateValue) {
   return date.toLocaleString('en-IN', { day: 'numeric', month: 'short', hour: 'numeric', minute: '2-digit' })
 }
 
-function getInitials(value) {
-  return String(value || 'S').split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'S'
+function formatOrderId(orderId) {
+  const value = String(orderId || '').trim()
+  if (!value) return 'ORD-00000000'
+
+  const match = value.match(/[A-Fa-f0-9]{8}/)
+  const shortCode = match ? match[0].toUpperCase() : value.replace(/[^A-Fa-f0-9]/g, '').slice(0, 8).toUpperCase() || '00000000'
+
+  return `ORD-${shortCode}`
 }
 
 export default function SupplierIncomingOrdersPage() {
@@ -266,25 +272,14 @@ export default function SupplierIncomingOrdersPage() {
                   <label className="supplier-checkbox-cell">
                     <input checked={selectedIds.includes(order.id)} onChange={() => toggleSelection(order.id)} type="checkbox" />
                   </label>
-                  <div className="supplier-order-id">{order.id}</div>
+                  <div className="supplier-order-id">{formatOrderId(order.id)}</div>
                   <div className="supplier-customer-cell">
-                    <span className="supplier-customer-avatar">{getInitials(order.customer)}</span>
                     <div>
                       <strong>{order.customer}</strong>
                       <small>{order.area}</small>
                     </div>
                   </div>
                   <div className="supplier-items-cell">
-                    <div className="supplier-item-pills">
-                      {orderItems.slice(0, 3).map((item, index) => {
-                        const itemName = item?.name || item?.product || 'Item'
-                        return (
-                          <span className={`supplier-item-pill color-${item?.color || 'green'}`} key={`${order.id}-${index}`}>
-                            {itemName.slice(0, 2).toUpperCase()}
-                          </span>
-                        )
-                      })}
-                    </div>
                     <small>{orderItems.length} items</small>
                   </div>
                   <div className="supplier-amount-cell">{formatCurrency(order.amount)}</div>
@@ -294,7 +289,6 @@ export default function SupplierIncomingOrdersPage() {
                     <Link className="supplier-view-button" to={`/dashboard/supplier/orders/${encodeURIComponent(order.id)}`}>
                       View
                     </Link>
-                    <button aria-label={`More actions for ${order.id}`} className="supplier-menu-button" type="button">⋮</button>
                   </div>
                 </div>
               )
