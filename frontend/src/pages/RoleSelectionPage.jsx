@@ -25,41 +25,87 @@ export default function RoleSelectionPage() {
   }
 
   return (
-    <section className="setup-page role-selection-page">
-      <div className="role-editorial">
-        <div className="eyebrow">{t('accountSetup')}</div>
-        <h1>{t('roleSelectionHeading')}</h1>
-        <p className="role-intro">{t('roleSelectionIntro')}</p>
-        <div className="role-benefits">
+    <section className="min-h-[calc(100vh-4.5rem)] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 grid grid-cols-1 lg:grid-cols-[minmax(280px,0.72fr)_minmax(600px,1.28fr)] gap-8 lg:gap-14 items-center">
+      <div className="flex flex-col justify-center max-w-xl lg:max-w-none">
+        <div className="text-xs font-bold uppercase tracking-widest text-[#f06535] mb-2">{t('accountSetup')}</div>
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-[#102d45] tracking-tight leading-[1.1] mb-4">
+          {t('roleSelectionHeading')}
+        </h1>
+        <p className="text-sm sm:text-base text-slate-600 leading-relaxed mb-6 sm:mb-8">
+          {t('roleSelectionIntro')}
+        </p>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-4 mb-8">
           {['benefitLocal', 'benefitGrowth', 'benefitNetwork'].map((key, index) => (
-            <div className="role-benefit" key={key}>
-              <span className={`role-benefit-icon role-benefit-icon--${index}`} aria-hidden="true">{['✦', '↗', '✓'][index]}</span>
-              <span><strong>{t(`${key}Title`)}</strong><small>{t(`${key}Description`)}</small></span>
+            <div className="flex items-start gap-3" key={key}>
+              <span
+                className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${
+                  index === 0
+                    ? 'bg-orange-100 text-orange-600'
+                    : index === 1
+                    ? 'bg-emerald-100 text-emerald-600'
+                    : 'bg-purple-100 text-purple-600'
+                }`}
+                aria-hidden="true"
+              >
+                {['✦', '↗', '✓'][index]}
+              </span>
+              <div>
+                <strong className="text-xs sm:text-sm font-semibold text-slate-800 block">
+                  {t(`${key}Title`)}
+                </strong>
+                <small className="text-[11px] sm:text-xs text-slate-500 leading-normal block mt-0.5">
+                  {t(`${key}Description`)}
+                </small>
+              </div>
             </div>
           ))}
         </div>
-        <blockquote className="role-quote"><span aria-hidden="true">“</span><p>{t('roleQuote')}</p><cite>— {t('appName')}</cite></blockquote>
+
+        <blockquote className="border-l-2 border-orange-200 pl-4 text-xs sm:text-sm italic text-slate-600">
+          <p>“{t('roleQuote')}”</p>
+          <cite className="block not-italic text-[11px] text-slate-400 font-medium mt-1.5">
+            — {t('appName')}
+          </cite>
+        </blockquote>
       </div>
 
-      <div className="role-picker">
-        <div className="role-picker-heading">
-          <div><div className="eyebrow">{t('selectYourRole')}</div><h2>{t('selectRole')}</h2></div>
-          <div className="role-progress" aria-label={t('roleProgressLabel')}>
-            {[['1', 'chooseRoleStep'], ['2', 'createAccountStep'], ['3', 'getStartedStep']].map(([number, labelKey], index) => (
-              <div className={`role-progress-step${index === 0 ? ' active' : ''}`} key={number}>
-                <span>{number}</span><small>{t(labelKey)}</small>
-              </div>
-            ))}
-          </div>
-        </div>
-        <div className="role-grid">
+      <div className="flex flex-col justify-center w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-5 w-full">
           {roles.map((role) => (
-            <RoleCard key={role.value} role={{ ...role, title: t(role.titleKey), description: t(role.descriptionKey), overlay: t(role.overlayKey), imageAlt: t(role.imageAltKey), benefits: role.benefitKeys.map((key) => t(key)) }} selected={selectedRole === role.value} onSelect={setSelectedRole} />
+            <RoleCard
+              key={role.value}
+              role={{
+                ...role,
+                title: t(role.titleKey),
+                description: t(role.descriptionKey),
+                overlay: t(role.overlayKey),
+                imageAlt: t(role.imageAltKey),
+                benefits: role.benefitKeys.map((key) => t(key)),
+              }}
+              selected={selectedRole === role.value}
+              onSelect={setSelectedRole}
+            />
           ))}
         </div>
-        <div className="role-actions">
-          <button className="button primary" disabled={!selectedRole} onClick={continueToSignup} type="button">{t('continue')} <span aria-hidden="true">→</span></button>
-          <span className="muted selection-status" aria-live="polite">{selectedRole ? t('roleSelected') : t('selectOneRole')}</span>
+
+        <div className="flex flex-col sm:flex-row items-center gap-4 mt-6 sm:mt-8">
+          <button
+            className={`w-full sm:w-auto px-8 py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${
+              selectedRole
+                ? 'bg-[#f06535] hover:bg-[#e05424] text-white shadow-md shadow-orange-500/20 active:scale-[0.98]'
+                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+            }`}
+            disabled={!selectedRole}
+            onClick={continueToSignup}
+            type="button"
+          >
+            <span>{t('continue')}</span>
+            <span aria-hidden="true">→</span>
+          </button>
+          <span className="text-xs text-slate-500 font-medium" aria-live="polite">
+            {selectedRole ? t('roleSelected') : t('selectOneRole')}
+          </span>
         </div>
       </div>
     </section>

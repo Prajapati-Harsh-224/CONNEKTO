@@ -175,31 +175,59 @@ export default function SupplierIncomingOrdersPage() {
 
   if (isLoading) return <LoadingState message={t('loadingIncomingOrders')} />
   if (error && !orders.length) {
-    return <section className="orders-page orders-error"><div className="orders-breadcrumb"><span>{t('supplierWorkspace')}</span><span>›</span><span>{t('orders')}</span></div><h1>{t('incomingOrders')}</h1><p className="form-message error" role="alert">{error}</p><button className="button secondary" onClick={() => window.location.reload()} type="button">{t('tryAgain')}</button></section>
+    return (
+      <section className="space-y-4">
+        <div className="flex items-center gap-1.5 text-xs text-slate-500">
+          <span>{t('supplier')}</span>
+          <span aria-hidden="true">›</span>
+          <span className="font-semibold text-slate-800">{t('orders')}</span>
+        </div>
+        <h1 className="text-2xl font-bold text-slate-900">{t('incomingOrders')}</h1>
+        <p className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-xl" role="alert">{error}</p>
+        <button
+          className="px-4 py-2 text-sm font-semibold rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 transition-colors"
+          onClick={() => window.location.reload()}
+          type="button"
+        >
+          {t('tryAgain')}
+        </button>
+      </section>
+    )
   }
 
   return (
-    <section className="supplier-orders-page">
-      <div className="orders-breadcrumb">
+    <section className="space-y-6">
+      <div className="flex items-center gap-1.5 text-xs text-slate-500">
         <span>{t('supplier')}</span>
-        <span>›</span>
-        <span>{t('orders')}</span>
+        <span aria-hidden="true">›</span>
+        <span className="font-semibold text-slate-800">{t('orders')}</span>
       </div>
 
-      <div className="supplier-orders-header-row">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1>Orders</h1>
-          <p>Manage and fulfill orders from your shop customers.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold font-serif text-[#102d45]">Orders</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">Manage and fulfill orders from your shop customers.</p>
         </div>
 
-        <div className="supplier-orders-header-actions">
-          <button className="supplier-export-button" onClick={exportOrders} type="button">Export</button>
-          <div className="supplier-bulk-select-wrap">
-            <select className="supplier-bulk-select" defaultValue="" disabled={!selectedIds.length || isUpdating} onChange={(event) => {
-              const value = event.target.value
-              if (value) applyBulkStatus(value)
-              event.target.value = ''
-            }}>
+        <div className="flex items-center gap-2.5">
+          <button
+            className="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs transition-colors cursor-pointer"
+            onClick={exportOrders}
+            type="button"
+          >
+            Export
+          </button>
+          <div>
+            <select
+              className="px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 shadow-2xs outline-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
+              defaultValue=""
+              disabled={!selectedIds.length || isUpdating}
+              onChange={(event) => {
+                const value = event.target.value
+                if (value) applyBulkStatus(value)
+                event.target.value = ''
+              }}
+            >
               <option value="">Bulk Actions</option>
               <option value="Accepted">Mark as accepted</option>
               <option value="Preparing">Mark as preparing</option>
@@ -211,102 +239,148 @@ export default function SupplierIncomingOrdersPage() {
         </div>
       </div>
 
-      <div className="supplier-order-tabs" role="tablist">
+      <div className="flex items-center gap-1.5 overflow-x-auto pb-1 border-b border-slate-200" role="tablist">
         {tabs.map((tab) => (
-          <button className={activeTab === tab ? 'active' : ''} key={tab} onClick={() => setActiveTab(tab)} role="tab" type="button">
+          <button
+            className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1.5 ${
+              activeTab === tab
+                ? 'bg-emerald-600 text-white shadow-xs'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
+            }`}
+            key={tab}
+            onClick={() => setActiveTab(tab)}
+            role="tab"
+            type="button"
+          >
             <span>{tab}</span>
-            {tab !== 'All Orders' && <small>({counts[tab] || 0})</small>}
+            {tab !== 'All Orders' && <small className="opacity-80">({counts[tab] || 0})</small>}
           </button>
         ))}
       </div>
 
-      <div className="supplier-filter-panel">
-        <div className="supplier-filter-row">
-          <label className="supplier-search-field">
-            <span aria-hidden="true">⌕</span>
-            <input onChange={(event) => setSearch(event.target.value)} placeholder="Search by order ID or customer name..." type="search" value={search} />
-          </label>
-          <label className="supplier-select-field">
-            <select onChange={(event) => setStatusFilter(event.target.value)} value={statusFilter}>
+      <div className="bg-white rounded-2xl p-3 sm:p-4 border border-slate-100 shadow-xs">
+        <div className="flex flex-col sm:flex-row items-center gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-[220px] w-full sm:w-auto">
+            <span className="absolute left-3 top-2.5 text-slate-400" aria-hidden="true">⌕</span>
+            <input
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder="Search by order ID or customer name..."
+              type="search"
+              value={search}
+              className="w-full pl-8 pr-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition-colors"
+            />
+          </div>
+          <div className="flex items-center gap-2.5 w-full sm:w-auto flex-wrap">
+            <select
+              onChange={(event) => setStatusFilter(event.target.value)}
+              value={statusFilter}
+              className="flex-1 sm:flex-initial px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 bg-white outline-none cursor-pointer"
+            >
               {statusValues.map((status) => <option key={status} value={status}>{status}</option>)}
             </select>
-          </label>
-          <label className="supplier-select-field">
-            <select onChange={(event) => setCustomerFilter(event.target.value)} value={customerFilter}>
+            <select
+              onChange={(event) => setCustomerFilter(event.target.value)}
+              value={customerFilter}
+              className="flex-1 sm:flex-initial px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 bg-white outline-none cursor-pointer"
+            >
               {customerOptions.map((customer) => <option key={customer} value={customer}>{customer}</option>)}
             </select>
-          </label>
-          <label className="supplier-select-field">
-            <select onChange={(event) => setDateFilter(event.target.value)} value={dateFilter}>
+            <select
+              onChange={(event) => setDateFilter(event.target.value)}
+              value={dateFilter}
+              className="flex-1 sm:flex-initial px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 bg-white outline-none cursor-pointer"
+            >
               <option value="Select Date Range">Select Date Range</option>
               <option value="Today">Today</option>
               <option value="Last 7 days">Last 7 days</option>
               <option value="Last 30 days">Last 30 days</option>
             </select>
-          </label>
-          <button className="supplier-clear-button" onClick={clearFilters} type="button">Clear</button>
+            <button
+              onClick={clearFilters}
+              type="button"
+              className="px-3.5 py-2 rounded-xl text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+            >
+              Clear
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="supplier-table-wrap">
-        <div className="supplier-table-header">
-          <label className="supplier-checkbox-head">
-            <input checked={allVisibleSelected} onChange={(event) => handleSelectAll(event.target.checked)} type="checkbox" />
-          </label>
-          <span>Order ID</span>
-          <span>Customer (Shop)</span>
-          <span>Items</span>
-          <span>Amount</span>
-          <span>Status</span>
-          <span>Date &amp; Time</span>
-          <span>Action</span>
-        </div>
+      <div className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
+        <div className="overflow-x-auto">
+          <div className="min-w-[850px] grid grid-cols-[2.5rem_1.1fr_1.5fr_0.8fr_0.9fr_1fr_1.2fr_4.5rem] items-center gap-3 px-5 py-3 border-b border-slate-100 bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+            <label className="flex items-center cursor-pointer">
+              <input checked={allVisibleSelected} onChange={(event) => handleSelectAll(event.target.checked)} type="checkbox" className="rounded text-emerald-600 focus:ring-emerald-500" />
+            </label>
+            <span>Order ID</span>
+            <span>Customer (Shop)</span>
+            <span>Items</span>
+            <span>Amount</span>
+            <span>Status</span>
+            <span>Date &amp; Time</span>
+            <span>Action</span>
+          </div>
 
-        {visibleOrders.length ? (
-          <>
-            {visibleOrders.map((order) => {
-              const orderItems = Array.isArray(order.items) ? order.items : []
+          {visibleOrders.length ? (
+            <div className="divide-y divide-slate-50 min-w-[850px]">
+              {visibleOrders.map((order) => {
+                const orderItems = Array.isArray(order.items) ? order.items : []
 
-              return (
-                <div className="supplier-table-row" key={order.id}>
-                  <label className="supplier-checkbox-cell">
-                    <input checked={selectedIds.includes(order.id)} onChange={() => toggleSelection(order.id)} type="checkbox" />
-                  </label>
-                  <div className="supplier-order-id">{formatOrderId(order.id)}</div>
-                  <div className="supplier-customer-cell">
+                return (
+                  <div className="grid grid-cols-[2.5rem_1.1fr_1.5fr_0.8fr_0.9fr_1fr_1.2fr_4.5rem] items-center gap-3 px-5 py-3.5 hover:bg-slate-50/70 transition-colors text-xs" key={order.id}>
+                    <label className="flex items-center cursor-pointer">
+                      <input checked={selectedIds.includes(order.id)} onChange={() => toggleSelection(order.id)} type="checkbox" className="rounded text-emerald-600 focus:ring-emerald-500" />
+                    </label>
+                    <div className="font-bold text-slate-900 font-mono text-[11px]">{formatOrderId(order.id)}</div>
                     <div>
-                      <strong>{order.customer}</strong>
-                      <small>{order.area}</small>
+                      <strong className="font-semibold text-slate-800 block">{order.customer}</strong>
+                      <small className="text-slate-400 text-[11px]">{order.area}</small>
+                    </div>
+                    <div>
+                      <small className="text-slate-500 text-xs font-medium">{orderItems.length} items</small>
+                    </div>
+                    <div className="font-bold text-slate-900 tabular-nums">{formatCurrency(order.amount)}</div>
+                    <div><StatusBadge status={order.status} /></div>
+                    <div className="text-slate-500 text-[11px]">{formatDateTime(order.date)}</div>
+                    <div>
+                      <Link
+                        className="px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors inline-block text-center"
+                        to={`/dashboard/supplier/orders/${encodeURIComponent(order.id)}`}
+                      >
+                        View
+                      </Link>
                     </div>
                   </div>
-                  <div className="supplier-items-cell">
-                    <small>{orderItems.length} items</small>
-                  </div>
-                  <div className="supplier-amount-cell">{formatCurrency(order.amount)}</div>
-                  <div className="supplier-status-cell"><StatusBadge status={order.status} /></div>
-                  <div className="supplier-date-cell">{formatDateTime(order.date)}</div>
-                  <div className="supplier-action-cell">
-                    <Link className="supplier-view-button" to={`/dashboard/supplier/orders/${encodeURIComponent(order.id)}`}>
-                      View
-                    </Link>
-                  </div>
-                </div>
-              )
-            })}
-
-            <div className="supplier-pagination">
-              <span>Showing {filteredOrders.length ? (page - 1) * pageSize + 1 : 0}–{Math.min(page * pageSize, filteredOrders.length)} of {filteredOrders.length} orders</span>
-              <div className="supplier-pagination-controls">
-                <button disabled={page === 1} onClick={() => setPage((current) => Math.max(1, current - 1))} type="button">‹</button>
-                {Array.from({ length: totalPages }, (_, index) => index + 1).slice(0, 5).map((pageNumber) => (
-                  <button className={pageNumber === page ? 'active' : ''} key={pageNumber} onClick={() => setPage(pageNumber)} type="button">{pageNumber}</button>
-                ))}
-                <button disabled={page === totalPages} onClick={() => setPage((current) => Math.min(totalPages, current + 1))} type="button">›</button>
-              </div>
+                )
+              })}
             </div>
-          </>
-        ) : (
-          <EmptyState title="No orders found" message="Try another search or reset the filters to view more orders." />
+          ) : (
+            <EmptyState title="No orders found" message="Try another search or reset the filters to view more orders." />
+          )}
+        </div>
+
+        {visibleOrders.length > 0 && (
+          <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3.5 bg-slate-50/50 border-t border-slate-100 text-xs text-slate-500">
+            <span>Showing {filteredOrders.length ? (page - 1) * pageSize + 1 : 0}–{Math.min(page * pageSize, filteredOrders.length)} of {filteredOrders.length} orders</span>
+            <div className="flex items-center gap-1">
+              <button disabled={page === 1} onClick={() => setPage((current) => Math.max(1, current - 1))} type="button" className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center font-bold disabled:opacity-40 cursor-pointer">‹</button>
+              {Array.from({ length: totalPages }, (_, index) => index + 1).slice(0, 5).map((pageNumber) => (
+                <button
+                  className={`w-7 h-7 rounded-lg flex items-center justify-center font-semibold text-xs cursor-pointer ${
+                    pageNumber === page
+                      ? 'bg-emerald-600 text-white'
+                      : 'border border-slate-200 text-slate-700 hover:bg-slate-50'
+                  }`}
+                  key={pageNumber}
+                  onClick={() => setPage(pageNumber)}
+                  type="button"
+                >
+                  {pageNumber}
+                </button>
+              ))}
+              <button disabled={page === totalPages} onClick={() => setPage((current) => Math.min(totalPages, current + 1))} type="button" className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center font-bold disabled:opacity-40 cursor-pointer">›</button>
+            </div>
+          </div>
         )}
       </div>
     </section>

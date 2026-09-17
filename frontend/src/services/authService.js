@@ -12,6 +12,7 @@ export function login(credentials) {
     body: {
       emailOrPhone: credentials.emailOrPhone,
       password: credentials.password,
+      role: credentials.role,
     },
   })
 }
@@ -33,4 +34,11 @@ export function getCurrentUser() {
 
 export function logout() {
   return apiRequest('/auth/logout', { method: 'POST' })
+}
+
+export function updateProfile(profileData) {
+  return apiRequest('/auth/profile', {
+    method: 'PUT',
+    body: profileData,
+  })
 }

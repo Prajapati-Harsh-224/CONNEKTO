@@ -70,6 +70,7 @@ class LoginRequest(BaseModel):
     model_config = ConfigDict(extra="ignore")
     emailOrPhone: str
     password: str
+    role: Optional[str] = None
 
 class ProductRequest(BaseModel):
     name: str
@@ -101,6 +102,18 @@ class CheckoutRequest(BaseModel):
 
 class StatusRequest(BaseModel):
     status: str
+
+class ProfileUpdateRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    name: str
+    email: Optional[str] = None
+    phone: Optional[str] = None
+    area: Optional[str] = None
+    serviceAreas: Optional[List[str]] = None
+    category: Optional[str] = None
+    categories: Optional[List[str]] = None
+    shopName: Optional[str] = None
+    shopAddress: Optional[str] = None
 
 class Envelope(BaseModel):
     model_config = ConfigDict(extra="allow")

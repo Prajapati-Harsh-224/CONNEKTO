@@ -91,29 +91,81 @@ export default function ProductDetailPage() {
     )
   }
 
-  return <section className="product-detail-page">
-    <Link className="back-link" to={`/dashboard/shop-owner/suppliers/${supplier.id}/products`}>{t('backToCatalog', { supplier: supplier.name })}</Link>
-    <div className="product-detail-layout">
-      <ProductImage alt={`${product.name} product`} className="product-detail-image" fallbackText={product.name?.slice(0, 1)?.toUpperCase() || 'P'} src={product.imageUrl || product.imageLabel} />
-      <div className="product-detail-content">
-        <div className="eyebrow">{t('productDetails')}</div>
-        <span className="product-category">{product.category}</span>
-        <h1>{product.name}</h1>
-        <p className="product-detail-brand">{product.brand}</p>
-        <div className="detail-spec-grid">
-          <div><span>{t('packSize')}</span><strong>{product.packSize}</strong></div>
-          <div><span>{t('minimumQuantity')}</span><strong>1 Box ({unitsPerBox} pkts)</strong></div>
-          <div><span>Packaging</span><strong>1 Box = {unitsPerBox} packets</strong></div>
+  return (
+    <section className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-4">
+      <Link 
+        className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-brand-orange hover:text-brand-orange-dark transition-colors" 
+        to={`/dashboard/shop-owner/suppliers/${supplier.id}/products`}
+      >
+        ← {t('backToCatalog', { supplier: supplier.name })}
+      </Link>
+
+      <div className="p-5 sm:p-8 bg-white rounded-2xl border border-slate-200/80 shadow-xs">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8 items-start">
+          <div className="relative aspect-square w-full rounded-2xl bg-slate-50 border border-slate-100 overflow-hidden flex items-center justify-center p-6">
+            <ProductImage 
+              alt={`${product.name} product`} 
+              className="w-full h-full object-contain" 
+              fallbackText={product.name?.slice(0, 1)?.toUpperCase() || 'P'} 
+              src={product.imageUrl || product.imageLabel} 
+            />
+          </div>
+
+          <div className="space-y-4">
+            <div>
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-400">{product.category}</span>
+              <h1 className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-0.5">{product.name}</h1>
+              <p className="text-xs sm:text-sm font-semibold text-brand-orange mt-1">{product.brand}</p>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2.5 p-3.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
+              <div>
+                <span className="text-[11px] font-medium text-slate-400 block">{t('packSize')}</span>
+                <strong className="font-bold text-slate-900 mt-0.5 block truncate">{product.packSize}</strong>
+              </div>
+              <div>
+                <span className="text-[11px] font-medium text-slate-400 block">{t('minimumQuantity')}</span>
+                <strong className="font-bold text-slate-900 mt-0.5 block truncate">1 Box</strong>
+              </div>
+              <div>
+                <span className="text-[11px] font-medium text-slate-400 block">Packaging</span>
+                <strong className="font-bold text-slate-900 mt-0.5 block truncate">{unitsPerBox} pkts/box</strong>
+              </div>
+            </div>
+
+            <div className="py-3 border-y border-slate-100 space-y-1">
+              <div className="text-2xl sm:text-3xl font-black text-slate-900">
+                ₹{unitPrice.toLocaleString('en-IN')} <small className="text-xs font-normal text-slate-400">/ packet</small>
+              </div>
+              <div className="text-xs font-semibold text-emerald-700">
+                1 Box = {unitsPerBox} packets (₹{boxPrice.toLocaleString('en-IN')} / box)
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-1">
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Select Quantity</label>
+              <QuantitySelector error={quantityError} isBox={isBox} minimum={minBoxes} onChange={updateBoxes} value={boxes} />
+              <div className="text-xs font-semibold text-slate-600">
+                Total: {totalQuantity} packets (₹{(boxPrice * boxes).toLocaleString('en-IN')})
+              </div>
+            </div>
+
+            {successMessage && (
+              <div className="p-3.5 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-xs font-semibold" role="status">
+                {successMessage}
+              </div>
+            )}
+
+            <button 
+              className="w-full py-3.5 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white font-bold text-sm sm:text-base shadow-xs hover:shadow transition-all cursor-pointer" 
+              onClick={handleAddToCart} 
+              type="button"
+            >
+              {t('addToCart')}
+            </button>
+          </div>
         </div>
-        <div style={{ margin: '0.75rem 0' }}>
-          <strong className="detail-price">₹{unitPrice.toLocaleString('en-IN')} <small style={{ fontSize: '0.85rem', fontWeight: 'normal', color: '#6b7280' }}>/ packet</small></strong>
-          <div style={{ color: '#047857', fontWeight: '600', fontSize: '0.9rem', marginTop: '0.2rem' }}>1 Box = {unitsPerBox} packets (₹{boxPrice.toLocaleString('en-IN')} / box)</div>
-        </div>
-        <QuantitySelector error={quantityError} isBox={isBox} minimum={minBoxes} onChange={updateBoxes} value={boxes} />
-        <div style={{ fontSize: '0.85rem', color: '#4b5563', margin: '0.4rem 0' }}>Total: {totalQuantity} packets (₹{(boxPrice * boxes).toLocaleString('en-IN')})</div>
-        {successMessage && <p className="form-message success" role="status">{successMessage}</p>}
-        <button className="button primary detail-cart-button" onClick={handleAddToCart} type="button">{t('addToCart')}</button>
       </div>
-    </div>
-  </section>
+    </section>
+  )
 }

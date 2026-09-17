@@ -21,37 +21,44 @@ export default function RoleLayout({ role: routeRole }) {
   const avatarInitial = displayName.trim().slice(0, 1).toUpperCase()
 
   return (
-    <div className={`workspace-layout${role === 'shop-owner' ? ' shop-owner-layout' : ''}${role === 'supplier' ? ' supplier-layout' : ''}`}>
-      <header className="workspace-header">
-        <div className="workspace-header-brand">
-          <Link className="brand" to="/" aria-label={t('connectoHome')}>
-            <span className="brand-mark">C</span>
-            <span>{messages.appName}</span>
+    <div className="min-h-screen flex flex-col bg-[#fbfaf8]">
+      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100 h-16 px-4 sm:px-6 flex items-center justify-between gap-4">
+        <div className="flex items-center gap-4">
+          <Link className="flex items-center gap-2.5 shrink-0" to="/" aria-label={t('connectoHome')}>
+            <span className="w-8 h-8 rounded-full bg-[#f06535] text-white flex items-center justify-center font-bold text-base shadow-sm shrink-0">
+              C
+            </span>
+            <span className="font-bold text-slate-900 text-lg tracking-tight hidden sm:inline">{messages.appName}</span>
           </Link>
         </div>
 
         {role !== 'supplier' && role !== 'shop-owner' ? (
-          <div className="workspace-header-search">
-            <span className="workspace-search-icon"><FiSearch size={18} /></span>
-            <input aria-label={t('searchSuppliersOrders')} placeholder={t('searchSuppliersOrders')} type="text" />
+          <div className="relative flex-1 max-w-md hidden md:flex items-center">
+            <span className="absolute left-3 text-slate-400"><FiSearch size={16} /></span>
+            <input
+              aria-label={t('searchSuppliersOrders')}
+              placeholder={t('searchSuppliersOrders')}
+              type="text"
+              className="w-full pl-9 pr-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50/50 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
+            />
           </div>
         ) : null}
 
-        <div className="workspace-header-tools">
-          <div className="workspace-language">
-            <FiGlobe size={16} />
+        <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+          <div className="hidden sm:flex items-center gap-1.5 text-slate-600">
+            <FiGlobe size={15} className="text-slate-400" />
             <LanguageSelector />
           </div>
 
-          <div style={{ position: 'relative' }}>
+          <div className="relative">
             <button
-              className="workspace-icon-button"
+              className="relative p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
               type="button"
               aria-label={t('notifications') || 'Notifications'}
               onClick={() => setIsNotifOpen(prev => !prev)}
             >
               <FiBell size={18} />
-              {unreadCount > 0 && <span className="workspace-notification-dot" aria-hidden="true" />}
+              {unreadCount > 0 && <span className="absolute top-1.5 right-1.5 w-2.5 h-2.5 bg-rose-500 rounded-full ring-2 ring-white" aria-hidden="true" />}
             </button>
             <NotificationDropdown
               role={role}
@@ -60,19 +67,24 @@ export default function RoleLayout({ role: routeRole }) {
               onUnreadChange={setUnreadCount}
             />
           </div>
-          <Link className="workspace-user" to={`/dashboard/${role}/profile`} aria-label={`${displayName}, ${roleLabel}. ${t('profile')}`}>
-            <span className="workspace-user-avatar" aria-hidden="true">{avatarInitial}</span>
-            <div className="workspace-user-meta">
-              <span className="workspace-user-name">{displayName}</span>
-              <span className="workspace-user-role">{roleLabel}</span>
+
+          <Link className="flex items-center gap-2.5 p-1 sm:px-2 sm:py-1.5 rounded-xl hover:bg-slate-100/60 transition-colors" to={`/dashboard/${role}/profile`} aria-label={`${displayName}, ${roleLabel}. ${t('profile')}`}>
+            <span className="w-8 h-8 rounded-full bg-orange-100 text-[#f06535] flex items-center justify-center font-bold text-sm shrink-0" aria-hidden="true">
+              {avatarInitial}
+            </span>
+            <div className="hidden md:flex flex-col text-left leading-tight">
+              <span className="text-xs font-bold text-slate-800">{displayName}</span>
+              <span className="text-[10px] text-slate-400 capitalize">{roleLabel}</span>
             </div>
           </Link>
         </div>
       </header>
 
-      <div className="workspace-body">
+      <div className="flex flex-1 w-full relative">
         <Sidebar role={role} />
-        <main className="workspace-content"><Outlet /></main>
+        <main className="flex-1 min-w-0 px-3 sm:px-6 lg:px-8 py-5 max-w-7xl mx-auto w-full pb-20 md:pb-8">
+          <Outlet />
+        </main>
       </div>
       <MobileNavigation role={role} />
     </div>

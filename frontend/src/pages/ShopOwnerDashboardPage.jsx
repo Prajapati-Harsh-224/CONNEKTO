@@ -83,16 +83,17 @@ export default function ShopOwnerDashboardPage() {
   if (isLoading) return <LoadingState message={t('loadingWorkspace')} />
 
   return (
-    <section className="shop-owner-dashboard">
-      <header className="shop-owner-dashboard-header">
+    <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
+      <header className="pb-2 border-b border-slate-100">
         <div>
-          <h1>{getDynamicGreeting()}, {firstName}</h1>
-          <p>{t('hereIsLatestView')}</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
+            {getDynamicGreeting()}, {firstName}
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('hereIsLatestView')}</p>
         </div>
       </header>
 
-
-      <div className="summary-card-grid">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
         {summaryCards.map((card) => (
           <MetricCard
             key={card.label}
@@ -106,69 +107,92 @@ export default function ShopOwnerDashboardPage() {
         ))}
       </div>
 
-      <div className="shop-owner-lower-grid">
-        <section className="data-panel recent-orders-panel">
-          <div className="panel-header">
-            <div className="panel-title-wrap">
-              <span className="panel-icon accent-orange" aria-hidden="true"><FiList /></span>
-              <h2>{t('recentOrders')}</h2>
+      <div className="grid grid-cols-1 lg:grid-cols-[1.8fr_1.2fr] gap-6 items-start">
+        <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4">
+          <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-orange-50 text-brand-orange text-lg">
+                <FiList />
+              </span>
+              <h2 className="text-base sm:text-lg font-bold text-slate-900">{t('recentOrders')}</h2>
             </div>
-            <Link className="panel-link" to="/dashboard/shop-owner/orders">{t('viewAll')} <FiArrowRight /></Link>
+            <Link className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-orange hover:text-brand-orange-dark transition-colors" to="/dashboard/shop-owner/orders">
+              {t('viewAll')} <FiArrowRight />
+            </Link>
           </div>
-          {recentOrders.length ? (
-            <div className="recent-orders-table" role="table" aria-label={t('recentOrders')}>
-              <div className="recent-orders-head" role="row">
-                <span role="columnheader">#</span>
-                <span role="columnheader">{t('supplier')}</span>
-                <span role="columnheader">{t('amount')}</span>
-                <span role="columnheader">{t('status')}</span>
-                <span role="columnheader">{t('date')}</span>
-                <span aria-hidden="true" />
-              </div>
 
-              {recentOrders.map((order) => (
-                <div className="recent-orders-row" key={order.id} role="row">
-                  <span role="cell" className="num-font">{order.id}</span>
-                  <span data-label={t('supplier')} role="cell">{order.supplier}</span>
-                  <span data-label={t('amount')} role="cell" className="num-font">{order.amount}</span>
-                  <span data-label={t('status')} role="cell"><StatusBadge status={order.status} /></span>
-                  <span data-label={t('date')} role="cell" className="num-font">{order.date}</span>
-                  <Link className="row-arrow" to={`/dashboard/shop-owner/orders/${encodeURIComponent(order.id)}`} aria-label={`View ${order.id}`}>
-                    <FiChevronRight size={16} />
-                  </Link>
+          {recentOrders.length ? (
+            <div className="overflow-x-auto -mx-5 sm:-mx-6 px-5 sm:px-6">
+              <div className="min-w-[540px]">
+                <div className="grid grid-cols-[1fr_1.8fr_1.2fr_1.2fr_1.2fr_auto] gap-3 py-2.5 px-3 bg-slate-50 rounded-xl text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  <span>#</span>
+                  <span>{t('supplier')}</span>
+                  <span>{t('amount')}</span>
+                  <span>{t('status')}</span>
+                  <span>{t('date')}</span>
+                  <span />
                 </div>
-              ))}
+
+                <div className="divide-y divide-slate-100">
+                  {recentOrders.map((order) => (
+                    <div className="grid grid-cols-[1fr_1.8fr_1.2fr_1.2fr_1.2fr_auto] gap-3 items-center py-3 px-3 hover:bg-slate-50/60 transition-colors" key={order.id}>
+                      <span className="text-xs font-mono font-bold text-slate-700 truncate">{order.id}</span>
+                      <span className="text-sm font-semibold text-slate-900 truncate">{order.supplier}</span>
+                      <span className="text-xs font-bold text-slate-900">{order.amount}</span>
+                      <span><StatusBadge status={order.status} /></span>
+                      <span className="text-xs text-slate-500 whitespace-nowrap">{order.date}</span>
+                      <Link 
+                        className="flex items-center justify-center w-7 h-7 rounded-lg border border-slate-200 hover:border-brand-orange hover:bg-orange-50 hover:text-brand-orange text-slate-400 transition-colors" 
+                        to={`/dashboard/shop-owner/orders/${encodeURIComponent(order.id)}`} 
+                        aria-label={`View ${order.id}`}
+                      >
+                        <FiChevronRight size={16} />
+                      </Link>
+                    </div>
+                  ))}
+                </div>
+              </div>
             </div>
           ) : (
             <EmptyState title="No recent orders" message="When you place orders with suppliers, they will appear here." />
           )}
         </section>
 
-        <section className="data-panel deliveries-panel">
-          <div className="panel-header">
-            <div className="panel-title-wrap">
-              <span className="panel-icon accent-orange" aria-hidden="true"><FiTruck /></span>
-              <h2>{t('todaysDeliveries')}</h2>
+        <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4">
+          <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-orange-50 text-brand-orange text-lg">
+                <FiTruck />
+              </span>
+              <h2 className="text-base sm:text-lg font-bold text-slate-900">{t('todaysDeliveries')}</h2>
             </div>
-            <Link className="panel-link" to="/dashboard/shop-owner/orders">{t('viewAll')} <FiArrowRight /></Link>
+            <Link className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-orange hover:text-brand-orange-dark transition-colors" to="/dashboard/shop-owner/orders">
+              {t('viewAll')} <FiArrowRight />
+            </Link>
           </div>
 
           {deliveries.length ? (
-            <div className="deliveries-list">
+            <div className="space-y-3">
               {deliveries.map((delivery) => (
-                <div className="delivery-item" key={`${delivery.orderId}-${delivery.supplier}`}>
-                  <div className="delivery-icon" aria-hidden="true"><FiTruck size={16} /></div>
-                  <div className="delivery-meta">
-                    <div className="delivery-row-top">
-                      <strong>{delivery.supplier}</strong>
+                <div className="flex items-center gap-3 p-3.5 rounded-xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50/50 transition-all" key={`${delivery.orderId}-${delivery.supplier}`}>
+                  <div className="flex items-center justify-center w-9 h-9 rounded-xl bg-orange-50 text-brand-orange shrink-0" aria-hidden="true">
+                    <FiTruck size={16} />
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <strong className="text-sm font-semibold text-slate-900 truncate">{delivery.supplier}</strong>
                       <StatusBadge status={delivery.status} />
                     </div>
-                    <div className="delivery-row-bottom">
-                      <span className="num-font">{delivery.orderId}</span>
-                      <span className="num-font">{delivery.time}</span>
+                    <div className="flex items-center justify-between text-xs text-slate-400 mt-1 font-mono">
+                      <span>{delivery.orderId}</span>
+                      <span>{delivery.time}</span>
                     </div>
                   </div>
-                  <Link className="row-arrow" to={`/dashboard/shop-owner/orders/${encodeURIComponent(delivery.orderId)}`} aria-label={`View ${delivery.orderId}`}>
+                  <Link 
+                    className="flex items-center justify-center w-7 h-7 rounded-lg border border-slate-200 hover:border-brand-orange hover:bg-orange-50 hover:text-brand-orange text-slate-400 transition-colors shrink-0" 
+                    to={`/dashboard/shop-owner/orders/${encodeURIComponent(delivery.orderId)}`} 
+                    aria-label={`View ${delivery.orderId}`}
+                  >
                     <FiChevronRight size={16} />
                   </Link>
                 </div>
@@ -180,13 +204,22 @@ export default function ShopOwnerDashboardPage() {
         </section>
       </div>
 
-      <section className="dashboard-insight">
-        <span className="dashboard-insight-icon" aria-hidden="true"><HiSparkles /></span>
-        <div>
-          <strong>{t('keepBusinessStocked')}</strong>
-          <p>{t('spendingInsight')}</p>
+      <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 border border-orange-200/70 shadow-xs">
+        <div className="flex items-start sm:items-center gap-3.5">
+          <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-brand-orange text-white text-xl shrink-0 shadow-xs" aria-hidden="true">
+            <HiSparkles />
+          </span>
+          <div>
+            <strong className="text-sm sm:text-base font-extrabold text-slate-900">{t('keepBusinessStocked')}</strong>
+            <p className="text-xs sm:text-sm text-slate-600 mt-0.5">{t('spendingInsight')}</p>
+          </div>
         </div>
-        <Link className="panel-link" to="/dashboard/shop-owner/analytics">{t('viewInsights')} <FiArrowRight /></Link>
+        <Link 
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-orange-200 text-xs font-bold text-brand-orange hover:bg-orange-50 transition-all shadow-xs shrink-0 self-start sm:self-auto" 
+          to="/dashboard/shop-owner/analytics"
+        >
+          {t('viewInsights')} <FiArrowRight />
+        </Link>
       </section>
     </section>
   )

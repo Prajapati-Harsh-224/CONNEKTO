@@ -73,54 +73,186 @@ export default function ShopOwnerCartPage() {
     notifyCartUpdated()
   }
 
-  if (!cart.length) return <section className="cart-page cart-empty-page"><div className="cart-breadcrumb">{t('shopOwner')} <span>›</span> {t('cart')}</div><h1 className="cart-empty-heading">{t('cartEmpty')}</h1><EmptyState title={t('noItemsAdded')} message={t('browseCatalogToStart')} /><Link className="button primary" to="/dashboard/shop-owner/suppliers">{t('browseSuppliers')}</Link></section>
+  if (!cart.length) {
+    return (
+      <section className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+          <span>{t('shopOwner')}</span>
+          <span aria-hidden="true">›</span>
+          <span className="text-slate-700">{t('cart')}</span>
+        </div>
+        <div className="text-center py-12 bg-white rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
+          <h1 className="text-2xl sm:text-3xl font-black text-slate-900">{t('cartEmpty')}</h1>
+          <EmptyState title={t('noItemsAdded')} message={t('browseCatalogToStart')} />
+          <Link 
+            className="inline-block px-6 py-3 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white font-bold text-sm shadow-xs hover:shadow transition-all" 
+            to="/dashboard/shop-owner/suppliers"
+          >
+            {t('browseSuppliers')}
+          </Link>
+        </div>
+      </section>
+    )
+  }
 
   return (
-    <section className="cart-page">
-      <div className="cart-breadcrumb"><span>{t('shopOwner')}</span><span>›</span><span>{t('cart')}</span></div>
-      <div className="cart-heading"><div><h1>{t('yourCart')}</h1><p>{t('cartReview')}</p></div></div>
-      <div className="cart-layout">
-        <div className="cart-groups">
+    <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
+      <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+        <span>{t('shopOwner')}</span>
+        <span aria-hidden="true">›</span>
+        <span className="text-slate-700">{t('cart')}</span>
+      </div>
+
+      <div className="pb-2 border-b border-slate-100">
+        <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">{t('yourCart')}</h1>
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('cartReview')}</p>
+      </div>
+
+      <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 items-start">
+        <div className="space-y-6">
           {groups.map((group) => {
             const isCollapsed = collapsedSuppliers[group.supplierId]
-            return <section className="cart-supplier-group" key={group.supplierId}>
-              <div className="cart-group-heading">
-                <div className="cart-supplier-identity"><div className="cart-supplier-avatar" aria-hidden="true">{getInitials(group.name)}</div><div><div className="cart-supplier-name-row"><h2>{group.name}</h2>{group.verified && <span className="cart-verified">● Verified Supplier</span>}</div><div className="cart-supplier-meta"><span>{group.location}</span><span>|</span><span>{group.category}</span></div></div></div>
-                <div className="cart-group-summary"><span>{t('supplierSubtotal')}</span><strong>{formatPrice(group.subtotal)}</strong></div>
-                <button className="cart-collapse-button" type="button" aria-label={isCollapsed ? `Expand ${group.name}` : `Collapse ${group.name}`} aria-expanded={!isCollapsed} onClick={() => setCollapsedSuppliers((current) => ({ ...current, [group.supplierId]: !current[group.supplierId] }))}>{isCollapsed ? '⌄' : '⌃'}</button>
-              </div>
-              {!isCollapsed && <div className="cart-group-items">{group.items.map((item) => {
-                const unitsPerBox = Math.max(1, Number(item.unitsPerBox || item.minimumQuantity || 1))
-                const boxes = Number(item.boxes || Math.max(1, Math.round(Number(item.quantity || unitsPerBox) / unitsPerBox)))
-                return (
-                  <article className="cart-item" key={`${item.supplierId}-${item.productId}`}>
-                    <ProductImage alt={`${item.name} cart item`} aria-hidden="true" className="cart-item-art" fallbackText={(item.name || 'P').slice(0, 1).toUpperCase()} src={item.imageUrl || item.imageLabel || ''} />
-                    <div className="cart-item-info">
-                      <strong>{item.name}</strong>
-                      <span>{item.packSize} <b>|</b> {item.brand}</span>
-                      <small>
-                        {formatPrice(parsePrice(item.unitPrice))}/packet
-                        <span style={{ display: 'block', color: '#047857', fontWeight: '600' }}>1 Box = {unitsPerBox} packets ({formatPrice(parsePrice(item.unitPrice) * unitsPerBox)}/box)</span>
-                      </small>
-                      <div style={{ fontSize: '0.82rem', color: '#4b5563', marginTop: '0.25rem', fontWeight: '500' }}>{item.quantity} packets</div>
+            return (
+              <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs overflow-hidden" key={group.supplierId}>
+                <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5 bg-slate-50/80 border-b border-slate-100">
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center justify-center w-10 h-10 rounded-xl bg-slate-900 text-white font-black text-sm shadow-xs" aria-hidden="true">
+                      {getInitials(group.name)}
                     </div>
-                    <QuantitySelector
-                      error={quantityErrors[item.productId]}
-                      isBox={true}
-                      minimum={1}
-                      onChange={(val) => changeQuantity(item, val)}
-                      value={boxes}
-                    />
-                    <strong className="cart-item-subtotal">{formatPrice(parsePrice(item.unitPrice) * Number(item.quantity))}</strong>
-                    <button className="remove-item" onClick={() => removeItem(item)} type="button" aria-label={`Remove ${item.name}`}>×</button>
-                  </article>
-                )
-              })}</div>}
-              <div className="cart-group-footer"><span>{group.items.length} {group.items.length === 1 ? t('itemCount') : t('itemsCount')}</span><button type="button" onClick={() => group.items.forEach(removeItem)}>Clear supplier cart</button></div>
-            </section>
+                    <div className="flex flex-col min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <h2 className="text-sm sm:text-base font-bold text-slate-900 truncate">{group.name}</h2>
+                        {group.verified && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold">
+                            ● Verified
+                          </span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1.5 text-xs text-slate-400 truncate">
+                        <span>{group.location}</span>
+                        {group.category && <span>• {group.category}</span>}
+                      </div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-4">
+                    <div className="text-right">
+                      <span className="text-[11px] font-semibold text-slate-400 block uppercase tracking-wider">{t('supplierSubtotal')}</span>
+                      <strong className="text-base sm:text-lg font-black text-slate-900">{formatPrice(group.subtotal)}</strong>
+                    </div>
+                    <button 
+                      className="p-1.5 rounded-lg border border-slate-200 hover:bg-white text-slate-600 transition-colors cursor-pointer text-xs font-bold" 
+                      type="button" 
+                      aria-label={isCollapsed ? `Expand ${group.name}` : `Collapse ${group.name}`} 
+                      aria-expanded={!isCollapsed} 
+                      onClick={() => setCollapsedSuppliers((current) => ({ ...current, [group.supplierId]: !current[group.supplierId] }))}
+                    >
+                      {isCollapsed ? '▼' : '▲'}
+                    </button>
+                  </div>
+                </div>
+
+                {!isCollapsed && (
+                  <div className="divide-y divide-slate-100 p-4 sm:p-5">
+                    {group.items.map((item) => {
+                      const unitsPerBox = Math.max(1, Number(item.unitsPerBox || item.minimumQuantity || 1))
+                      const boxes = Number(item.boxes || Math.max(1, Math.round(Number(item.quantity || unitsPerBox) / unitsPerBox)))
+                      return (
+                        <article className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 first:pt-0 last:pb-0" key={`${item.supplierId}-${item.productId}`}>
+                          <div className="flex items-center gap-3.5 min-w-0">
+                            <ProductImage 
+                              alt={`${item.name} cart item`} 
+                              aria-hidden="true" 
+                              className="w-14 h-14 sm:w-16 sm:h-16 rounded-xl object-cover bg-slate-100 shrink-0 border border-slate-100" 
+                              fallbackText={(item.name || 'P').slice(0, 1).toUpperCase()} 
+                              src={item.imageUrl || item.imageLabel || ''} 
+                            />
+                            <div className="flex flex-col min-w-0">
+                              <strong className="text-sm sm:text-base font-bold text-slate-900 truncate">{item.name}</strong>
+                              <span className="text-xs text-slate-400 font-medium">{item.packSize} • {item.brand}</span>
+                              <div className="text-xs text-emerald-700 font-semibold mt-1">
+                                1 Box = {unitsPerBox} pkts ({formatPrice(parsePrice(item.unitPrice) * unitsPerBox)}/box)
+                              </div>
+                            </div>
+                          </div>
+
+                          <div className="flex items-center justify-between sm:justify-end gap-4 w-full sm:w-auto">
+                            <QuantitySelector
+                              error={quantityErrors[item.productId]}
+                              isBox={true}
+                              minimum={1}
+                              onChange={(val) => changeQuantity(item, val)}
+                              value={boxes}
+                            />
+                            <div className="text-right min-w-[90px]">
+                              <strong className="text-sm sm:text-base font-black text-slate-900 block">
+                                {formatPrice(parsePrice(item.unitPrice) * Number(item.quantity))}
+                              </strong>
+                              <span className="text-[11px] text-slate-400">{item.quantity} pkts</span>
+                            </div>
+                            <button 
+                              className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer text-lg font-bold" 
+                              onClick={() => removeItem(item)} 
+                              type="button" 
+                              aria-label={`Remove ${item.name}`}
+                            >
+                              ×
+                            </button>
+                          </div>
+                        </article>
+                      )
+                    })}
+                  </div>
+                )}
+
+                <div className="flex items-center justify-between px-5 py-3 bg-slate-50/50 border-t border-slate-100 text-xs text-slate-500 font-medium">
+                  <span>{group.items.length} {group.items.length === 1 ? t('itemCount') : t('itemsCount')}</span>
+                  <button className="text-rose-600 hover:text-rose-800 font-semibold cursor-pointer" type="button" onClick={() => group.items.forEach(removeItem)}>
+                    Clear supplier cart
+                  </button>
+                </div>
+              </section>
+            )
           })}
         </div>
-        <aside className="cart-total-panel"><div className="cart-summary-heading"><span className="cart-summary-icon" aria-hidden="true">▣</span><h2>{t('orderSummary')}</h2></div><div className="cart-summary-stat"><span>Total Suppliers</span><strong>{groups.length}</strong></div><div className="cart-summary-stat"><span>Total Boxes</span><strong>{totalBoxes}</strong></div><div className="cart-summary-total"><span>Total Amount</span><strong>{formatPrice(total)}</strong></div><Link className="button primary" to="/dashboard/shop-owner/checkout">{t('continueToCheckout')} <span aria-hidden="true">→</span></Link><div className="cart-trust-note"><strong>Secure & split payments</strong><span>Your payment will be securely processed for each supplier.</span></div><Link className="cart-continue-shopping" to="/dashboard/shop-owner/suppliers">‹&nbsp; Continue Shopping</Link></aside>
+
+        <aside className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4 xl:sticky xl:top-20">
+          <h2 className="text-base font-black text-slate-900 pb-3 border-b border-slate-100">{t('orderSummary')}</h2>
+          
+          <div className="space-y-2 text-xs sm:text-sm text-slate-600">
+            <div className="flex justify-between">
+              <span>Total Suppliers</span>
+              <strong className="font-bold text-slate-800">{groups.length}</strong>
+            </div>
+            <div className="flex justify-between">
+              <span>Total Boxes</span>
+              <strong className="font-bold text-slate-800">{totalBoxes}</strong>
+            </div>
+            <div className="flex items-center justify-between text-base font-black text-slate-900 pt-3 border-t border-slate-100">
+              <span>Total Amount</span>
+              <span>{formatPrice(total)}</span>
+            </div>
+          </div>
+
+          <Link 
+            className="flex items-center justify-center gap-2 w-full py-3.5 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white font-bold text-sm shadow-xs hover:shadow transition-all" 
+            to="/dashboard/shop-owner/checkout"
+          >
+            {t('continueToCheckout')} <span aria-hidden="true">→</span>
+          </Link>
+
+          <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-500 space-y-0.5">
+            <strong className="font-bold text-slate-700 block">Secure & split payments</strong>
+            <span>Your payment will be securely processed for each supplier.</span>
+          </div>
+
+          <Link 
+            className="block text-center text-xs font-bold text-brand-orange hover:text-brand-orange-dark transition-colors pt-1" 
+            to="/dashboard/shop-owner/suppliers"
+          >
+            ← Continue Shopping
+          </Link>
+        </aside>
       </div>
     </section>
   )

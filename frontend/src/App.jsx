@@ -61,6 +61,8 @@ export default function App() {
             <Route path="home" element={<SupplierDashboardPage />} />
             <Route path="orders" element={<SupplierIncomingOrdersPage />} />
             <Route path="orders/:orderId" element={<SupplierIncomingOrderDetailPage />} />
+            <Route path="incoming-orders" element={<Navigate replace to="/dashboard/supplier/orders" />} />
+            <Route path="incoming-orders/:orderId" element={<SupplierIncomingOrderDetailPage />} />
             <Route path="products" element={<SupplierProductManagementPage />} />
             <Route path="customers" element={<SupplierCustomersPage />} />
             <Route path="analytics" element={<SupplierAnalyticsPage />} />

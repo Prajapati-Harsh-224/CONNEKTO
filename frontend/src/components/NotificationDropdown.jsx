@@ -44,7 +44,7 @@ export default function NotificationDropdown({ role, isOpen, onClose, onUnreadCh
               title: `Order #${order.id.slice(0, 8)}: ${order.status}`,
               message: `Supplier: ${order.supplierName || 'Supplier'} · Subtotal: ₹${Number(order.subtotal || 0).toLocaleString('en-IN')}`,
               time: order.updatedAt || order.createdAt,
-              link: `/dashboard/shop-owner/orders/${order.id}`,
+              link: order.id ? `/dashboard/shop-owner/orders/${order.id}` : '/dashboard/shop-owner/orders',
               status: order.status
             }))
             setNotifications(list)
@@ -56,10 +56,12 @@ export default function NotificationDropdown({ role, isOpen, onClose, onUnreadCh
               id: `supplier-order-${order.id}-${order.status}-${order.updatedAt || order.createdAt}`,
               orderId: order.id,
               type: 'supplier_order',
-              title: `New Order #${order.id.slice(0, 8)}`,
+              title: `New Order #${(order.id || '').slice(0, 8)}`,
               message: `From ${order.shopName || order.shopOwnerName || 'Shop Owner'} · Status: ${order.status} · Amount: ₹${Number(order.subtotal || 0).toLocaleString('en-IN')}`,
               time: order.createdAt,
-              link: `/dashboard/supplier/incoming-orders/${order.id}`,
+              link: role === 'gruh-udyog'
+                ? '/dashboard/gruh-udyog/orders'
+                : (order.id ? `/dashboard/supplier/orders/${order.id}` : '/dashboard/supplier/orders'),
               status: order.status
             }))
             setNotifications(list)
@@ -111,64 +113,37 @@ export default function NotificationDropdown({ role, isOpen, onClose, onUnreadCh
   if (!isOpen) return null
 
   return (
-    <div className="notification-dropdown" ref={dropdownRef} style={{
-      position: 'absolute',
-      top: 'calc(100% + 8px)',
-      right: '0',
-      width: '360px',
-      maxHeight: '440px',
-      backgroundColor: '#ffffff',
-      boxShadow: '0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)',
-      borderRadius: '12px',
-      border: '1px solid #e5e7eb',
-      zIndex: 1000,
-      display: 'flex',
-      flexDirection: 'column',
-      overflow: 'hidden'
-    }}>
-      <div style={{
-        padding: '12px 16px',
-        borderBottom: '1px solid #f3f4f6',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'space-between',
-        backgroundColor: '#fafafa'
-      }}>
-        <div style={{ fontWeight: 600, fontSize: '0.95rem', color: '#111827' }}>
-          Notifications {unreadCount > 0 && <span style={{
-            background: '#ef4444',
-            color: '#fff',
-            borderRadius: '9999px',
-            padding: '2px 8px',
-            fontSize: '0.75rem',
-            marginLeft: '6px'
-          }}>{unreadCount}</span>}
+    <div
+      ref={dropdownRef}
+      className="absolute top-[calc(100%+0.5rem)] -right-14 sm:right-0 w-[calc(100vw-2rem)] max-w-[360px] max-h-[440px] bg-white shadow-2xl rounded-2xl border border-slate-100 z-50 flex flex-col overflow-hidden"
+    >
+      <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
+        <div className="font-bold text-sm text-slate-900 flex items-center gap-1.5">
+          <span>Notifications</span>
+          {unreadCount > 0 && (
+            <span className="bg-rose-500 text-white rounded-full px-2 py-0.5 text-[11px] font-bold">
+              {unreadCount}
+            </span>
+          )}
         </div>
         {unreadCount > 0 && (
           <button
             onClick={handleMarkAllRead}
             type="button"
-            style={{
-              background: 'none',
-              border: 'none',
-              color: '#2563eb',
-              fontSize: '0.8rem',
-              fontWeight: 500,
-              cursor: 'pointer'
-            }}
+            className="text-xs font-semibold text-[#f06535] hover:text-[#e05424] cursor-pointer bg-transparent border-none p-0"
           >
             Mark all read
           </button>
         )}
       </div>
 
-      <div style={{ overflowY: 'auto', flex: 1, padding: '8px 0' }}>
+      <div className="overflow-y-auto flex-1 divide-y divide-slate-50 py-1">
         {loading ? (
-          <div style={{ padding: '24px', textAlign: 'center', color: '#6b7280', fontSize: '0.875rem' }}>
+          <div className="p-6 text-center text-slate-400 text-xs">
             Loading notifications...
           </div>
         ) : notifications.length === 0 ? (
-          <div style={{ padding: '24px', textAlign: 'center', color: '#6b7280', fontSize: '0.875rem' }}>
+          <div className="p-6 text-center text-slate-400 text-xs">
             No notifications available
           </div>
         ) : (
@@ -179,33 +154,25 @@ export default function NotificationDropdown({ role, isOpen, onClose, onUnreadCh
                 key={n.id}
                 to={n.link}
                 onClick={() => handleItemClick(n.id)}
-                style={{
-                  display: 'block',
-                  padding: '12px 16px',
-                  borderBottom: '1px solid #f9fafb',
-                  backgroundColor: isRead ? '#ffffff' : '#eff6ff',
-                  textDecoration: 'none',
-                  transition: 'background-color 0.15s ease'
-                }}
+                className={`block px-4 py-3 transition-colors ${
+                  isRead ? 'bg-white hover:bg-slate-50' : 'bg-orange-50/40 hover:bg-orange-50/70'
+                }`}
               >
-                <div style={{ display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
-                  <div style={{
-                    width: '8px',
-                    height: '8px',
-                    borderRadius: '50%',
-                    backgroundColor: isRead ? 'transparent' : '#2563eb',
-                    marginTop: '6px',
-                    flexShrink: 0
-                  }} />
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '0.875rem', fontWeight: isRead ? 500 : 600, color: '#1f2937' }}>
+                <div className="flex items-start gap-2.5">
+                  <div
+                    className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
+                      isRead ? 'bg-transparent' : 'bg-[#f06535]'
+                    }`}
+                  />
+                  <div className="flex-1 min-w-0">
+                    <div className={`text-xs ${isRead ? 'font-medium text-slate-700' : 'font-bold text-slate-900'} truncate`}>
                       {n.title}
                     </div>
-                    <div style={{ fontSize: '0.8rem', color: '#4b5563', marginTop: '2px' }}>
+                    <div className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">
                       {n.message}
                     </div>
                     {n.time && (
-                      <div style={{ fontSize: '0.725rem', color: '#9ca3af', marginTop: '4px' }}>
+                      <div className="text-[10px] text-slate-400 mt-1">
                         {new Date(n.time).toLocaleString()}
                       </div>
                     )}

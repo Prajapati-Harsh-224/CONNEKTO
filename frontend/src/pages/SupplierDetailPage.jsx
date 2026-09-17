@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
+import { FiMapPin, FiCheckCircle, FiArrowRight, FiArrowLeft } from 'react-icons/fi'
 import EmptyState from '../components/EmptyState.jsx'
 import LoadingState from '../components/LoadingState.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
@@ -39,43 +40,77 @@ export default function SupplierDetailPage() {
   }, [supplierId])
 
   if (isLoading) return <LoadingState message={t('loadingSupplierCatalog')} />
-  if (error) return <section className="supplier-detail-page"><p className="form-message error" role="alert">{error}</p></section>
+  if (error) {
+    return (
+      <section className="p-4 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-xl" role="alert">
+        {error}
+      </section>
+    )
+  }
   if (notFound || !supplier) return <EmptyState title={t('supplierNotFound')} message={t('supplierCatalogMessage')} />
 
   const initials = getSupplierInitials(supplier.name)
   const displayLocation = (Array.isArray(supplier.serviceAreas) && supplier.serviceAreas.length > 0) ? supplier.serviceAreas.join(', ') : (supplier.location || '')
 
   return (
-    <section className="supplier-detail-page">
-      <div className="supplier-detail-breadcrumb">
-        Shop Owner <span>→</span> Suppliers <span>→</span> {supplier.name}
-      </div>
+    <section className="space-y-6 max-w-4xl mx-auto">
+      {/* Breadcrumb */}
+      <nav className="flex items-center gap-2 text-xs font-semibold text-slate-500">
+        <span>Shop Owner</span>
+        <span>→</span>
+        <Link to="/dashboard/shop-owner/suppliers" className="hover:text-brand-orange transition-colors">Suppliers</Link>
+        <span>→</span>
+        <span className="text-slate-800 font-bold truncate">{supplier.name}</span>
+      </nav>
 
-      <div className="supplier-profile-panel">
-        <div className="supplier-profile-header">
-          <div className="supplier-profile-avatar" aria-hidden="true">{initials}</div>
+      {/* Supplier Profile Panel */}
+      <div className="bg-white rounded-2xl border border-slate-200/80 p-6 sm:p-8 shadow-xs space-y-6">
+        <div className="flex flex-col sm:flex-row items-start gap-5">
+          <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-2xl bg-orange-100 text-brand-orange font-bold text-xl sm:text-2xl flex items-center justify-center shrink-0 shadow-xs border border-orange-200/60">
+            {initials}
+          </div>
 
-          <div className="supplier-profile-copy">
-            <div className="supplier-profile-heading-row">
-              <span className="supplier-profile-category">{supplier.category}</span>
-              {supplier.isVerified && <span className="supplier-verified-badge">Verified Supplier</span>}
+          <div className="flex-1 min-w-0 space-y-2">
+            <div className="flex flex-wrap items-center gap-2">
+              <span className="px-2.5 py-0.5 rounded-full text-xs font-bold text-brand-orange bg-orange-50 border border-orange-200 uppercase tracking-wider">
+                {supplier.category}
+              </span>
+              {supplier.isVerified && (
+                <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200">
+                  <FiCheckCircle className="w-3.5 h-3.5" />
+                  Verified Supplier
+                </span>
+              )}
             </div>
-            <h1>{supplier.name}</h1>
+
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">{supplier.name}</h1>
+
             {displayLocation && (
-              <div className="supplier-profile-location" style={{ fontSize: '0.92rem', color: '#4b5563', marginTop: '0.25rem', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
-                📍 {displayLocation}
+              <div className="inline-flex items-center gap-1.5 text-xs sm:text-sm text-slate-600">
+                <FiMapPin className="w-4 h-4 text-slate-400 shrink-0" />
+                <span>{displayLocation}</span>
               </div>
             )}
-            <p>{supplier.description}</p>
+
+            <p className="text-sm text-slate-600 leading-relaxed pt-1">{supplier.description}</p>
           </div>
         </div>
 
-        <div className="supplier-profile-actions">
-          <Link className="button primary supplier-primary-action" to={`/dashboard/shop-owner/suppliers/${supplier.id}/products`}>
-            View products
+        {/* Action Buttons */}
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 pt-6 border-t border-slate-100">
+          <Link
+            className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold bg-brand-orange text-white hover:bg-orange-700 active:scale-95 transition-all shadow-xs"
+            to={`/dashboard/shop-owner/suppliers/${supplier.id}/products`}
+          >
+            <span>View products</span>
+            <FiArrowRight className="w-4 h-4" />
           </Link>
-          <Link className="button secondary supplier-secondary-action" to="/dashboard/shop-owner/suppliers">
-            Back to suppliers
+          <Link
+            className="inline-flex items-center justify-center gap-2 px-5 py-3 rounded-xl text-sm font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 active:scale-95 transition-all"
+            to="/dashboard/shop-owner/suppliers"
+          >
+            <FiArrowLeft className="w-4 h-4" />
+            <span>Back to suppliers</span>
           </Link>
         </div>
       </div>

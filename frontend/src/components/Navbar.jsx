@@ -19,13 +19,17 @@ export default function Navbar() {
   ]
 
   return (
-    <nav className="pub-nav" aria-label="Primary navigation">
+    <nav className="hidden md:flex items-center gap-1 lg:gap-2 text-xs sm:text-sm font-medium text-slate-600" aria-label="Primary navigation">
       {navLinks.map((item) => {
+        const isActive = item.path && location.pathname === item.path
+        const baseClass = "px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
+        const activeClass = isActive ? "text-[#f06535] font-semibold bg-orange-50" : "hover:text-slate-900 hover:bg-slate-100/60"
+
         if (item.path) {
           return (
             <Link
               key={item.key}
-              className={location.pathname === item.path ? 'active' : ''}
+              className={`${baseClass} ${activeClass}`}
               to={item.path}
             >
               {t(item.key)}
@@ -36,6 +40,7 @@ export default function Navbar() {
           <a
             key={item.key}
             href={`#${item.id}`}
+            className={`${baseClass} ${activeClass}`}
             onClick={e => { e.preventDefault(); scrollToSection(item.id) }}
           >
             {t(item.key)}

@@ -81,21 +81,32 @@ export default function SupplierDashboardPage() {
   }
 
   if (isLoading) return <LoadingState message={t('loadingWorkspace')} />
-  if (error) return <section className="supplier-dashboard-page"><p className="form-message error" role="alert">{error}</p></section>
-  if (!dashboard) return <section className="supplier-dashboard-page"><p className="form-message error" role="alert">Supplier dashboard unavailable.</p></section>
+  if (error) return (
+    <section className="p-4 sm:p-6 max-w-7xl mx-auto">
+      <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium" role="alert">
+        {error}
+      </div>
+    </section>
+  )
+  if (!dashboard) return (
+    <section className="p-4 sm:p-6 max-w-7xl mx-auto">
+      <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium" role="alert">
+        Supplier dashboard unavailable.
+      </div>
+    </section>
+  )
 
   return (
-    <section className="supplier-dashboard-page">
-      <header className="supplier-dashboard-header">
+    <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <p className="supplier-dashboard-greeting">{getDynamicGreeting()}</p>
-          <h1>{dashboard.businessName}</h1>
-          <p className="supplier-dashboard-subtitle">Manage your orders, products and customers from one place.</p>
+          <p className="text-xs sm:text-sm font-bold text-brand-orange uppercase tracking-wider">{getDynamicGreeting()}</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight mt-0.5">{dashboard.businessName}</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">Manage your orders, products and customers from one place.</p>
         </div>
       </header>
 
-
-      <div className="supplier-summary-grid">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
         {dashboard.metrics.map((metric) => (
           <MetricCard
             key={metric.label}
@@ -109,44 +120,60 @@ export default function SupplierDashboardPage() {
         ))}
       </div>
 
-      <div className="supplier-main-panel">
-        <div className="supplier-orders-header">
+      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6">
+        <div className="flex items-center justify-between gap-4 pb-5 border-b border-slate-100">
           <div>
-            <span className="supplier-section-kicker">Recent Orders</span>
-            
+            <h2 className="text-base sm:text-lg font-bold text-slate-900">Recent Orders</h2>
+            <p className="text-xs text-slate-400 mt-0.5">Latest incoming orders requiring attention</p>
           </div>
-          <button className="supplier-view-all" onClick={() => navigate('/dashboard/supplier/orders')} type="button">
+          <button 
+            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-brand-orange hover:text-brand-orange-dark transition-colors cursor-pointer" 
+            onClick={() => navigate('/dashboard/supplier/orders')} 
+            type="button"
+          >
             View All Orders <span aria-hidden="true">→</span>
           </button>
         </div>
 
-        <div className="supplier-orders-table" role="table" aria-label="Recent supplier orders">
-          <div className="supplier-orders-head" role="row">
-            <span role="columnheader">Order ID</span>
-            <span role="columnheader">Customer (Shop)</span>
-            <span role="columnheader">Items</span>
-            <span role="columnheader">Amount</span>
-            <span role="columnheader">Status</span>
-            <span role="columnheader">Date &amp; Time</span>
-            <span aria-hidden="true" />
-          </div>
-
-          {recentOrders.map((order) => (
-            <div className="supplier-orders-row" key={order.id} role="row">
-              <span className="supplier-order-id-cell" role="cell"><strong>{order.orderIdDisplay}</strong></span>
-              <span className="supplier-customer-cell" role="cell">
-                <span className="supplier-customer-text">
-                  <span className="supplier-order-shop-name">{order.shopOwner}</span>
-                  <small>{order.location}</small>
-                </span>
-              </span>
-              <span className="supplier-items-cell" role="cell">{order.items} items</span>
-              <span className="supplier-amount-cell" role="cell">{order.amountLabel}</span>
-              <span className="supplier-status-cell" role="cell"><StatusBadge status={order.status} /></span>
-              <span className="supplier-date-cell" role="cell">{order.dateLabel}</span>
-              <button className="supplier-row-action" onClick={() => navigate(`/dashboard/supplier/orders/${encodeURIComponent(order.id)}`)} type="button">View</button>
+        <div className="overflow-x-auto -mx-5 sm:-mx-6 px-5 sm:px-6" role="table" aria-label="Recent supplier orders">
+          <div className="min-w-[760px]">
+            <div className="grid grid-cols-[1.2fr_2fr_1fr_1.2fr_1.2fr_1.6fr_auto] gap-4 py-3 px-4 bg-slate-50/80 rounded-xl text-xs font-bold text-slate-500 uppercase tracking-wider mt-4" role="row">
+              <span role="columnheader">Order ID</span>
+              <span role="columnheader">Customer (Shop)</span>
+              <span role="columnheader">Items</span>
+              <span role="columnheader">Amount</span>
+              <span role="columnheader">Status</span>
+              <span role="columnheader">Date &amp; Time</span>
+              <span aria-hidden="true" />
             </div>
-          ))}
+
+            <div className="divide-y divide-slate-100">
+              {recentOrders.map((order) => (
+                <div 
+                  className="grid grid-cols-[1.2fr_2fr_1fr_1.2fr_1.2fr_1.6fr_auto] gap-4 items-center py-3.5 px-4 hover:bg-slate-50/60 transition-colors" 
+                  key={order.id} 
+                  role="row"
+                >
+                  <span className="text-xs font-mono font-bold text-slate-800" role="cell">{order.orderIdDisplay}</span>
+                  <span className="flex flex-col min-w-0" role="cell">
+                    <span className="text-sm font-semibold text-slate-900 truncate">{order.shopOwner}</span>
+                    <small className="text-xs text-slate-400 truncate">{order.location}</small>
+                  </span>
+                  <span className="text-xs text-slate-600 font-medium" role="cell">{order.items} items</span>
+                  <span className="text-xs font-bold text-slate-900" role="cell">{order.amountLabel}</span>
+                  <span role="cell"><StatusBadge status={order.status} /></span>
+                  <span className="text-xs text-slate-500 whitespace-nowrap" role="cell">{order.dateLabel}</span>
+                  <button 
+                    className="px-3 py-1.5 rounded-lg border border-slate-200 hover:border-brand-orange hover:bg-orange-50 hover:text-brand-orange text-xs font-semibold text-slate-700 transition-all cursor-pointer whitespace-nowrap" 
+                    onClick={() => navigate(`/dashboard/supplier/orders/${encodeURIComponent(order.id)}`)} 
+                    type="button"
+                  >
+                    View
+                  </button>
+                </div>
+              ))}
+            </div>
+          </div>
         </div>
       </div>
     </section>

@@ -24,11 +24,22 @@ export default function MobileNavigation({ role: routeRole }) {
   const { t } = useLocale()
 
   return (
-    <nav className="mobile-navigation" aria-label={t('workspace')}>
+    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 bg-white/95 backdrop-blur-md border-t border-slate-200 flex items-center justify-around px-2 py-1.5 shadow-lg" aria-label={t('workspace')}>
       {items.map((item) => (
-        <NavLink className={({ isActive }) => isActive ? 'mobile-link active' : 'mobile-link'} end={item.section === 'home'} key={item.section} to={`/dashboard/${role}/${item.section}`}>
-          <span className="mobile-link-icon" aria-hidden="true"><NavIcon section={item.section} /></span>
-          <span>{t(item.key)}</span>
+        <NavLink
+          className={({ isActive }) =>
+            `flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] font-medium transition-colors ${
+              isActive ? 'text-[#f06535] font-semibold' : 'text-slate-500 hover:text-slate-800'
+            }`
+          }
+          end={item.section === 'home'}
+          key={item.section}
+          to={`/dashboard/${role}/${item.section}`}
+        >
+          <span className="text-base" aria-hidden="true">
+            <NavIcon section={item.section} />
+          </span>
+          <span className="truncate max-w-[60px]">{t(item.key)}</span>
         </NavLink>
       ))}
     </nav>

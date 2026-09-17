@@ -41,25 +41,35 @@ export default function Sidebar({ role: routeRole }) {
   }, [])
 
   return (
-    <aside className="sidebar" aria-label={t('workspace')}>
-      <div className="sidebar-label">{t('workspace')}</div>
+    <aside className="hidden md:flex flex-col w-56 lg:w-64 border-r border-slate-200/70 bg-white sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto p-4 space-y-1 shrink-0 self-start z-30" aria-label={t('workspace')}>
+      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 py-2">{t('workspace')}</div>
       {items.map((item) => {
         const badge = item.section === 'cart' ? String(cartCount || 0) : item.badge
         const showSupplierDivider = role === 'supplier' && item.section === 'customers'
         return (
           <Fragment key={item.section}>
             <NavLink
-              className={({ isActive }) => `side-link${isActive ? ' active' : ''}`}
+              className={({ isActive }) =>
+                `flex items-center justify-between px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-colors ${
+                  isActive
+                    ? 'bg-orange-50 text-[#f06535] font-semibold'
+                    : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
+                }`
+              }
               end={item.section === 'home'}
               to={`/dashboard/${role}/${item.section}`}
             >
-              <span style={{ display: 'inline-flex', alignItems: 'center' }}>
+              <span className="inline-flex items-center">
                 <NavIcon section={item.section} />
                 {t(item.key)}
               </span>
-              {badge && Number(badge) > 0 ? <span className="nav-badge">{badge}</span> : null}
+              {badge && Number(badge) > 0 ? (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#f06535] text-white tabular-nums">
+                  {badge}
+                </span>
+              ) : null}
             </NavLink>
-            {showSupplierDivider ? <div className="sidebar-section-divider" aria-hidden="true" /> : null}
+            {showSupplierDivider ? <div className="h-px bg-slate-100 my-2" aria-hidden="true" /> : null}
           </Fragment>
         )
       })}

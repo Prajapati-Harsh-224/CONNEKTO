@@ -8,7 +8,7 @@ export default function PasswordField({ value, onChange, error, name = 'password
   const resolvedLabel = label || t('password')
 
   return (
-    <div className="password-field-wrap">
+    <div className="relative w-full">
       <FormField
         autoComplete={autoComplete}
         error={error}
@@ -19,7 +19,12 @@ export default function PasswordField({ value, onChange, error, name = 'password
         type={visible ? 'text' : 'password'}
         value={value}
       />
-      <button className="password-toggle" onClick={() => setVisible((isVisible) => !isVisible)} type="button" aria-label={visible ? t('hide') : t('show')}>
+      <button
+        className="absolute right-3 top-[1.85rem] text-xs font-semibold text-slate-400 hover:text-slate-600 cursor-pointer select-none bg-transparent border-none p-1 transition-colors"
+        onClick={() => setVisible((isVisible) => !isVisible)}
+        type="button"
+        aria-label={visible ? t('hide') : t('show')}
+      >
         {visible ? t('hide') : t('show')}
       </button>
     </div>

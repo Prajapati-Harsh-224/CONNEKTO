@@ -133,44 +133,53 @@ export default function SupplierProductManagementPage() {
   if (isLoading) return <LoadingState message={t('loadingYourProducts')} />
   if (error && !products.length) {
     return (
-      <section className="management-page">
-        <div className="eyebrow">{t('supplierWorkspace')}</div>
-        <h1>{t('productsUnavailable')}</h1>
-        <p className="form-message error" role="alert">{error}</p>
+      <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-4">
+        <div className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('supplierWorkspace')}</div>
+        <h1 className="text-2xl sm:text-3xl font-black text-slate-900">{t('productsUnavailable')}</h1>
+        <p className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium" role="alert">{error}</p>
       </section>
     )
   }
 
   return (
-    <section className="supplier-product-page">
-      <div className="supplier-product-breadcrumb">
+    <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
+      <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
         <span>{t('supplierWorkspace')}</span>
         <span aria-hidden="true">›</span>
-        <span>{t('products')}</span>
+        <span className="text-slate-700">{t('products')}</span>
       </div>
 
-      <div className="supplier-product-header">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
-          <div className="eyebrow">{t('supplierWorkspace')}</div>
-          <h1>{t('yourProducts')}</h1>
-          <p className="muted">{t('manageCatalogVisible')}</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">{t('yourProducts')}</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('manageCatalogVisible')}</p>
         </div>
-        <button className="button primary" onClick={startAdd} type="button">{t('addProduct')}</button>
+        <button 
+          className="px-5 py-2.5 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white font-bold text-sm shadow-xs hover:shadow transition-all self-start sm:self-auto cursor-pointer" 
+          onClick={startAdd} 
+          type="button"
+        >
+          + {t('addProduct')}
+        </button>
       </div>
 
-      {feedback && <p className="form-message success" role="status">{feedback}</p>}
+      {feedback && (
+        <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold flex items-center justify-between" role="status">
+          <span>{feedback}</span>
+          <button className="text-emerald-600 hover:text-emerald-900 text-xs font-bold ml-2 cursor-pointer" onClick={() => setFeedback('')} type="button">Dismiss</button>
+        </div>
+      )}
 
       {editingId && (
-        <section className="management-form-panel">
-          <div className="section-heading">
-            <div>
-              <span className="section-kicker">{editingId === 'new' ? t('newListing') : t('editListing')}</span>
-              <h2>{editingId === 'new' ? t('addAProduct') : t('updateProduct')}</h2>
-            </div>
+        <section className="p-5 sm:p-7 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
+          <div className="mb-6 pb-4 border-b border-slate-100">
+            <span className="text-xs font-bold uppercase tracking-wider text-brand-orange">{editingId === 'new' ? t('newListing') : t('editListing')}</span>
+            <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5">{editingId === 'new' ? t('addAProduct') : t('updateProduct')}</h2>
           </div>
           <ProductManagementForm
-            form={form}
+            categories={categories.filter((cat) => cat !== 'All categories')}
             errors={{ form: formError }}
+            form={form}
             isSubmitting={isSaving}
             onCancel={() => setEditingId(null)}
             onChange={updateField}
@@ -180,31 +189,47 @@ export default function SupplierProductManagementPage() {
         </section>
       )}
 
-      <div className="supplier-product-shell">
-        <aside className="supplier-product-categories">
-          <h2>Categories</h2>
-          {categories.map((category) => (
-            <button
-              key={category}
-              className={activeCategory === category ? 'active' : ''}
-              onClick={() => setActiveCategory(category)}
-              type="button"
-            >
-              {category}
-            </button>
-          ))}
+      <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 items-start">
+        <aside className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs space-y-1 lg:sticky lg:top-20 self-start">
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 py-2">Categories</h2>
+          <div className="flex flex-row lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
+            {categories.map((category) => (
+              <button
+                key={category}
+                className={`w-full text-left px-3.5 py-2.5 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer truncate shrink-0 lg:shrink ${
+                  activeCategory === category 
+                    ? 'bg-orange-50 text-brand-orange font-bold border border-orange-200/60' 
+                    : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                }`}
+                onClick={() => setActiveCategory(category)}
+                type="button"
+              >
+                {category}
+              </button>
+            ))}
+          </div>
         </aside>
 
-        <div className="supplier-product-results">
-          <div className="supplier-product-toolbar">
-            <label className="supplier-search-field">
-              <span aria-hidden="true">⌕</span>
-              <input onChange={(event) => setQuery(event.target.value)} placeholder={t('searchProducts')} type="search" value={query} />
+        <div className="space-y-4">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 p-3 bg-white rounded-2xl border border-slate-200/80 shadow-xs">
+            <label className="relative flex-1 flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 focus-within:ring-2 focus-within:ring-brand-orange/20 focus-within:border-brand-orange transition-all">
+              <span className="text-slate-400 mr-2 text-base" aria-hidden="true">⌕</span>
+              <input 
+                className="w-full bg-transparent text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden"
+                onChange={(event) => setQuery(event.target.value)} 
+                placeholder={t('searchProducts')} 
+                type="search" 
+                value={query} 
+              />
             </label>
 
-            <label className="supplier-filter-field">
+            <label className="sm:w-52">
               <span className="sr-only">Sort products</span>
-              <select onChange={(event) => setSortBy(event.target.value)} value={sortBy}>
+              <select 
+                className="w-full bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-sm text-slate-700 font-medium focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange transition-all"
+                onChange={(event) => setSortBy(event.target.value)} 
+                value={sortBy}
+              >
                 <option value="popular">Popular</option>
                 <option value="name">Name</option>
                 <option value="price-low">Price: Low to High</option>
@@ -213,7 +238,7 @@ export default function SupplierProductManagementPage() {
             </label>
 
             <button
-              className="supplier-clear-button"
+              className="px-4 py-2 text-xs font-bold text-slate-500 hover:text-slate-800 rounded-xl border border-slate-200 hover:bg-slate-50 transition-all cursor-pointer whitespace-nowrap"
               onClick={() => {
                 setQuery('')
                 setActiveCategory('All categories')
@@ -225,45 +250,77 @@ export default function SupplierProductManagementPage() {
             </button>
           </div>
 
-          <div className="supplier-product-results-head">
-            <h2>{visibleProducts.length} products</h2>
+          <div className="flex items-center justify-between text-xs sm:text-sm font-semibold text-slate-500 px-1">
+            <h2 className="font-bold text-slate-800">{visibleProducts.length} products</h2>
             <span>{query ? `Filtered by “${query}”` : 'Showing all products'}</span>
           </div>
 
           {visibleProducts.length ? (
-            <div className="supplier-product-grid">
+            <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
               {visibleProducts.map((product) => (
-                <article className={`supplier-product-card${product.isActive ? '' : ' inactive'}`} key={product.id}>
-                  <ProductImage
-                    alt={`${product.name} product`}
-                    aria-hidden="true"
-                    className="supplier-product-art"
-                    fallbackText={(product.name || 'P').slice(0, 1).toUpperCase()}
-                    src={product.imageUrl || ''}
-                  />
+                <article 
+                  className={`group flex flex-col bg-white rounded-2xl border border-slate-200/80 overflow-hidden shadow-xs hover:shadow-md hover:border-slate-300 transition-all ${
+                    product.isActive ? '' : 'opacity-70 bg-slate-50/50'
+                  }`} 
+                  key={product.id}
+                >
+                  <div className="relative w-full aspect-[4/3] bg-slate-100 overflow-hidden flex items-center justify-center">
+                    <ProductImage
+                      alt={`${product.name} product`}
+                      aria-hidden="true"
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      fallbackText={(product.name || 'P').slice(0, 1).toUpperCase()}
+                      src={product.imageUrl || ''}
+                    />
+                  </div>
 
-                  <div className="supplier-product-body">
-                    <div className="supplier-product-topline">
-                      <span className="supplier-product-category">{product.category || 'General'}</span>
-                      <span className={`active-status ${product.isActive ? 'active' : 'inactive'}`}>
-                        {product.isActive ? t('active') : t('inactive')}
-                      </span>
+                  <div className="flex-1 flex flex-col p-4 sm:p-5 justify-between">
+                    <div>
+                      <div className="flex items-center justify-between gap-2 mb-2">
+                        <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400 truncate">{product.category || 'General'}</span>
+                        <span className={`px-2 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider border ${
+                          product.isActive 
+                            ? 'bg-emerald-50 text-emerald-600 border-emerald-200' 
+                            : 'bg-slate-100 text-slate-500 border-slate-200'
+                        }`}>
+                          {product.isActive ? t('active') : t('inactive')}
+                        </span>
+                      </div>
+
+                      <h3 className="text-base font-bold text-slate-900 truncate group-hover:text-brand-orange transition-colors" title={product.name}>
+                        {product.name}
+                      </h3>
+                      <p className="text-xs text-slate-500 font-medium mb-3 truncate" title={`${product.brand} · ${product.packSize}`}>
+                        {product.brand} · {product.packSize}
+                      </p>
                     </div>
 
-                    <h3 title={product.name}>{product.name}</h3>
-                    <p className="supplier-product-brand" title={`${product.brand} · ${product.packSize}`}>{product.brand} · {product.packSize}</p>
-                    <div className="supplier-product-meta">
-                      <span>Min: {product.minimumQuantity} · Stock: {product.availableStock ?? 0}</span>
-                      <span>{product.isActive ? 'Live' : 'Hidden'}</span>
-                    </div>
+                    <div>
+                      <div className="flex items-center justify-between text-xs text-slate-500 py-2 border-y border-slate-100 mb-3 font-medium">
+                        <span>Min: {product.minimumQuantity} · Stock: {product.availableStock ?? 0}</span>
+                        <span>{product.isActive ? 'Live' : 'Hidden'}</span>
+                      </div>
 
-                    <div className="supplier-product-footer">
-                      <strong className="supplier-product-price">{formatPrice(product.price)}</strong>
-                      <div className="supplier-product-actions">
-                        <button className="button secondary" onClick={() => startEdit(product)} type="button">{t('edit')}</button>
-                        {product.isActive && (
-                          <button className="text-action" onClick={() => deactivateProduct(product)} type="button">{t('deactivate')}</button>
-                        )}
+                      <div className="flex items-center justify-between gap-2">
+                        <strong className="text-base sm:text-lg font-extrabold text-slate-900">{formatPrice(product.price)}</strong>
+                        <div className="flex items-center gap-2">
+                          <button 
+                            className="px-3 py-1.5 rounded-lg border border-slate-200 hover:border-brand-orange hover:bg-orange-50 hover:text-brand-orange text-xs font-bold text-slate-700 transition-all cursor-pointer" 
+                            onClick={() => startEdit(product)} 
+                            type="button"
+                          >
+                            {t('edit')}
+                          </button>
+                          {product.isActive && (
+                            <button 
+                              className="px-2 py-1 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:underline cursor-pointer" 
+                              onClick={() => deactivateProduct(product)} 
+                              type="button"
+                            >
+                              {t('deactivate')}
+                            </button>
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>

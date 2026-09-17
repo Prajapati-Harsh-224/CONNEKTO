@@ -126,112 +126,110 @@ export default function SupplierCustomersPage() {
     setPage(1)
   }
 
-  function exportCustomers() {
-    const rows = [
-      ['Customer name', 'Contact', 'Location', 'Orders', 'Total spent', 'Last order', 'Status'].join(','),
-      ...filteredCustomers.map((customer) => [customer.name, customer.phone || customer.shopOwnerPhone || '', customer.location, customer.totalOrders, customer.totalSpent, formatDate(customer.lastOrder), customer.status].map((value) => `"${String(value).replaceAll('"', '""')}"`).join(',')),
-    ].join('\n')
 
-    const blob = new Blob([rows], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = 'supplier-customers.csv'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
-  }
 
   const locationOptions = ['All cities', ...new Set(customers.map((customer) => customer.location).filter(Boolean))]
 
   if (loading) return <LoadingState message="Loading customers..." />
 
   return (
-    <section className="supplier-customers-page">
-      <div className="orders-breadcrumb">
+    <section className="space-y-6">
+      <div className="flex items-center gap-1.5 text-xs text-slate-500">
         <span>{t('supplier')}</span>
-        <span>›</span>
-        <span>{t('customers')}</span>
+        <span aria-hidden="true">›</span>
+        <span className="font-semibold text-slate-800">{t('customers')}</span>
       </div>
 
-      <div className="supplier-orders-header-row">
-        <div>
-          <p className="supplier-detail-eyebrow">Supplier workspace</p>
-          <h1>{t('customers')}</h1>
-          <p>{t('customersDescription')}</p>
-        </div>
-
-        <div className="supplier-orders-header-actions">
-          <button className="so-btn-outline" type="button" onClick={exportCustomers} disabled={!filteredCustomers.length}>
-            {t('exportCSV')}
-          </button>
-        </div>
+      <div>
+        <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 mb-1">Supplier workspace</p>
+        <h1 className="text-2xl sm:text-3xl font-bold font-serif text-[#102d45]">{t('customers')}</h1>
+        <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('customersDescription')}</p>
       </div>
 
-      <div className="customer-summary-grid">
-        <div className="metric-card customer-stat-card">
-          <div className="metric-card-icon">◎</div>
-          <div className="metric-card-content">
-            <span>Total customers</span>
-            <strong>{stats.totalCustomers}</strong>
-            <small>{stats.activeCustomers} active this month</small>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
+        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-base shrink-0">◎</div>
+          <div className="flex flex-col">
+            <span className="text-xs text-slate-500 font-medium">Total customers</span>
+            <strong className="text-xl font-bold text-slate-900 tabular-nums">{stats.totalCustomers}</strong>
+            <small className="text-[11px] text-slate-400 mt-0.5">{stats.activeCustomers} active this month</small>
           </div>
         </div>
-        <div className="metric-card customer-stat-card">
-          <div className="metric-card-icon">↗</div>
-          <div className="metric-card-content">
-            <span>Order volume</span>
-            <strong>{stats.totalOrders}</strong>
-            <small>Across all active stores</small>
+        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-base shrink-0">↗</div>
+          <div className="flex flex-col">
+            <span className="text-xs text-slate-500 font-medium">Order volume</span>
+            <strong className="text-xl font-bold text-slate-900 tabular-nums">{stats.totalOrders}</strong>
+            <small className="text-[11px] text-slate-400 mt-0.5">Across all active stores</small>
           </div>
         </div>
-        <div className="metric-card customer-stat-card">
-          <div className="metric-card-icon">₹</div>
-          <div className="metric-card-content">
-            <span>Average spend</span>
-            <strong>{formatCurrency(stats.avgOrderValue)}</strong>
-            <small>Per customer</small>
+        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold text-base shrink-0">₹</div>
+          <div className="flex flex-col">
+            <span className="text-xs text-slate-500 font-medium">Average spend</span>
+            <strong className="text-xl font-bold text-slate-900 tabular-nums">{formatCurrency(stats.avgOrderValue)}</strong>
+            <small className="text-[11px] text-slate-400 mt-0.5">Per customer</small>
           </div>
         </div>
-        <div className="metric-card customer-stat-card">
-          <div className="metric-card-icon">✓</div>
-          <div className="metric-card-content">
-            <span>Active customers</span>
-            <strong>{stats.activeCustomers}</strong>
-            <small>Currently active</small>
+        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex items-center gap-3.5">
+          <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center font-bold text-base shrink-0">✓</div>
+          <div className="flex flex-col">
+            <span className="text-xs text-slate-500 font-medium">Active customers</span>
+            <strong className="text-xl font-bold text-slate-900 tabular-nums">{stats.activeCustomers}</strong>
+            <small className="text-[11px] text-slate-400 mt-0.5">Currently active</small>
           </div>
         </div>
       </div>
 
-      <div className="supplier-filter-panel">
-        <div className="supplier-filter-row">
-          <label className="supplier-search-field">
-            <span aria-hidden="true">⌕</span>
-            <input aria-label={t('searchCustomers')} onChange={(event) => setSearch(event.target.value)} placeholder={t('searchCustomers')} type="search" value={search} />
-          </label>
+      <div className="bg-white rounded-2xl p-3 sm:p-4 border border-slate-100 shadow-xs">
+        <div className="flex flex-col sm:flex-row items-center gap-3 flex-wrap">
+          <div className="relative flex-1 min-w-[200px] w-full sm:w-auto">
+            <span className="absolute left-3 top-2.5 text-slate-400" aria-hidden="true">⌕</span>
+            <input
+              aria-label={t('searchCustomers')}
+              onChange={(event) => setSearch(event.target.value)}
+              placeholder={t('searchCustomers')}
+              type="search"
+              value={search}
+              className="w-full pl-8 pr-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition-colors"
+            />
+          </div>
 
-          <label className="supplier-select-field">
-            <select onChange={(event) => setStatusFilter(event.target.value)} value={statusFilter}>
+          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+            <select
+              onChange={(event) => setStatusFilter(event.target.value)}
+              value={statusFilter}
+              className="flex-1 sm:flex-initial px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 bg-white outline-none cursor-pointer"
+            >
               <option value="All status">All status</option>
               <option value="Active">Active</option>
               <option value="Inactive">Inactive</option>
             </select>
-          </label>
 
-          <label className="supplier-select-field">
-            <select onChange={(event) => setLocationFilter(event.target.value)} value={locationFilter}>
-              {locationOptions.map((location) => <option key={location} value={location}>{location}</option>)}
+            <select
+              onChange={(event) => setLocationFilter(event.target.value)}
+              value={locationFilter}
+              className="flex-1 sm:flex-initial px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 bg-white outline-none cursor-pointer"
+            >
+              {locationOptions.map((location) => (
+                <option key={location} value={location}>{location}</option>
+              ))}
             </select>
-          </label>
 
-          <button className="supplier-clear-button" onClick={clearFilters} type="button">Clear</button>
+            <button
+              onClick={clearFilters}
+              type="button"
+              className="px-3.5 py-2 rounded-xl text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
+            >
+              Clear
+            </button>
+          </div>
         </div>
       </div>
 
-      <div className="supplier-customer-layout">
-        <div className="supplier-table-wrap">
-          <div className="supplier-table-header">
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-start">
+        <div className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
+          <div className="hidden md:grid grid-cols-[1.4fr_1.4fr_1.1fr_0.7fr_0.9fr] items-center gap-3 px-5 py-3 border-b border-slate-100 bg-slate-50/70 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
             <span>Customer</span>
             <span>Contact</span>
             <span>Location</span>
@@ -241,46 +239,77 @@ export default function SupplierCustomersPage() {
 
           {visibleCustomers.length ? (
             <>
-              {visibleCustomers.map((customer) => (
-                <div
-                  className={`supplier-table-row ${selectedCustomer?.id === customer.id ? 'is-selected' : ''}`}
-                  key={customer.id}
-                  onClick={() => setSelectedCustomerId(customer.id)}
-                  onKeyDown={(event) => {
-                    if (event.key === 'Enter' || event.key === ' ') {
-                      event.preventDefault()
-                      setSelectedCustomerId(customer.id)
-                    }
-                  }}
-                  role="button"
-                  tabIndex={0}
-                >
-                  <div className="supplier-customer-cell">
-                    <div className="supplier-customer-info">
-                      <strong>{customer.name}</strong>
-                      <small>{customer.category}</small>
+              <div className="divide-y divide-slate-50">
+                {visibleCustomers.map((customer) => (
+                  <div
+                    key={customer.id}
+                    className={`flex flex-col md:grid md:grid-cols-[1.4fr_1.4fr_1.1fr_0.7fr_0.9fr] items-start md:items-center gap-2 md:gap-3 px-5 py-3.5 transition-colors cursor-pointer text-xs ${
+                      selectedCustomer?.id === customer.id
+                        ? 'bg-emerald-50/50 border-l-4 border-l-emerald-600'
+                        : 'hover:bg-slate-50/70'
+                    }`}
+                    onClick={() => setSelectedCustomerId(customer.id)}
+                    onKeyDown={(event) => {
+                      if (event.key === 'Enter' || event.key === ' ') {
+                        event.preventDefault()
+                        setSelectedCustomerId(customer.id)
+                      }
+                    }}
+                    role="button"
+                    tabIndex={0}
+                  >
+                    <div>
+                      <strong className="font-bold text-slate-800 block">{customer.name}</strong>
+                      <small className="text-slate-400 text-[11px]">{customer.category}</small>
                     </div>
+
+                    <div>
+                      <strong className="font-medium text-slate-700 block">{customer.shopOwner}</strong>
+                      <small className="text-slate-400 text-[11px]">{customer.phone || 'No phone available'}</small>
+                    </div>
+
+                    <div className="text-slate-600">{customer.location}</div>
+                    <div className="font-bold text-slate-800 tabular-nums">{customer.totalOrders}</div>
+                    <div className="font-bold text-slate-900 tabular-nums">{formatCurrency(customer.totalSpent)}</div>
                   </div>
+                ))}
+              </div>
 
-                  <div className="supplier-customer-contact">
-                    <strong>{customer.shopOwner}</strong>
-                    <small>{customer.phone || 'No phone available'}</small>
-                  </div>
-
-                  <div className="supplier-customer-location">{customer.location}</div>
-                  <div className="supplier-amount-cell">{customer.totalOrders}</div>
-                  <div className="supplier-amount-cell">{formatCurrency(customer.totalSpent)}</div>
-                </div>
-              ))}
-
-              <div className="supplier-pagination">
-                <span>Showing {filteredCustomers.length ? (currentPage - 1) * pageSize + 1 : 0}–{Math.min(currentPage * pageSize, filteredCustomers.length)} of {filteredCustomers.length} customers</span>
-                <div className="supplier-pagination-controls">
-                  <button disabled={currentPage === 1} onClick={() => setPage((pageNumber) => Math.max(1, pageNumber - 1))} type="button">‹</button>
+              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3.5 bg-slate-50/50 border-t border-slate-100 text-xs text-slate-500">
+                <span>
+                  Showing {filteredCustomers.length ? (currentPage - 1) * pageSize + 1 : 0}–{Math.min(currentPage * pageSize, filteredCustomers.length)} of {filteredCustomers.length} customers
+                </span>
+                <div className="flex items-center gap-1">
+                  <button
+                    disabled={currentPage === 1}
+                    onClick={() => setPage((pageNumber) => Math.max(1, pageNumber - 1))}
+                    type="button"
+                    className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center font-bold disabled:opacity-40 cursor-pointer"
+                  >
+                    ‹
+                  </button>
                   {Array.from({ length: totalPages }, (_, index) => index + 1).slice(0, 5).map((pageNumber) => (
-                    <button className={pageNumber === currentPage ? 'active' : ''} key={pageNumber} onClick={() => setPage(pageNumber)} type="button">{pageNumber}</button>
+                    <button
+                      key={pageNumber}
+                      onClick={() => setPage(pageNumber)}
+                      type="button"
+                      className={`w-7 h-7 rounded-lg flex items-center justify-center font-semibold text-xs cursor-pointer ${
+                        pageNumber === currentPage
+                          ? 'bg-emerald-600 text-white'
+                          : 'border border-slate-200 text-slate-700 hover:bg-slate-50'
+                      }`}
+                    >
+                      {pageNumber}
+                    </button>
                   ))}
-                  <button disabled={currentPage === totalPages} onClick={() => setPage((pageNumber) => Math.min(totalPages, pageNumber + 1))} type="button">›</button>
+                  <button
+                    disabled={currentPage === totalPages}
+                    onClick={() => setPage((pageNumber) => Math.min(totalPages, pageNumber + 1))}
+                    type="button"
+                    className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center font-bold disabled:opacity-40 cursor-pointer"
+                  >
+                    ›
+                  </button>
                 </div>
               </div>
             </>
@@ -290,51 +319,60 @@ export default function SupplierCustomersPage() {
         </div>
 
         {selectedCustomer && (
-          <aside className="customer-detail-card">
-            <div className="customer-detail-header">
-              <span className={`supplier-customer-avatar color-${selectedCustomer.color || 'green'}`}>{getInitials(selectedCustomer.name)}</span>
+          <aside className="bg-white rounded-2xl border border-slate-100 shadow-xs p-5 space-y-4 sticky top-20">
+            <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+              <span className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm shrink-0">
+                {getInitials(selectedCustomer.name)}
+              </span>
               <div>
-                <h2>{selectedCustomer.name}</h2>
-                <p>{selectedCustomer.category}</p>
+                <h2 className="text-base font-bold text-slate-900 leading-tight">{selectedCustomer.name}</h2>
+                <p className="text-xs text-slate-400 mt-0.5">{selectedCustomer.category}</p>
               </div>
             </div>
 
-            <div className="customer-detail-metrics">
+            <div className="grid grid-cols-2 gap-2 bg-slate-50 rounded-xl p-3 text-center">
               <div>
-                <span>Orders</span>
-                <strong>{selectedCustomer.totalOrders}</strong>
+                <span className="text-[11px] text-slate-400 font-medium block">Orders</span>
+                <strong className="text-base font-bold text-slate-900 tabular-nums">{selectedCustomer.totalOrders}</strong>
               </div>
               <div>
-                <span>Spend</span>
-                <strong>{formatCurrency(selectedCustomer.totalSpent)}</strong>
+                <span className="text-[11px] text-slate-400 font-medium block">Spend</span>
+                <strong className="text-base font-bold text-slate-900 tabular-nums">{formatCurrency(selectedCustomer.totalSpent)}</strong>
               </div>
             </div>
 
-            <div className="customer-detail-list">
-              <div>
-                <label>Owner</label>
-                <strong>{selectedCustomer.shopOwner}</strong>
+            <div className="space-y-2.5 text-xs divide-y divide-slate-50">
+              <div className="pt-2 flex justify-between items-center">
+                <span className="text-slate-400">Owner</span>
+                <strong className="font-semibold text-slate-800">{selectedCustomer.shopOwner}</strong>
               </div>
-              <div>
-                <label>Phone</label>
-                <strong>{selectedCustomer.phone || '—'}</strong>
+              <div className="pt-2 flex justify-between items-center">
+                <span className="text-slate-400">Phone</span>
+                <strong className="font-semibold text-slate-800">{selectedCustomer.phone || '—'}</strong>
               </div>
-              <div>
-                <label>Location</label>
-                <strong>{selectedCustomer.location}</strong>
+              <div className="pt-2 flex justify-between items-center">
+                <span className="text-slate-400">Location</span>
+                <strong className="font-semibold text-slate-800">{selectedCustomer.location}</strong>
               </div>
-              <div>
-                <label>Last order</label>
-                <strong>{formatDate(selectedCustomer.lastOrder)}</strong>
+              <div className="pt-2 flex justify-between items-center">
+                <span className="text-slate-400">Last order</span>
+                <strong className="font-semibold text-slate-800">{formatDate(selectedCustomer.lastOrder)}</strong>
               </div>
-              <div>
-                <label>Status</label>
+              <div className="pt-2 flex justify-between items-center">
+                <span className="text-slate-400">Status</span>
                 <StatusBadge status={selectedCustomer.status} />
               </div>
             </div>
 
-            <div className="customer-detail-actions">
-              <button className="supplier-view-button" disabled={!selectedCustomer.phone} onClick={() => callCustomer(selectedCustomer.phone)} type="button">Call customer</button>
+            <div className="pt-2">
+              <button
+                className="w-full py-2.5 px-4 rounded-xl text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 transition-colors border border-emerald-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={!selectedCustomer.phone}
+                onClick={() => callCustomer(selectedCustomer.phone)}
+                type="button"
+              >
+                Call customer
+              </button>
             </div>
           </aside>
         )}

@@ -11,12 +11,12 @@ from uuid import uuid4
 from fastapi import Depends, FastAPI, Request, Response
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
-from sqlalchemy import func, or_, select, text
-from sqlalchemy.orm import Session, joinedload
+from sqlalchemy import delete, func, or_, select, text
+from sqlalchemy.orm import Session, joinedload, object_session
 
 from .database import Base, SessionLocal, engine, get_db
 from .models import Checkout, OrderItem, Product, SessionToken, Shop, Supplier, SupplierOrder, SupplierServiceArea, User
-from .schemas import CheckoutRequest, LoginRequest, ProductRequest, ShopOwnerRegisterRequest, SupplierRegisterRequest, GruhUdyogRegisterRequest, StatusRequest
+from .schemas import CheckoutRequest, LoginRequest, ProductRequest, ShopOwnerRegisterRequest, SupplierRegisterRequest, GruhUdyogRegisterRequest, StatusRequest, ProfileUpdateRequest
 
 SESSION_COOKIE = "connecto_session"
 SESSION_DAYS = 7
@@ -139,7 +139,15 @@ def backfill_supplier_service_areas() -> None:
             db.commit()
 
 
-def safe_user(user: User) -> dict:
+def safe_user(user: User, db: Session | None = None) -> dict:
+    if db is None:
+        try:
+            db = object_session(user)
+        except Exception:
+            db = None
+    if db is None:
+        with SessionLocal() as fallback_db:
+            return safe_user(user, db=fallback_db)
     user_area = user.area or (user.shop.area if user.shop else None)
     result = {
         "id": user.id,
@@ -152,6 +160,39 @@ def safe_user(user: User) -> dict:
     }
     if user.shop:
         result["shop"] = {"name": user.shop.name, "address": user.shop.address, "area": user.shop.area}
+
+    if db and user.role in {"SUPPLIER", "GRUH_UDYOG"}:
+        supplier = db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
+        if supplier:
+            db_areas = db.scalars(
+                select(SupplierServiceArea.area)
+                .where(SupplierServiceArea.supplier_id == supplier.id)
+                .order_by(SupplierServiceArea.area)
+            ).all()
+            if db_areas:
+                service_areas = list(db_areas)
+            elif supplier.service_areas_raw:
+                service_areas = [a.strip() for a in supplier.service_areas_raw.split(",") if a.strip()]
+            else:
+                service_areas = [sa.area for sa in supplier.service_areas]
+
+            categories = [c.strip() for c in (supplier.category or "").split(",") if c.strip()]
+            result["supplier"] = {
+                "id": supplier.id,
+                "name": supplier.name,
+                "category": supplier.category or "",
+                "categories": categories,
+                "serviceAreas": service_areas,
+                "area": supplier.location or (service_areas[0] if service_areas else user_area),
+                "phone": supplier.phone or user.phone,
+                "email": supplier.email or user.email
+            }
+            if service_areas:
+                result["area"] = ", ".join(service_areas)
+                result["serviceAreas"] = service_areas
+            if categories:
+                result["category"] = supplier.category
+                result["categories"] = categories
     return result
 
 
@@ -387,12 +428,146 @@ def login(payload: LoginRequest, response: Response, db: Session = Depends(get_d
     user = db.scalar(query)
     if not user or not verify_password(payload.password, user.password_hash):
         return error("The sign-in details are not valid.", "INVALID_CREDENTIALS", 401)
+
+    if payload.role:
+        expected_role = payload.role.strip().upper()
+        if user.role != expected_role:
+            role_display = {
+                "SHOP_OWNER": "Shop Owner",
+                "SUPPLIER": "Supplier",
+                "GRUH_UDYOG": "Gruh Udyog"
+            }
+            actual_label = role_display.get(user.role, user.role.replace("_", " ").title())
+            return error(
+                f"This account is registered as a {actual_label}. Please select the {actual_label} role to sign in.",
+                "ROLE_MISMATCH",
+                403
+            )
+
     set_session(response, db, user)
-    return envelope({"user": safe_user(user)}, "Signed in")
+    return envelope({"user": safe_user(user, db=db)}, "Signed in")
 
 @app.get("/api/auth/me")
-def me(user: User = Depends(require_user)):
-    return envelope({"user": safe_user(user)}, "Current user returned")
+def me(user: User = Depends(require_user), db: Session = Depends(get_db)):
+    return envelope({"user": safe_user(user, db=db)}, "Current user returned")
+
+@app.put("/api/auth/profile")
+def update_profile(payload: ProfileUpdateRequest, user: User = Depends(require_user), db: Session = Depends(get_db)):
+    details = {}
+    clean_name = payload.name.strip() if payload.name else ""
+    if len(clean_name) < 2:
+        details["name"] = "Full name must be at least 2 characters."
+
+    clean_phone = normalize_identifier(payload.phone) if payload.phone else ""
+    if payload.phone is not None:
+        if clean_phone and len(clean_phone) < 8:
+            details["phone"] = "A valid phone number is required."
+        elif clean_phone and clean_phone != user.phone:
+            existing_user = db.scalar(select(User).where(User.phone == clean_phone, User.id != user.id))
+            if existing_user:
+                details["phone"] = "An account with this phone number already exists."
+
+    clean_email = payload.email.strip().lower() if payload.email and payload.email.strip() else None
+    if payload.email is not None and clean_email:
+        if "@" not in clean_email:
+            details["email"] = "A valid email address is required."
+        elif clean_email != (user.email or "").lower():
+            existing_user = db.scalar(select(User).where(func.lower(User.email) == clean_email, User.id != user.id))
+            if existing_user:
+                details["email"] = "An account with this email address already exists."
+
+    # Parse and clean categories
+    selected_categories = []
+    if payload.categories is not None:
+        selected_categories = [c.strip() for c in payload.categories if c and c.strip()]
+    elif payload.category:
+        selected_categories = [c.strip() for c in payload.category.split(",") if c and c.strip()]
+    clean_category_str = ", ".join(selected_categories) if selected_categories else "FMCG"
+
+    # Area logic
+    raw_areas = []
+    if payload.serviceAreas is not None and len(payload.serviceAreas) > 0:
+        raw_areas = payload.serviceAreas
+    elif payload.area and payload.area.strip():
+        raw_areas = [payload.area.strip()]
+
+    clean_areas = service_area_values(raw_areas) if raw_areas else []
+    primary_area = clean_areas[0] if clean_areas else (normalize_area_label(payload.area) if payload.area else (user.area or ""))
+
+    if user.role in {"SUPPLIER", "GRUH_UDYOG"} and not clean_areas and not primary_area:
+        details["area"] = "At least one service area is required."
+
+    if details:
+        return error("Please correct the highlighted fields.", "VALIDATION_ERROR", 400, details)
+
+    # Update User entity
+    user.name = clean_name
+    if clean_email is not None:
+        user.email = clean_email
+    if clean_phone:
+        user.phone = clean_phone
+    if clean_areas:
+        user.area = (", ".join(clean_areas))[:100]
+    elif primary_area:
+        user.area = primary_area[:100]
+
+    # Keep login_identifier synchronized
+    if user.email and (not user.login_identifier or "@" in user.login_identifier):
+        user.login_identifier = user.email
+    elif user.phone and (not user.login_identifier or "@" not in user.login_identifier):
+        user.login_identifier = user.phone
+
+    # Role-specific updates & area logic
+    if user.role in {"SUPPLIER", "GRUH_UDYOG"}:
+        supplier = db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
+        if not supplier:
+            supplier = Supplier(
+                id=f"supplier-{user.id[:8]}",
+                owner_id=user.id,
+                name=f"{user.name}'s Supply Desk",
+                category=clean_category_str,
+                location=primary_area,
+                service_areas_raw=", ".join(clean_areas) if clean_areas else primary_area,
+                phone=user.phone or "",
+                email=user.email or "",
+                is_verified=False,
+                rating=None,
+                review_count=0
+            )
+            db.add(supplier)
+            db.flush()
+        else:
+            supplier.name = f"{user.name}'s Supply Desk" if not supplier.name else supplier.name
+            supplier.category = clean_category_str
+            supplier.location = primary_area
+            supplier.phone = user.phone or supplier.phone
+            supplier.email = user.email or supplier.email
+            supplier.service_areas_raw = ", ".join(clean_areas) if clean_areas else primary_area
+
+        # Update SupplierServiceArea records to synchronize service areas
+        if clean_areas:
+            supplier.service_areas.clear()
+            db.flush()
+            for area in clean_areas:
+                supplier.service_areas.append(SupplierServiceArea(
+                    supplier_id=supplier.id,
+                    area_key=normalize_area_key(area),
+                    area=normalize_area_label(area)
+                ))
+            db.flush()
+
+    elif user.role == "SHOP_OWNER":
+        if user.shop:
+            if primary_area:
+                user.shop.area = primary_area
+            if payload.shopName and payload.shopName.strip():
+                user.shop.name = payload.shopName.strip()
+            if payload.shopAddress and payload.shopAddress.strip():
+                user.shop.address = payload.shopAddress.strip()
+
+    db.commit()
+    db.refresh(user)
+    return envelope({"user": safe_user(user, db=db)}, "Profile updated successfully")
 
 @app.post("/api/auth/logout")
 def logout(request: Request, response: Response, db: Session = Depends(get_db)):

@@ -35,7 +35,12 @@ export function AuthProvider({ children }) {
     setUser(null)
   }
 
-  return <AuthContext.Provider value={{ user, isLoading, signIn, signOut }}>{children}</AuthContext.Provider>
+  function updateUser(updatedUser) {
+    setUser(updatedUser)
+    if (updatedUser?.role) saveSelectedRole(updatedUser.role)
+  }
+
+  return <AuthContext.Provider value={{ user, isLoading, signIn, signOut, updateUser }}>{children}</AuthContext.Provider>
 }
 
 export function useAuth() {

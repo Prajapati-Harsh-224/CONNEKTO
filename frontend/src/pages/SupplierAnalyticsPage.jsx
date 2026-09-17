@@ -169,105 +169,143 @@ export default function SupplierAnalyticsPage() {
   ]
 
 
+  const metricAccents = {
+    green: { icon: 'bg-emerald-50 text-emerald-600 border-emerald-100', text: 'text-emerald-600' },
+    blue: { icon: 'bg-blue-50 text-blue-600 border-blue-100', text: 'text-blue-600' },
+    amber: { icon: 'bg-amber-50 text-amber-600 border-amber-100', text: 'text-amber-600' },
+    purple: { icon: 'bg-purple-50 text-purple-600 border-purple-100', text: 'text-purple-600' },
+  }
+
   return (
-    <section className="supplier-analytics-page">
-      <div className="orders-breadcrumb">
+    <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
+      <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
         <span>Supplier</span>
-        <span>›</span>
-        <span>Analytics</span>
+        <span aria-hidden="true">›</span>
+        <span className="text-slate-700">Analytics</span>
       </div>
 
-      <div className="supplier-analytics-header-row">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
-          <h1>Analytics</h1>
-          <p>A simple view of your business performance.</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">Analytics</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">A simple view of your business performance.</p>
         </div>
 
-        <label className="analytics-date-picker">
-          <span className="analytics-picker-icon"><HeaderIcon type="calendar" /></span>
-          <select aria-label="Select analytics period" onChange={(event) => setDateFilter(event.target.value)} value={dateFilter}>
+        <label className="relative inline-flex items-center bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-xs cursor-pointer focus-within:ring-2 focus-within:ring-brand-orange/20 focus-within:border-brand-orange">
+          <span className="text-slate-400 mr-2 text-sm" aria-hidden="true"><HeaderIcon type="calendar" /></span>
+          <select 
+            aria-label="Select analytics period" 
+            className="bg-transparent text-xs sm:text-sm font-semibold text-slate-700 focus:outline-hidden pr-6 cursor-pointer" 
+            onChange={(event) => setDateFilter(event.target.value)} 
+            value={dateFilter}
+          >
             {dateOptions.map((option) => (
               <option key={option} value={option}>{option}</option>
             ))}
           </select>
-          <span className="analytics-picker-caret"><HeaderIcon type="chevron" /></span>
+          <span className="text-slate-400 ml-auto pointer-events-none text-xs"><HeaderIcon type="chevron" /></span>
         </label>
       </div>
 
-      <div className="customer-summary-grid analytics-kpi-grid">
-        {metrics.map((metric) => (
-          <article className={`metric-card customer-stat-card analytics-kpi-card analytics-kpi-${metric.accent}`} key={metric.title}>
-            <div className="metric-card-icon analytics-metric-icon"><HeaderIcon type={metric.icon} /></div>
-            <div className="metric-card-content">
-              <span>{metric.title}</span>
-              <strong>{metric.value}</strong>
-              <small>{metric.delta}</small>
-            </div>
-            <span className="analytics-kpi-arrow" aria-hidden="true"><HeaderIcon type="arrow" /></span>
-          </article>
-        ))}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        {metrics.map((metric) => {
+          const accent = metricAccents[metric.accent] || metricAccents.blue
+          return (
+            <article 
+              className="flex items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md transition-all" 
+              key={metric.title}
+            >
+              <div className="flex items-center gap-3.5 min-w-0">
+                <div className={`flex items-center justify-center w-11 h-11 rounded-xl border text-xl font-bold shrink-0 ${accent.icon}`}>
+                  <HeaderIcon type={metric.icon} />
+                </div>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">{metric.title}</span>
+                  <strong className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight leading-tight">{metric.value}</strong>
+                  <small className="text-xs text-slate-400 font-medium truncate">{metric.delta}</small>
+                </div>
+              </div>
+              <span className="text-slate-300 shrink-0" aria-hidden="true"><HeaderIcon type="arrow" /></span>
+            </article>
+          )
+        })}
       </div>
 
-      <div className="supplier-analytics-grid">
-        <article className="analytics-main-card analytics-trend-card">
-          <div className="analytics-card-header">
-            <div className="analytics-card-title-block">
-              <span className="analytics-card-icon success-icon"><HeaderIcon type="chart" /></span>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <article className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-5">
+          <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 text-lg">
+                <HeaderIcon type="chart" />
+              </span>
               <div>
-                <h2>Sales Trend</h2>
-                <p>Your monthly sales over the last 6 months.</p>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">Sales Trend</h2>
+                <p className="text-xs text-slate-400">Your monthly sales over the last 6 months.</p>
               </div>
             </div>
 
-            <label className="analytics-select-wrap minimal">
-              <select aria-label="Select sales period" onChange={(event) => setSalesPeriod(event.target.value)} value={salesPeriod}>
+            <label className="relative inline-flex items-center bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 cursor-pointer">
+              <select 
+                aria-label="Select sales period" 
+                className="bg-transparent text-xs font-semibold text-slate-700 focus:outline-hidden pr-4 cursor-pointer"
+                onChange={(event) => setSalesPeriod(event.target.value)} 
+                value={salesPeriod}
+              >
                 {salesPeriodOptions.map((option) => (
                   <option key={option} value={option}>{option}</option>
                 ))}
               </select>
-              <span className="analytics-select-caret"><HeaderIcon type="chevron" /></span>
+              <span className="text-slate-400 pointer-events-none text-xs"><HeaderIcon type="chevron" /></span>
             </label>
           </div>
 
-          <SalesTrendChart labels={salesData.months} values={salesData.values} />
+          <div className="w-full overflow-hidden">
+            <SalesTrendChart labels={salesData.months || ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep']} values={salesData.values || [0, 0, 0, 0, 0, 0]} />
+          </div>
         </article>
 
-        <article className="analytics-main-card analytics-breakdown-card">
-          <div className="analytics-card-header">
-            <div className="analytics-card-title-block">
-              <span className="analytics-card-icon success-icon"><HeaderIcon type="spark" /></span>
+        <article className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-5">
+          <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-purple-50 text-purple-600 text-lg">
+                <HeaderIcon type="spark" />
+              </span>
               <div>
-                <h2>Revenue Breakdown</h2>
-                <p>Sales distribution by product category.</p>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">Revenue Breakdown</h2>
+                <p className="text-xs text-slate-400">Sales distribution by product category.</p>
               </div>
             </div>
 
-            <label className="analytics-select-wrap minimal">
-              <select aria-label="Select revenue period" onChange={(event) => setRevenuePeriod(event.target.value)} value={revenuePeriod}>
+            <label className="relative inline-flex items-center bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 cursor-pointer">
+              <select 
+                aria-label="Select revenue period" 
+                className="bg-transparent text-xs font-semibold text-slate-700 focus:outline-hidden pr-4 cursor-pointer"
+                onChange={(event) => setRevenuePeriod(event.target.value)} 
+                value={revenuePeriod}
+              >
                 {revenueOptions.map((option) => (
                   <option key={option} value={option}>{option}</option>
                 ))}
               </select>
-              <span className="analytics-select-caret"><HeaderIcon type="chevron" /></span>
+              <span className="text-slate-400 pointer-events-none text-xs"><HeaderIcon type="chevron" /></span>
             </label>
           </div>
 
-          <div className="revenue-breakdown-wrapper">
-            <div className="revenue-donut" style={donutStyle}>
-              <div className="revenue-donut-inner">
-                <strong>₹1.24L</strong>
-                <span>Total Sales</span>
+          <div className="flex flex-col sm:flex-row items-center justify-around gap-6 pt-2">
+            <div className="relative w-44 h-44 rounded-full flex items-center justify-center shadow-xs shrink-0" style={donutStyle}>
+              <div className="w-28 h-28 rounded-full bg-white flex flex-col items-center justify-center shadow-inner">
+                <strong className="text-lg font-black text-slate-900 leading-tight">₹1.24L</strong>
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total Sales</span>
               </div>
             </div>
 
-            <div className="revenue-legend">
+            <div className="w-full sm:w-auto space-y-2.5 flex-1 max-w-xs">
               {revenueSegments.map((segment) => (
-                <div className="legend-row" key={segment.name}>
-                  <span className="legend-label">
-                    <i style={{ background: segment.color }} />
-                    <span>{segment.name}</span>
+                <div className="flex items-center justify-between gap-3 text-xs sm:text-sm" key={segment.name}>
+                  <span className="flex items-center gap-2 font-medium text-slate-700 truncate">
+                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: segment.color }} />
+                    <span className="truncate">{segment.name}</span>
                   </span>
-                  <strong>{segment.value}%</strong>
+                  <strong className="font-bold text-slate-900">{segment.value}%</strong>
                 </div>
               ))}
             </div>
@@ -275,79 +313,99 @@ export default function SupplierAnalyticsPage() {
         </article>
       </div>
 
-      <div className="supplier-analytics-grid lower-grid">
-        <article className="analytics-main-card analytics-table-card">
-          <div className="analytics-card-header">
-            <div className="analytics-card-title-block">
-              <span className="analytics-card-icon success-icon"><HeaderIcon type="product" /></span>
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <article className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4">
+          <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-orange-50 text-brand-orange text-lg">
+                <HeaderIcon type="product" />
+              </span>
               <div>
-                <h2>Top Selling Products</h2>
-                <p>Products with highest sales this month.</p>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">Top Selling Products</h2>
+                <p className="text-xs text-slate-400">Products with highest sales this month.</p>
               </div>
             </div>
-            <Link className="analytics-view-all" to="/dashboard/supplier/products">View all products <HeaderIcon type="arrow" /></Link>
+            <Link className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-orange hover:text-brand-orange-dark transition-colors" to="/dashboard/supplier/products">
+              View all <HeaderIcon type="arrow" />
+            </Link>
           </div>
 
-          <table className="analytics-data-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Product</th>
-                <th>Units Sold</th>
-                <th>Revenue</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pageData.topProducts.map((product) => (
-                <tr key={product.name}>
-                  <td>{product.rank}</td>
-                  <td className="product-name-cell">
-                    <span className="product-mini-thumb" aria-hidden="true">{product.name.slice(0, 2).toUpperCase()}</span>
-                    <span>{product.name}</span>
-                  </td>
-                  <td>{product.units}</td>
-                  <td>{formatCurrency(product.revenue)}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs sm:text-sm">
+              <thead>
+                <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  <th className="pb-3 pr-2">#</th>
+                  <th className="pb-3 px-2">Product</th>
+                  <th className="pb-3 px-2">Units Sold</th>
+                  <th className="pb-3 pl-2 text-right">Revenue</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {pageData.topProducts.map((product) => (
+                  <tr className="hover:bg-slate-50/60 transition-colors" key={product.name}>
+                    <td className="py-3 pr-2 font-bold text-slate-400">{product.rank}</td>
+                    <td className="py-3 px-2">
+                      <div className="flex items-center gap-2.5">
+                        <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-orange-50 text-[10px] font-bold text-brand-orange shrink-0">
+                          {product.name.slice(0, 2).toUpperCase()}
+                        </span>
+                        <span className="font-semibold text-slate-800 truncate max-w-[140px] sm:max-w-none">{product.name}</span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-2 text-slate-600 font-medium">{product.units}</td>
+                    <td className="py-3 pl-2 text-right font-bold text-slate-900">{formatCurrency(product.revenue)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </article>
 
-        <article className="analytics-main-card analytics-table-card">
-          <div className="analytics-card-header">
-            <div className="analytics-card-title-block">
-              <span className="analytics-card-icon success-icon"><HeaderIcon type="customers" /></span>
+        <article className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4">
+          <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-blue-50 text-blue-600 text-lg">
+                <HeaderIcon type="customers" />
+              </span>
               <div>
-                <h2>Top Customers</h2>
-                <p>Customers who ordered the most this month.</p>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">Top Customers</h2>
+                <p className="text-xs text-slate-400">Customers who ordered the most this month.</p>
               </div>
             </div>
-            <Link className="analytics-view-all" to="/dashboard/supplier/customers">View all customers <HeaderIcon type="arrow" /></Link>
+            <Link className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-orange hover:text-brand-orange-dark transition-colors" to="/dashboard/supplier/customers">
+              View all <HeaderIcon type="arrow" />
+            </Link>
           </div>
 
-          <table className="analytics-data-table customer-table">
-            <thead>
-              <tr>
-                <th>#</th>
-                <th>Customer (Shop)</th>
-                <th>Orders</th>
-                <th>Total Spent</th>
-              </tr>
-            </thead>
-            <tbody>
-              {pageData.topCustomers.map((customer) => (
-                <tr key={customer.name}>
-                  <td>{customer.rank}</td>
-                  <td className="customer-name-cell">
-                    <span className="customer-mini-avatar" aria-hidden="true">{customer.name.split(' ').map((word) => word[0]).slice(0, 2).join('').toUpperCase()}</span>
-                    <span>{customer.name}</span>
-                  </td>
-                  <td>{customer.orders}</td>
-                  <td>{formatCurrency(customer.totalSpent)}</td>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left text-xs sm:text-sm">
+              <thead>
+                <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                  <th className="pb-3 pr-2">#</th>
+                  <th className="pb-3 px-2">Customer (Shop)</th>
+                  <th className="pb-3 px-2">Orders</th>
+                  <th className="pb-3 pl-2 text-right">Total Spent</th>
                 </tr>
-              ))}
-            </tbody>
-          </table>
+              </thead>
+              <tbody className="divide-y divide-slate-50">
+                {pageData.topCustomers.map((customer) => (
+                  <tr className="hover:bg-slate-50/60 transition-colors" key={customer.name}>
+                    <td className="py-3 pr-2 font-bold text-slate-400">{customer.rank}</td>
+                    <td className="py-3 px-2">
+                      <div className="flex items-center gap-2.5">
+                        <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-blue-50 text-[10px] font-bold text-blue-600 shrink-0">
+                          {customer.name.split(' ').map((word) => word[0]).slice(0, 2).join('').toUpperCase()}
+                        </span>
+                        <span className="font-semibold text-slate-800 truncate max-w-[140px] sm:max-w-none">{customer.name}</span>
+                      </div>
+                    </td>
+                    <td className="py-3 px-2 text-slate-600 font-medium">{customer.orders}</td>
+                    <td className="py-3 pl-2 text-right font-bold text-slate-900">{formatCurrency(customer.totalSpent)}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
         </article>
       </div>
     </section>

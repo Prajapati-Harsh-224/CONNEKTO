@@ -1,5 +1,6 @@
 import { useCallback } from 'react'
 import { Link } from 'react-router-dom'
+import { FiArrowRight, FiPlay, FiBriefcase, FiShield, FiTrendingUp, FiShoppingBag, FiTruck, FiUsers, FiMail, FiMapPin } from 'react-icons/fi'
 import { useLocale } from '../context/LocaleContext.jsx'
 import heroReference from '../assets/connekto_hero_visual_reference.png'
 import contactIllustration from '../assets/contact_illustration.svg'
@@ -13,223 +14,257 @@ export default function WelcomePage() {
   }, [])
 
   return (
-    <div className="home-page">
+    <div className="w-full min-h-screen bg-brand-cream/30 text-slate-800 selection:bg-brand-orange/20 selection:text-brand-orange">
 
       {/* ── HERO SECTION ── */}
-      <section className="home-hero" id="home" aria-label="Hero">
-        <div className="home-hero-inner">
+      <section className="relative overflow-hidden pt-6 sm:pt-12 pb-14 sm:pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" id="home" aria-label="Hero">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
 
           {/* LEFT COLUMN */}
-          <div className="home-hero-left">
-            <p className="home-eyebrow">{t('heroEyebrow')}</p>
-            <h1 className="home-heading">{t('heroHeading')}</h1>
-            <p className="home-subtitle">{t('heroSubtitle')}</p>
+          <div className="lg:col-span-7 space-y-6">
+            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-50 border border-orange-200 shadow-xs">
+              {t('heroEyebrow')}
+            </span>
+            <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-brand-navy tracking-tight leading-[1.15]">
+              {t('heroHeading')}
+            </h1>
+            <p className="text-base sm:text-lg text-slate-600 max-w-2xl leading-relaxed">
+              {t('heroSubtitle')}
+            </p>
 
-            <div className="home-cta-row">
-              <Link className="home-btn-primary" to="/role-selection">
-                {t('getStarted')} →
+            {/* Action Buttons */}
+            <div className="flex flex-wrap items-center gap-3 pt-2">
+              <Link
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm sm:text-base font-bold text-white bg-brand-orange hover:bg-orange-700 active:scale-95 shadow-md shadow-orange-500/20 transition-all"
+                to="/role-selection"
+              >
+                <span>{t('getStarted')}</span>
+                <FiArrowRight className="w-5 h-5" />
               </Link>
               <button
-                className="home-btn-video"
+                className="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl text-sm sm:text-base font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 active:scale-95 shadow-xs transition-all cursor-pointer"
                 onClick={() => scrollTo('how-it-works')}
                 type="button"
               >
-                <span className="home-play-icon" aria-hidden="true">
-                  <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3" /></svg>
+                <span className="w-6 h-6 rounded-full bg-orange-100 text-brand-orange flex items-center justify-center">
+                  <FiPlay className="w-3 h-3 fill-current ml-0.5" />
                 </span>
-                {t('watchVideo')}
+                <span>{t('watchVideo')}</span>
               </button>
             </div>
 
             {/* Value Points */}
-            <div className="home-value-points">
-              <div className="home-value-item">
-                <span className="home-value-icon" aria-hidden="true">
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="7" width="20" height="14" rx="2" /><path d="M16 7V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v2" /></svg>
-                </span>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-200/80">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 text-brand-orange flex items-center justify-center shrink-0 border border-orange-200/60 shadow-xs">
+                  <FiBriefcase className="w-4 h-4" />
+                </div>
                 <div>
-                  <strong>{t('wideNetwork')}</strong>
-                  <span>{t('wideNetworkDesc')}</span>
+                  <strong className="block text-xs sm:text-sm font-bold text-slate-900">{t('wideNetwork')}</strong>
+                  <span className="text-[11px] sm:text-xs text-slate-500">{t('wideNetworkDesc')}</span>
                 </div>
               </div>
-              <div className="home-value-item">
-                <span className="home-value-icon home-value-icon--green" aria-hidden="true">
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" /></svg>
-                </span>
+
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-200/60 shadow-xs">
+                  <FiShield className="w-4 h-4" />
+                </div>
                 <div>
-                  <strong>{t('reliableSupply')}</strong>
-                  <span>{t('reliableSupplyDesc')}</span>
+                  <strong className="block text-xs sm:text-sm font-bold text-slate-900">{t('reliableSupply')}</strong>
+                  <span className="text-[11px] sm:text-xs text-slate-500">{t('reliableSupplyDesc')}</span>
                 </div>
               </div>
-              <div className="home-value-item">
-                <span className="home-value-icon home-value-icon--orange" aria-hidden="true">
-                  <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
-                </span>
+
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-200/60 shadow-xs">
+                  <FiTrendingUp className="w-4 h-4" />
+                </div>
                 <div>
-                  <strong>{t('businessGrowth')}</strong>
-                  <span>{t('businessGrowthDesc')}</span>
+                  <strong className="block text-xs sm:text-sm font-bold text-slate-900">{t('businessGrowth')}</strong>
+                  <span className="text-[11px] sm:text-xs text-slate-500">{t('businessGrowthDesc')}</span>
                 </div>
               </div>
             </div>
           </div>
 
-          {/* RIGHT COLUMN — Uploaded Hero Reference */}
-          <div className="home-hero-right">
-            <img
-              className="home-hero-reference"
-              src={heroReference}
-              alt="Local businesses connected through Connekto"
-            />
+          {/* RIGHT COLUMN — Hero Visual */}
+          <div className="lg:col-span-5 flex justify-center">
+            <div className="relative w-full max-w-lg lg:max-w-none">
+              <div className="absolute -inset-2 bg-gradient-to-r from-orange-200 to-amber-200 rounded-3xl blur-xl opacity-40 -z-10" />
+              <img
+                alt="Local businesses connected through Connekto"
+                className="w-full h-auto rounded-2xl shadow-xl border border-white/80 object-cover"
+                src={heroReference}
+              />
+            </div>
           </div>
+
         </div>
       </section>
 
       {/* ── ROLE SELECTION (FOR BUSINESSES) ── */}
-      <section className="home-roles" id="for-businesses" aria-labelledby="roles-heading">
-        <div className="home-roles-inner">
-          <p className="home-eyebrow">{t('chooseYourRoleEyebrow')}</p>
-          <h2 id="roles-heading" className="home-roles-heading">{t('joinConnekto')}</h2>
-          <p className="home-roles-sub">{t('joinConnektoDesc')}</p>
-          <div className="home-role-cards">
-            <Link className="home-role-card" to="/role-selection" aria-label={t('shopOwner')}>
-              <span className="home-role-icon home-role-icon--orange">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
-              </span>
-              <div className="home-role-body">
-                <strong>{t('shopOwner')}</strong>
-                <span>{t('shopOwnerHomeDesc')}</span>
+      <section className="py-14 sm:py-20 bg-white border-y border-slate-200/80 px-4 sm:px-6 lg:px-8" id="for-businesses" aria-labelledby="roles-heading">
+        <div className="max-w-7xl mx-auto space-y-10">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-brand-orange">{t('chooseYourRoleEyebrow')}</span>
+            <h2 id="roles-heading" className="text-2xl sm:text-4xl font-extrabold text-brand-navy">{t('joinConnekto')}</h2>
+            <p className="text-sm sm:text-base text-slate-500">{t('joinConnektoDesc')}</p>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            {/* Shop Owner */}
+            <Link
+              to="/role-selection"
+              aria-label={t('shopOwner')}
+              className="group p-6 rounded-2xl bg-white border border-slate-200/90 hover:border-brand-orange hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-6 shadow-xs"
+            >
+              <div className="space-y-4">
+                <div className="w-12 h-12 rounded-2xl bg-orange-50 text-brand-orange flex items-center justify-center border border-orange-200/60 shadow-xs group-hover:scale-110 transition-transform">
+                  <FiShoppingBag className="w-6 h-6" />
+                </div>
+                <div>
+                  <strong className="block text-lg font-bold text-slate-900 group-hover:text-brand-orange transition-colors">{t('shopOwner')}</strong>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">{t('shopOwnerHomeDesc')}</p>
+                </div>
               </div>
-              <span className="home-role-arrow" aria-hidden="true">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
-              </span>
+              <div className="flex items-center gap-1 text-xs font-bold text-brand-orange">
+                <span>{t('getStarted')}</span>
+                <FiArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </div>
             </Link>
-            <Link className="home-role-card" to="/role-selection" aria-label={t('supplier')}>
-              <span className="home-role-icon home-role-icon--green">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" /><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" /></svg>
-              </span>
-              <div className="home-role-body">
-                <strong>{t('supplier')}</strong>
-                <span>{t('supplierHomeDesc')}</span>
+
+            {/* Supplier */}
+            <Link
+              to="/role-selection"
+              aria-label={t('supplier')}
+              className="group p-6 rounded-2xl bg-white border border-slate-200/90 hover:border-emerald-500 hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-6 shadow-xs"
+            >
+              <div className="space-y-4">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-200/60 shadow-xs group-hover:scale-110 transition-transform">
+                  <FiTruck className="w-6 h-6" />
+                </div>
+                <div>
+                  <strong className="block text-lg font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">{t('supplier')}</strong>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">{t('supplierHomeDesc')}</p>
+                </div>
               </div>
-              <span className="home-role-arrow" aria-hidden="true">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
-              </span>
+              <div className="flex items-center gap-1 text-xs font-bold text-emerald-600">
+                <span>{t('getStarted')}</span>
+                <FiArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </div>
             </Link>
-            <Link className="home-role-card home-role-card--purple" to="/role-selection" aria-label={t('gruhUdyog')}>
-              <span className="home-role-icon home-role-icon--purple">
-                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="7" r="4" /><path d="M5.5 20a7 7 0 0 1 13 0" /></svg>
-              </span>
-              <div className="home-role-body">
-                <strong>{t('gruhUdyog')}</strong>
-                <span>{t('gruhUdyogHomeDesc')}</span>
+
+            {/* Gruh Udyog */}
+            <Link
+              to="/role-selection"
+              aria-label={t('gruhUdyog')}
+              className="group p-6 rounded-2xl bg-white border border-slate-200/90 hover:border-purple-500 hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-6 shadow-xs"
+            >
+              <div className="space-y-4">
+                <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-200/60 shadow-xs group-hover:scale-110 transition-transform">
+                  <FiUsers className="w-6 h-6" />
+                </div>
+                <div>
+                  <strong className="block text-lg font-bold text-slate-900 group-hover:text-purple-600 transition-colors">{t('gruhUdyog')}</strong>
+                  <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">{t('gruhUdyogHomeDesc')}</p>
+                </div>
               </div>
-              <span className="home-role-arrow" aria-hidden="true">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="5" y1="12" x2="19" y2="12" /><polyline points="12 5 19 12 12 19" /></svg>
-              </span>
+              <div className="flex items-center gap-1 text-xs font-bold text-purple-600">
+                <span>{t('getStarted')}</span>
+                <FiArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+              </div>
             </Link>
           </div>
         </div>
       </section>
 
       {/* ── STATISTICS STRIP ── */}
-      <section className="home-stats" aria-label={t('platformStats')}>
-        <div className="home-stats-inner">
-          <div className="home-stat-item">
-            <span className="home-stat-icon" aria-hidden="true">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d4673f" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" /><circle cx="9" cy="7" r="4" /><path d="M23 21v-2a4 4 0 0 0-3-3.87" /><path d="M16 3.13a4 4 0 0 1 0 7.75" /></svg>
-            </span>
-            <div><strong className="home-stat-value">{t('stat1Value')}</strong><span className="home-stat-label">{t('stat1Label')}</span></div>
-          </div>
-          <div className="home-stat-divider" aria-hidden="true" />
-          <div className="home-stat-item">
-            <span className="home-stat-icon" aria-hidden="true">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d4673f" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /></svg>
-            </span>
-            <div><strong className="home-stat-value">{t('stat2Value')}</strong><span className="home-stat-label">{t('stat2Label')}</span></div>
-          </div>
-          <div className="home-stat-divider" aria-hidden="true" />
-          <div className="home-stat-item">
-            <span className="home-stat-icon" aria-hidden="true">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d4673f" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-            </span>
-            <div><strong className="home-stat-value">{t('stat3Value')}</strong><span className="home-stat-label">{t('stat3Label')}</span></div>
-          </div>
-          <div className="home-stat-divider" aria-hidden="true" />
-          <div className="home-stat-item">
-            <span className="home-stat-icon" aria-hidden="true">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#d4673f" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="20" x2="18" y2="10" /><line x1="12" y1="20" x2="12" y2="4" /><line x1="6" y1="20" x2="6" y2="14" /></svg>
-            </span>
-            <div><strong className="home-stat-value">{t('stat4Value')}</strong><span className="home-stat-label">{t('stat4Label')}</span></div>
+      <section className="py-10 bg-brand-cream/40 px-4 sm:px-6 lg:px-8" aria-label={t('platformStats')}>
+        <div className="max-w-7xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
+            <div className="space-y-1">
+              <strong className="block text-2xl sm:text-3xl font-black text-brand-navy">{t('stat1Value')}</strong>
+              <span className="text-xs sm:text-sm text-slate-500 font-medium">{t('stat1Label')}</span>
+            </div>
+            <div className="space-y-1">
+              <strong className="block text-2xl sm:text-3xl font-black text-brand-navy">{t('stat2Value')}</strong>
+              <span className="text-xs sm:text-sm text-slate-500 font-medium">{t('stat2Label')}</span>
+            </div>
+            <div className="space-y-1">
+              <strong className="block text-2xl sm:text-3xl font-black text-brand-navy">{t('stat3Value')}</strong>
+              <span className="text-xs sm:text-sm text-slate-500 font-medium">{t('stat3Label')}</span>
+            </div>
+            <div className="space-y-1">
+              <strong className="block text-2xl sm:text-3xl font-black text-brand-navy">{t('stat4Value')}</strong>
+              <span className="text-xs sm:text-sm text-slate-500 font-medium">{t('stat4Label')}</span>
+            </div>
           </div>
         </div>
       </section>
 
       {/* ── ABOUT SECTION ── */}
-      <section className="home-about" id="about" aria-labelledby="about-heading">
-        <div className="home-about-inner">
-          <div className="home-about-left">
-            <p className="home-eyebrow">{t('aboutEyebrow')}</p>
-            <h2 id="about-heading" className="home-section-heading">{t('aboutHeading')}</h2>
-            <p className="home-about-body">{t('aboutBody1')}</p>
-            <p className="home-about-body">{t('aboutBody2')}</p>
-            <p className="home-about-body">{t('aboutBody3')}</p>
-            <p className="home-about-body">{t('aboutBody4')}</p>
-            <p className="home-about-closing">{t('aboutClosing')}</p>
-            <Link className="home-btn-primary home-btn-primary--sm" to="/role-selection">{t('getStarted')} →</Link>
+      <section className="py-14 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" id="about" aria-labelledby="about-heading">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-14 items-center">
+          <div className="lg:col-span-7 space-y-4">
+            <span className="text-xs font-bold uppercase tracking-wider text-brand-orange">{t('aboutEyebrow')}</span>
+            <h2 id="about-heading" className="text-2xl sm:text-4xl font-extrabold text-brand-navy">{t('aboutHeading')}</h2>
+            <div className="space-y-3 text-sm sm:text-base text-slate-600 leading-relaxed">
+              <p>{t('aboutBody1')}</p>
+              <p>{t('aboutBody2')}</p>
+              <p>{t('aboutBody3')}</p>
+              <p>{t('aboutBody4')}</p>
+            </div>
+            <p className="text-sm sm:text-base font-semibold text-brand-navy pt-2">{t('aboutClosing')}</p>
+            <div className="pt-2">
+              <Link
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-brand-orange hover:bg-orange-700 active:scale-95 shadow-sm transition-all"
+                to="/role-selection"
+              >
+                <span>{t('getStarted')}</span>
+                <FiArrowRight className="w-4 h-4" />
+              </Link>
+            </div>
           </div>
-          <div className="home-about-right" aria-hidden="true">
-            <div className="home-about-visual">
-              {/* Background decorative blobs */}
-              <div className="home-about-blob home-about-blob--1" />
-              <div className="home-about-blob home-about-blob--2" />
-              
-              {/* Connection lines */}
-              <svg className="home-about-connector-lines" viewBox="0 0 340 380" fill="none" aria-hidden="true">
-                <path d="M 85 80 Q 170 100 170 190" stroke="#e5e2db" strokeWidth="2" strokeDasharray="6 4" strokeLinecap="round" />
-                <path d="M 255 80 Q 170 100 170 190" stroke="#e5e2db" strokeWidth="2" strokeDasharray="6 4" strokeLinecap="round" />
-                <path d="M 170 240 Q 170 300 170 320" stroke="#e5e2db" strokeWidth="2" strokeDasharray="6 4" strokeLinecap="round" />
-              </svg>
 
-              {/* Shop Owner - Top Left */}
-              <div className="home-about-role-card home-about-role-card--shop">
-                <span className="home-about-role-icon home-about-role-icon--orange">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" /><polyline points="9 22 9 12 15 12 15 22" /></svg>
-                </span>
-                <div className="home-about-role-text">
-                  <strong>{t('shopOwner')}</strong>
-                  <span>{t('aboutShopOwnerShort1')}</span>
-                  <span>{t('aboutShopOwnerShort2')}</span>
-                </div>
+          {/* Role Diagram / Visual */}
+          <div className="lg:col-span-5 flex justify-center" aria-hidden="true">
+            <div className="relative w-full max-w-md bg-white rounded-3xl border border-slate-200 p-6 sm:p-8 shadow-md space-y-4 text-center">
+              <div className="w-14 h-14 rounded-2xl bg-brand-navy text-white text-xl font-black mx-auto flex items-center justify-center shadow-md">
+                C
               </div>
+              <h3 className="text-xl font-black text-brand-navy">Connekto</h3>
+              <p className="text-xs text-slate-500">Unified local commerce ecosystem connecting retailers, suppliers, and producers.</p>
 
-              {/* Supplier - Top Right */}
-              <div className="home-about-role-card home-about-role-card--supplier">
-                <span className="home-about-role-icon home-about-role-icon--green">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="1" y="3" width="15" height="13" /><polygon points="16 8 20 8 23 11 23 16 16 16 16 8" /><circle cx="5.5" cy="18.5" r="2.5" /><circle cx="18.5" cy="18.5" r="2.5" /></svg>
-                </span>
-                <div className="home-about-role-text">
-                  <strong>{t('supplier')}</strong>
-                  <span>{t('aboutSupplierShort1')}</span>
-                  <span>{t('aboutSupplierShort2')}</span>
+              <div className="grid grid-cols-1 gap-2.5 pt-4 text-left">
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-orange-50/70 border border-orange-100">
+                  <div className="w-8 h-8 rounded-lg bg-white text-brand-orange flex items-center justify-center shadow-xs">
+                    <FiShoppingBag className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <strong className="block text-xs font-bold text-slate-900">{t('shopOwner')}</strong>
+                    <span className="block text-[11px] text-slate-500 truncate">{t('aboutShopOwnerShort1')}</span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Gruh Udyog - Bottom Center */}
-              <div className="home-about-role-card home-about-role-card--gruh">
-                <span className="home-about-role-icon home-about-role-icon--purple">
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="7" r="4" /><path d="M5.5 20a7 7 0 0 1 13 0" /></svg>
-                </span>
-                <div className="home-about-role-text">
-                  <strong>{t('gruhUdyog')}</strong>
-                  <span>{t('aboutGruhUdyogShort1')}</span>
-                  <span>{t('aboutGruhUdyogShort2')}</span>
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50/70 border border-emerald-100">
+                  <div className="w-8 h-8 rounded-lg bg-white text-emerald-600 flex items-center justify-center shadow-xs">
+                    <FiTruck className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <strong className="block text-xs font-bold text-slate-900">{t('supplier')}</strong>
+                    <span className="block text-[11px] text-slate-500 truncate">{t('aboutSupplierShort1')}</span>
+                  </div>
                 </div>
-              </div>
 
-              {/* Central Connekto Platform Badge */}
-              <div className="home-about-platform-badge">
-                <span className="pub-brand-mark" style={{ width: '2.5rem', height: '2.5rem', fontSize: '1rem' }}>C</span>
-                <strong>Connekto</strong>
+                <div className="flex items-center gap-3 p-3 rounded-xl bg-purple-50/70 border border-purple-100">
+                  <div className="w-8 h-8 rounded-lg bg-white text-purple-600 flex items-center justify-center shadow-xs">
+                    <FiUsers className="w-4 h-4" />
+                  </div>
+                  <div className="min-w-0">
+                    <strong className="block text-xs font-bold text-slate-900">{t('gruhUdyog')}</strong>
+                    <span className="block text-[11px] text-slate-500 truncate">{t('aboutGruhUdyogShort1')}</span>
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -237,23 +272,28 @@ export default function WelcomePage() {
       </section>
 
       {/* ── HOW IT WORKS ── */}
-      <section className="home-hiw" id="how-it-works" aria-labelledby="hiw-heading">
-        <div className="home-hiw-inner">
-          <p className="home-eyebrow">{t('hiwEyebrow')}</p>
-          <h2 id="hiw-heading" className="home-section-heading">{t('hiwHeading')}</h2>
-          <p className="home-roles-sub" style={{ marginBottom: '2.5rem' }}>{t('hiwSubtitle')}</p>
-          <div className="home-hiw-steps">
+      <section className="py-14 sm:py-20 bg-white border-t border-slate-200/80 px-4 sm:px-6 lg:px-8" id="how-it-works" aria-labelledby="hiw-heading">
+        <div className="max-w-7xl mx-auto space-y-10">
+          <div className="text-center max-w-2xl mx-auto space-y-2">
+            <span className="text-xs font-bold uppercase tracking-wider text-brand-orange">{t('hiwEyebrow')}</span>
+            <h2 id="hiw-heading" className="text-2xl sm:text-4xl font-extrabold text-brand-navy">{t('hiwHeading')}</h2>
+            <p className="text-sm sm:text-base text-slate-500">{t('hiwSubtitle')}</p>
+          </div>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
             {[
-              { num: '01', titleKey: 'hiwStep1Title', descKey: 'hiwStep1Desc', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2" /><circle cx="12" cy="7" r="4" /></svg> },
-              { num: '02', titleKey: 'hiwStep2Title', descKey: 'hiwStep2Desc', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="11" cy="11" r="8" /><line x1="21" y1="21" x2="16.65" y2="16.65" /></svg> },
-              { num: '03', titleKey: 'hiwStep3Title', descKey: 'hiwStep3Desc', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z" /></svg> },
-              { num: '04', titleKey: 'hiwStep4Title', descKey: 'hiwStep4Desc', icon: <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12" /></svg> },
+              { num: '01', titleKey: 'hiwStep1Title', descKey: 'hiwStep1Desc' },
+              { num: '02', titleKey: 'hiwStep2Title', descKey: 'hiwStep2Desc' },
+              { num: '03', titleKey: 'hiwStep3Title', descKey: 'hiwStep3Desc' },
+              { num: '04', titleKey: 'hiwStep4Title', descKey: 'hiwStep4Desc' },
             ].map((step) => (
-              <div key={step.num} className="home-hiw-step">
-                <div className="home-hiw-step-num">{step.num}</div>
-                <div className="home-hiw-step-icon" aria-hidden="true">{step.icon}</div>
-                <strong className="home-hiw-step-title">{t(step.titleKey)}</strong>
-                <p className="home-hiw-step-desc">{t(step.descKey)}</p>
+              <div
+                key={step.num}
+                className="p-6 rounded-2xl bg-slate-50 border border-slate-200/80 space-y-3 relative hover:bg-white hover:shadow-md hover:border-slate-300 transition-all"
+              >
+                <div className="text-3xl font-black text-brand-orange/25">{step.num}</div>
+                <strong className="block text-base font-bold text-slate-900">{t(step.titleKey)}</strong>
+                <p className="text-xs sm:text-sm text-slate-500 leading-relaxed">{t(step.descKey)}</p>
               </div>
             ))}
           </div>
@@ -261,33 +301,36 @@ export default function WelcomePage() {
       </section>
 
       {/* ── CONTACT SECTION ── */}
-      <section className="home-contact" id="contact" aria-labelledby="contact-heading">
-        <div className="home-contact-inner">
-          <div className="home-contact-left">
-            <p className="home-eyebrow">{t('contactEyebrow')}</p>
-            <h2 id="contact-heading" className="home-section-heading">{t('contactHeading')}</h2>
-            <p className="home-about-body">{t('contactSubtitle')}</p>
-            <div className="home-contact-info">
-              <div className="home-contact-info-item">
-                <span className="home-contact-info-icon" aria-hidden="true">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4673f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z" /><polyline points="22,6 12,13 2,6" /></svg>
-                </span>
-                <a href="mailto:hello@connekto.example" className="home-contact-link">hello@connekto.example</a>
+      <section className="py-14 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" id="contact" aria-labelledby="contact-heading">
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 items-center">
+          <div className="lg:col-span-6 space-y-6">
+            <span className="text-xs font-bold uppercase tracking-wider text-brand-orange">{t('contactEyebrow')}</span>
+            <h2 id="contact-heading" className="text-2xl sm:text-4xl font-extrabold text-brand-navy">{t('contactHeading')}</h2>
+            <p className="text-sm sm:text-base text-slate-600 leading-relaxed">{t('contactSubtitle')}</p>
+
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center gap-3 text-sm text-slate-700">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 text-brand-orange flex items-center justify-center shrink-0 border border-orange-200/60 shadow-xs">
+                  <FiMail className="w-4 h-4" />
+                </div>
+                <a className="font-semibold text-brand-orange hover:underline" href="mailto:hello@connekto.example">
+                  hello@connekto.example
+                </a>
               </div>
-              <div className="home-contact-info-item">
-                <span className="home-contact-info-icon" aria-hidden="true">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d4673f" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z" /><circle cx="12" cy="10" r="3" /></svg>
-                </span>
+              <div className="flex items-center gap-3 text-sm text-slate-700">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 text-brand-orange flex items-center justify-center shrink-0 border border-orange-200/60 shadow-xs">
+                  <FiMapPin className="w-4 h-4" />
+                </div>
                 <span>{t('contactLocation')}</span>
               </div>
             </div>
           </div>
 
-          <div className="home-contact-right">
-            <img 
-              src={contactIllustration} 
-              alt="Contact illustration showing email, questions, ideas, and partnerships" 
-              className="home-contact-illustration"
+          <div className="lg:col-span-6 flex justify-center">
+            <img
+              alt="Contact illustration showing email, questions, ideas, and partnerships"
+              className="w-full max-w-md h-auto"
+              src={contactIllustration}
             />
           </div>
         </div>

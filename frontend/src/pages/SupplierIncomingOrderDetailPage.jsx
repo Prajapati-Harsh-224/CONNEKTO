@@ -107,139 +107,141 @@ export default function SupplierIncomingOrderDetailPage() {
   }
 
   if (isLoading) return <LoadingState message={t('loadingIncomingOrders')} />
-  if (error) return <section className="order-detail-page"><p className="form-message error" role="alert">{error}</p><Link className="button secondary" to="/dashboard/supplier/orders">{t('backToIncomingOrders')}</Link></section>
+  if (error) return <section className="space-y-4 p-4"><p className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-xl" role="alert">{error}</p><Link className="px-4 py-2 bg-slate-100 rounded-xl text-sm font-semibold text-slate-700" to="/dashboard/supplier/orders">{t('backToIncomingOrders')}</Link></section>
   if (!order) return <EmptyState title={t('orderNotFound')} message={t('orderUnavailable')} />
 
   const customerName = order.customer || order.shopOwner || 'Shop owner'
 
   return (
-    <section className="order-detail-page">
-      <div className="order-detail-breadcrumb">
-        <Link to="/dashboard/supplier/orders">{t('orders') || 'Orders'}</Link>
+    <section className="space-y-6">
+      <div className="flex items-center gap-1.5 text-xs text-slate-500">
+        <Link className="hover:text-slate-800" to="/dashboard/supplier/orders">{t('orders') || 'Orders'}</Link>
         <span aria-hidden="true">›</span>
-        <span>Order #{order.id || order.orderId}</span>
+        <span className="font-semibold text-slate-800">Order #{order.id || order.orderId}</span>
       </div>
 
-      <div className="order-detail-heading">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
-          <span className="section-kicker">Supplier order</span>
-          <h1>Order #{order.id || order.orderId}</h1>
-          <p className="order-detail-supplier">Customer: {customerName}</p>
-        </div>
-        <StatusBadge status={order.status} />
-      </div>
-
-      <div className="order-detail-meta">
-        <div>
-          <span>Order date</span>
-          <strong>{formatDate(order.date)}</strong>
+          <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Supplier order</span>
+          <h1 className="text-2xl sm:text-3xl font-bold font-serif text-[#102d45]">Order #{order.id || order.orderId}</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">Customer: <strong className="text-slate-700 font-semibold">{customerName}</strong></p>
         </div>
         <div>
-          <span>Total amount</span>
-          <strong>{formatCurrency(total)}</strong>
-        </div>
-        <div>
-          <span>Delivery area</span>
-          <strong>{order.area || order.serviceArea || '—'}</strong>
-        </div>
-        <div>
-          <span>Payment method</span>
-          <strong>{paymentLabels[order.paymentMethod] || order.paymentMethod || 'Cash on Delivery'}</strong>
+          <StatusBadge status={order.status} />
         </div>
       </div>
 
-      <div className="order-detail-layout">
-        <main className="order-detail-main">
-          <section className="order-items-panel">
-            <div className="order-detail-section-heading">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs">
+        <div>
+          <span className="text-[11px] text-slate-400 font-medium block">Order date</span>
+          <strong className="text-sm sm:text-base font-semibold text-slate-900 mt-0.5 block">{formatDate(order.date)}</strong>
+        </div>
+        <div>
+          <span className="text-[11px] text-slate-400 font-medium block">Total amount</span>
+          <strong className="text-sm sm:text-base font-bold text-slate-900 mt-0.5 block tabular-nums">{formatCurrency(total)}</strong>
+        </div>
+        <div>
+          <span className="text-[11px] text-slate-400 font-medium block">Delivery area</span>
+          <strong className="text-sm sm:text-base font-semibold text-slate-900 mt-0.5 block">{order.area || order.serviceArea || '—'}</strong>
+        </div>
+        <div>
+          <span className="text-[11px] text-slate-400 font-medium block">Payment method</span>
+          <strong className="text-sm sm:text-base font-semibold text-slate-900 mt-0.5 block">{paymentLabels[order.paymentMethod] || order.paymentMethod || 'Cash on Delivery'}</strong>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
+        <main className="space-y-6">
+          <section className="bg-white rounded-2xl border border-slate-100 shadow-xs p-5 sm:p-6 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
-                <span className="section-kicker">Products</span>
-                <h2>Order Items</h2>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">Products</span>
+                <h2 className="text-lg font-bold text-slate-900 font-serif">Order Items</h2>
               </div>
-              <span className="order-detail-item-count">
+              <span className="px-2.5 py-1 rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
                 {items.length} {items.length === 1 ? 'item' : 'items'}
               </span>
             </div>
 
-            <div className="order-detail-items-heading">
+            <div className="hidden sm:grid grid-cols-[1fr_auto] text-xs font-bold text-slate-400 uppercase tracking-wider pb-1">
               <span>Product</span>
               <span>Amount</span>
             </div>
 
-            {items.map((item, index) => {
-              const unitsPerBox = Number(item.unitsPerBoxSnapshot || item.unitsPerBox || 1)
-              const isBox = unitsPerBox > 1
-              const boxes = item.boxes || (isBox ? Math.floor(item.quantity / unitsPerBox) : item.quantity)
-              const unitPrice = Number(String(item.unitPriceSnapshot || item.unitPrice || 0).replace(/[^0-9.]/g, ''))
-              return (
-                <div className="order-detail-item" key={`${item.sku || item.product}-${index}`}>
-                  <div>
-                    <strong>{item.product || item.name || 'Product'}</strong>
-                    <span>
-                      {isBox
-                        ? `${boxes} ${boxes === 1 ? 'Box' : 'Boxes'} (${item.quantity} packets) × ${formatCurrency(unitPrice)}/packet`
-                        : `${item.quantity} units × ${formatCurrency(unitPrice)}`}
-                    </span>
+            <div className="divide-y divide-slate-100">
+              {items.map((item, index) => {
+                const unitsPerBox = Number(item.unitsPerBoxSnapshot || item.unitsPerBox || 1)
+                const isBox = unitsPerBox > 1
+                const boxes = item.boxes || (isBox ? Math.floor(item.quantity / unitsPerBox) : item.quantity)
+                const unitPrice = Number(String(item.unitPriceSnapshot || item.unitPrice || 0).replace(/[^0-9.]/g, ''))
+                return (
+                  <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-3 text-xs" key={`${item.sku || item.product}-${index}`}>
+                    <div>
+                      <strong className="font-semibold text-slate-800 text-sm block">{item.product || item.name || 'Product'}</strong>
+                      <span className="text-slate-400 text-xs mt-0.5 block">
+                        {isBox
+                          ? `${boxes} ${boxes === 1 ? 'Box' : 'Boxes'} (${item.quantity} packets) × ${formatCurrency(unitPrice)}/packet`
+                          : `${item.quantity} units × ${formatCurrency(unitPrice)}`}
+                      </span>
+                    </div>
+                    <strong className="font-bold text-slate-900 text-sm tabular-nums self-end sm:self-center">{formatCurrency(item.total || unitPrice * (item.quantity || 1))}</strong>
                   </div>
-                  <strong>{formatCurrency(item.total || unitPrice * (item.quantity || 1))}</strong>
-                </div>
-              )
-            })}
-
-            <div className="order-detail-total">
-              <span>Supplier subtotal</span>
-              <strong>{formatCurrency(subtotal)}</strong>
+                )
+              })}
             </div>
-            {total !== subtotal && (
-              <div className="order-detail-total" style={{ borderTop: 'none', paddingTop: '0.4rem' }}>
-                <span>Supplier total</span>
-                <strong>{formatCurrency(total)}</strong>
+
+            <div className="pt-3 border-t border-slate-200 space-y-1 text-sm">
+              <div className="flex justify-between items-center text-slate-600 text-xs">
+                <span>Supplier subtotal</span>
+                <strong className="font-semibold text-slate-900 tabular-nums">{formatCurrency(subtotal)}</strong>
               </div>
-            )}
+              {total !== subtotal && (
+                <div className="flex justify-between items-center text-slate-600 text-xs">
+                  <span>Supplier total</span>
+                  <strong className="font-bold text-slate-900 text-base tabular-nums">{formatCurrency(total)}</strong>
+                </div>
+              )}
+            </div>
           </section>
 
-          <section className="customer-info-panel" style={{ marginTop: '1rem' }}>
-            <div className="order-detail-section-heading">
-              <div>
-                <span className="section-kicker">Customer Information</span>
-                <h2>Customer &amp; Delivery Details</h2>
+          <section className="bg-white rounded-2xl border border-slate-100 shadow-xs p-5 sm:p-6 space-y-4">
+            <div className="pb-3 border-b border-slate-100">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">Customer Information</span>
+              <h2 className="text-lg font-bold text-slate-900 font-serif">Customer &amp; Delivery Details</h2>
+            </div>
+
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
+              <div className="bg-slate-50 p-3.5 rounded-xl">
+                <label className="text-slate-400 font-medium block">Shop / Customer</label>
+                <strong className="font-bold text-slate-800 text-sm block mt-0.5">{customerName}</strong>
+                <small className="text-slate-400">{order.area || order.serviceArea || '—'}</small>
+              </div>
+              <div className="bg-slate-50 p-3.5 rounded-xl">
+                <label className="text-slate-400 font-medium block">Shop Owner</label>
+                <strong className="font-bold text-slate-800 text-sm block mt-0.5">{order.shopOwner || customerName}</strong>
+              </div>
+              <div className="bg-slate-50 p-3.5 rounded-xl">
+                <label className="text-slate-400 font-medium block">Phone Number</label>
+                <strong className="font-bold text-slate-800 text-sm block mt-0.5">{order.phone || '—'}</strong>
+              </div>
+              <div className="bg-slate-50 p-3.5 rounded-xl">
+                <label className="text-slate-400 font-medium block">Delivery Address</label>
+                <strong className="font-bold text-slate-800 text-sm block mt-0.5">{order.address || order.area || '—'}</strong>
               </div>
             </div>
 
-            <div className="customer-info-grid">
-              <div className="customer-info-item">
-                <label>Shop / Customer</label>
-                <strong>{customerName}</strong>
-                <small>{order.area || order.serviceArea || '—'}</small>
-              </div>
-              <div className="customer-info-item">
-                <label>Shop Owner</label>
-                <strong>{order.shopOwner || customerName}</strong>
-              </div>
-              <div className="customer-info-item">
-                <label>Phone Number</label>
-                <strong>{order.phone || '—'}</strong>
-              </div>
-              <div className="customer-info-item">
-                <label>Delivery Address</label>
-                <strong>{order.address || order.area || '—'}</strong>
-              </div>
-            </div>
-
-            <div className="customer-actions-row">
+            <div className="flex items-center gap-3 pt-2">
               {order.phone && (
                 <a
-                  className="supplier-detail-primary"
+                  className="px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-xs"
                   href={`tel:${order.phone}`}
-                  style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
                 >
                   Call Customer
                 </a>
               )}
               <Link
-                className="supplier-detail-secondary"
+                className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
                 to="/dashboard/supplier/customers"
-                style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}
               >
                 View Customers
               </Link>
@@ -247,28 +249,26 @@ export default function SupplierIncomingOrderDetailPage() {
           </section>
         </main>
 
-        <aside className="order-detail-side">
-          <section className="timeline-panel">
-            <div className="order-detail-section-heading">
+        <aside className="space-y-6">
+          <section className="bg-white rounded-2xl border border-slate-100 shadow-xs p-5 space-y-4">
+            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
-                <span className="section-kicker">Status timeline</span>
-                <h2>Order progress</h2>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">Status timeline</span>
+                <h2 className="text-base font-bold text-slate-900 font-serif">Order progress</h2>
               </div>
               <StatusBadge status={order.status} />
             </div>
             <StatusTimeline currentStatus={order.status} />
           </section>
 
-          <section className="supplier-actions-panel">
-            <div className="order-detail-section-heading">
-              <div>
-                <span className="section-kicker">Action Required</span>
-                <h2>Supplier Actions</h2>
-              </div>
+          <section className="bg-white rounded-2xl border border-slate-100 shadow-xs p-5 space-y-4">
+            <div className="pb-2 border-b border-slate-100">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">Action Required</span>
+              <h2 className="text-base font-bold text-slate-900 font-serif">Supplier Actions</h2>
             </div>
 
             {(statusTransitions[order.status] || []).length > 0 ? (
-              <div className="supplier-action-buttons-stack">
+              <div className="flex flex-col gap-4 pt-1">
                 {(statusTransitions[order.status] || []).map((nextStatus) => {
                   const isDestructive = nextStatus === 'Cancelled'
                   const label = nextStatus === 'Accepted'
@@ -283,7 +283,11 @@ export default function SupplierIncomingOrderDetailPage() {
 
                   return (
                     <button
-                      className={isDestructive ? 'supplier-detail-destructive' : 'supplier-detail-primary'}
+                      className={`w-full py-2.5 px-4 rounded-xl text-xs font-semibold transition-all cursor-pointer ${
+                        isDestructive
+                          ? 'text-rose-700 bg-rose-50 hover:bg-rose-100 border border-rose-200 mt-1.5'
+                          : 'text-white bg-emerald-600 hover:bg-emerald-700 shadow-xs shadow-emerald-600/20'
+                      }`}
                       disabled={isUpdating}
                       key={nextStatus}
                       onClick={() => updateStatus({ target: { value: nextStatus } })}
@@ -295,14 +299,14 @@ export default function SupplierIncomingOrderDetailPage() {
                 })}
               </div>
             ) : (
-              <div className="order-detail-note">
-                <strong>No Actions Needed</strong>
-                <p>Order is currently {order.status?.toLowerCase()}. No further status transitions available.</p>
+              <div className="bg-slate-50 p-3.5 rounded-xl text-xs text-slate-500">
+                <strong className="font-bold text-slate-700 block">No Actions Needed</strong>
+                <p className="mt-0.5">Order is currently {order.status?.toLowerCase()}. No further status transitions available.</p>
               </div>
             )}
 
             {statusError && (
-              <p className="form-message error" role="alert" style={{ marginTop: '0.6rem' }}>
+              <p className="p-3 rounded-xl text-xs font-medium text-rose-700 bg-rose-50 border border-rose-200" role="alert">
                 {statusError}
               </p>
             )}
@@ -310,8 +314,8 @@ export default function SupplierIncomingOrderDetailPage() {
         </aside>
       </div>
 
-      <div style={{ marginTop: '1.5rem' }}>
-        <Link className="supplier-back-link" to="/dashboard/supplier/orders">
+      <div className="pt-2">
+        <Link className="text-xs font-semibold text-slate-600 hover:text-slate-900 inline-flex items-center gap-1" to="/dashboard/supplier/orders">
           ← Back to Incoming Orders
         </Link>
       </div>

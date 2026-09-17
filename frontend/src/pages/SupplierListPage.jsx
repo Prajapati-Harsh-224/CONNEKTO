@@ -175,12 +175,12 @@ function getAvatarBg(name = '') {
 // ---------------------------------------------------------------------------
 function VerifiedBadge() {
   return (
-    <span className="sdc-verified-badge" aria-label="Verified Supplier">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold uppercase tracking-wider" aria-label="Verified Supplier">
       <svg viewBox="0 0 14 14" fill="none" aria-hidden="true" width="11" height="11">
         <circle cx="7" cy="7" r="6.5" fill="#1a7a3c" />
         <path d="M4.5 7l1.8 1.8L9.5 5.5" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
-      Verified Supplier
+      Verified
     </span>
   )
 }
@@ -190,31 +190,19 @@ function VerifiedBadge() {
 // ---------------------------------------------------------------------------
 function StarRating({ rating, reviewCount }) {
   return (
-    <div className="sdc-rating-row">
+    <div className="flex items-center gap-1 text-xs">
       {rating == null ? (
-        <span className="sdc-review-count">Not rated</span>
+        <span className="text-slate-400">Not rated</span>
       ) : (
         <>
           <svg viewBox="0 0 16 16" fill="#F59E0B" aria-hidden="true" width="14" height="14">
             <path d="M8 1l1.854 3.756L14 5.528l-3 2.924.708 4.133L8 10.5l-3.708 2.085L5 8.452 2 5.528l4.146-.772L8 1z" />
           </svg>
-          <span className="sdc-rating-value">{rating.toFixed(1)}</span>
-          <span className="sdc-review-count">({reviewCount} reviews)</span>
+          <span className="font-bold text-slate-900">{rating.toFixed(1)}</span>
+          <span className="text-slate-400">({reviewCount})</span>
         </>
       )}
     </div>
-  )
-}
-
-// ---------------------------------------------------------------------------
-// LocationPin icon
-// ---------------------------------------------------------------------------
-function LocationPinIcon() {
-  return (
-    <svg viewBox="0 0 16 16" fill="none" aria-hidden="true" width="13" height="13" className="sdc-loc-icon">
-      <path d="M8 14s5-4.3 5-8.5a5 5 0 1 0-10 0C3 9.7 8 14 8 14Z" stroke="#6b7280" strokeWidth="1.4" />
-      <circle cx="8" cy="5.5" r="1.5" stroke="#6b7280" strokeWidth="1.4" />
-    </svg>
   )
 }
 
@@ -225,7 +213,7 @@ function HeartButton({ isFavorite, name, onClick }) {
   return (
     <button
       type="button"
-      className={`sdc-heart-btn${isFavorite ? ' active' : ''}`}
+      className="p-2 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
       aria-label={isFavorite ? `Remove ${name} from favorites` : `Save ${name}`}
       onClick={onClick}
     >
@@ -244,45 +232,54 @@ function SupplierCard({ supplier, isFavorite, onToggleFavorite }) {
   const bg = getAvatarBg(supplier.name)
 
   return (
-    <article className="sdc-card">
-      <HeartButton
-        isFavorite={isFavorite}
-        name={supplier.name}
-        onClick={(e) => {
-          e.preventDefault()
-          onToggleFavorite(supplier.id)
-        }}
-      />
+    <article className="relative flex flex-col justify-between p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-slate-300 transition-all">
+      <div className="absolute top-4 right-4">
+        <HeartButton
+          isFavorite={isFavorite}
+          name={supplier.name}
+          onClick={(e) => {
+            e.preventDefault()
+            onToggleFavorite(supplier.id)
+          }}
+        />
+      </div>
 
-      <div className="sdc-card-top">
-        <div className="sdc-avatar" style={{ background: bg }} aria-hidden="true">
-          {initials}
-        </div>
-        <div className="sdc-card-identity">
-          <div className="sdc-name-row">
-            <h3 className="sdc-name">{supplier.name}</h3>
-            {supplier.isVerified && <VerifiedBadge />}
+      <div className="space-y-3">
+        <div className="flex items-start gap-3.5 pr-8">
+          <div className="flex items-center justify-center w-12 h-12 rounded-xl text-white font-black text-base shrink-0 shadow-xs" style={{ background: bg }} aria-hidden="true">
+            {initials}
           </div>
-          <span className="sdc-type">{supplier.type}</span>
-          {(supplier.serviceAreas?.length > 0 || supplier.location) && (
-            <div className="sdc-location-sub" style={{ fontSize: '0.82rem', color: '#6b7280', marginTop: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
-              📍 {supplier.serviceAreas?.length > 0 ? supplier.serviceAreas.join(', ') : supplier.location}
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-2 flex-wrap">
+              <h3 className="text-base sm:text-lg font-bold text-slate-900 truncate">{supplier.name}</h3>
+              {supplier.isVerified && <VerifiedBadge />}
             </div>
-          )}
+            <span className="text-xs font-semibold text-brand-orange">{supplier.type}</span>
+            {(supplier.serviceAreas?.length > 0 || supplier.location) && (
+              <div className="flex items-center gap-1 text-xs text-slate-400 mt-1 truncate">
+                <span>📍</span>
+                <span className="truncate">{supplier.serviceAreas?.length > 0 ? supplier.serviceAreas.join(', ') : supplier.location}</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        <p className="text-xs sm:text-sm text-slate-500 line-clamp-2 leading-relaxed">
+          {supplier.description || 'Verified wholesale distributor delivering to local grocery stores.'}
+        </p>
+
+        <div className="flex flex-wrap gap-1.5 pt-1">
+          {(supplier.tags || []).slice(0, 3).map((tag) => (
+            <span key={tag} className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold">
+              {tag}
+            </span>
+          ))}
         </div>
       </div>
 
-      <p className="sdc-description">{supplier.description}</p>
-
-      <div className="sdc-tag-row">
-        {(supplier.tags || []).slice(0, 3).map((tag) => (
-          <span key={tag} className="sdc-tag">{tag}</span>
-        ))}
-      </div>
-
-      <div className="sdc-card-footer">
+      <div className="pt-4 mt-4 border-t border-slate-100">
         <Link
-          className="sdc-view-btn"
+          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-orange-50 hover:bg-brand-orange hover:text-white text-brand-orange font-bold text-xs sm:text-sm transition-all border border-orange-200/60 shadow-xs"
           to={`/dashboard/shop-owner/suppliers/${supplier.id}/products`}
           aria-label={`View ${supplier.name} products`}
         >
@@ -359,41 +356,32 @@ export default function SupplierListPage() {
   if (isLoading) return <LoadingState message={t('loadingWorkspace')} />
 
   return (
-    <section className="sdc-page">
-
+    <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
       {/* ── Page header ── */}
-      <div className="sdc-page-header">
-        <div className="sdc-page-header-copy">
-          <nav className="sdc-breadcrumb" aria-label="Breadcrumb">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+        <div>
+          <nav className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2" aria-label="Breadcrumb">
             <span>{t('shopOwner')}</span>
-            <span className="sdc-breadcrumb-sep" aria-hidden="true">›</span>
-            <span aria-current="page">{t('suppliers')}</span>
+            <span aria-hidden="true">›</span>
+            <span className="text-slate-700">{t('suppliers')}</span>
           </nav>
-          <h1 className="sdc-heading">{t('findSuppliers')}</h1>
-          <p className="sdc-subheading">{t('findSuppliersDescription')}</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">{t('findSuppliers')}</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('findSuppliersDescription')}</p>
         </div>
-        <div className="sdc-hero-banner" aria-hidden="true">
-          <div className="sdc-hero-icon">
-            <svg viewBox="0 0 56 56" fill="none" width="56" height="56" aria-hidden="true">
-              <rect x="8" y="28" width="40" height="22" rx="3" fill="#2E7D32" opacity=".15" />
-              <rect x="14" y="20" width="28" height="30" rx="2" fill="#2E7D32" opacity=".25" />
-              <rect x="20" y="14" width="16" height="36" rx="2" fill="#2E7D32" opacity=".45" />
-              <path d="M24 40h8M24 35h8M26 30h4" stroke="#1a5c1e" strokeWidth="1.6" strokeLinecap="round" />
-              <path d="M28 14v-4M24 12l4-4 4 4" stroke="#1a5c1e" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round" />
-            </svg>
-          </div>
-          <div className="sdc-hero-text">
-            <div>Source Local</div>
-            <div>Stock Local</div>
-            <div>Grow Local</div>
+
+        <div className="hidden lg:flex items-center gap-3 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-900 text-xs font-semibold" aria-hidden="true">
+          <div className="flex flex-col leading-tight">
+            <span>Source Local</span>
+            <span>Stock Local</span>
+            <span className="text-emerald-700 font-extrabold">Grow Local</span>
           </div>
         </div>
       </div>
 
-      {/* ── Category carousel ── */}
-      <div className="sdc-category-section">
-        <div className="sdc-category-label">{t('shopByCategory')}</div>
-        <div className="sdc-category-list" role="list">
+      {/* ── Category carousel / selector ── */}
+      <div className="space-y-3">
+        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('shopByCategory')}</span>
+        <div className="flex gap-3 overflow-x-auto pb-2" role="list">
           {categoryCatalog.map((cat) => {
             const isActive = selectedCategory === cat.id
             const colors = categoryColors[cat.icon] || categoryColors.fmcg
@@ -402,42 +390,42 @@ export default function SupplierListPage() {
                 key={cat.id}
                 type="button"
                 role="listitem"
-                className={`sdc-cat-card${isActive ? ' active' : ''}`}
+                className={`flex flex-col items-center p-3 rounded-2xl border transition-all text-center cursor-pointer min-w-[120px] shrink-0 ${
+                  isActive 
+                    ? 'bg-orange-50 border-orange-300 ring-2 ring-orange-200' 
+                    : 'bg-white border-slate-200/80 hover:border-slate-300 hover:shadow-xs'
+                }`}
                 onClick={() => setSelectedCategory(isActive ? 'all' : cat.id)}
                 aria-pressed={isActive}
               >
                 <span
-                  className="sdc-cat-icon"
+                  className="flex items-center justify-center w-10 h-10 rounded-xl mb-2 text-lg"
                   style={{ background: colors.bg, color: colors.color }}
                 >
                   <CategoryIcon type={cat.icon} />
                 </span>
-                <span className="sdc-cat-name">{t(cat.key)}</span>
-                <span className="sdc-cat-desc">
-                  {categoryDescriptions[cat.id]}
-                </span>
+                <span className="text-xs font-bold text-slate-800 line-clamp-1">{t(cat.key)}</span>
               </button>
             )
           })}
         </div>
       </div>
 
-      {/* ── Results header ── */}
-      <div className="sdc-results-header">
-        <h2 className="sdc-results-heading">
-          {activeCategoryLabel}
-          <span className="sdc-results-count">({filteredSuppliers.length} suppliers)</span>
-        </h2>
-      </div>
+      {/* ── Search toolbar & results header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+        <div>
+          <h2 className="text-lg font-black text-slate-900">
+            {activeCategoryLabel} <span className="text-xs font-semibold text-slate-400">({filteredSuppliers.length} suppliers)</span>
+          </h2>
+        </div>
 
-      {/* ── Search toolbar ── */}
-      <div className="sdc-toolbar">
-        <label className="sdc-search-field" htmlFor="sdc-search">
-          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" width="16" height="16" className="sdc-search-icon">
-            <circle cx="9" cy="9" r="5.5" stroke="#9ca3af" strokeWidth="1.6" />
-            <path d="m13 13 3.5 3.5" stroke="#9ca3af" strokeWidth="1.6" strokeLinecap="round" />
+        <label className="relative sm:w-80 flex items-center bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 shadow-xs focus-within:ring-2 focus-within:ring-brand-orange/20 focus-within:border-brand-orange transition-all" htmlFor="sdc-search">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" width="16" height="16" className="text-slate-400 mr-2 shrink-0">
+            <circle cx="9" cy="9" r="5.5" stroke="currentColor" strokeWidth="1.6" />
+            <path d="m13 13 3.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
           </svg>
           <input
+            className="w-full bg-transparent text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden"
             id="sdc-search"
             type="text"
             value={searchTerm}
@@ -449,24 +437,24 @@ export default function SupplierListPage() {
 
       {/* ── Error state ── */}
       {error && (
-        <p className="form-message error sdc-error" role="alert">{error}</p>
+        <p className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium" role="alert">{error}</p>
       )}
 
       {!error && !isLoading && suppliers.length === 0 && (
-        <p className="form-message info sdc-empty-message">No suppliers are available right now.</p>
+        <p className="p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium">No suppliers are available right now.</p>
       )}
 
       {/* ── Supplier grid ── */}
       {filteredSuppliers.length === 0 ? (
-        <div className="sdc-empty-state">
-          <svg viewBox="0 0 48 48" fill="none" aria-hidden="true" width="48" height="48">
-            <circle cx="24" cy="24" r="22" stroke="#e5e7eb" strokeWidth="2" />
-            <path d="M16 24h16M24 16v16" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" />
+        <div className="flex flex-col items-center justify-center p-12 bg-white rounded-2xl border border-slate-200/80 shadow-xs text-center space-y-3">
+          <svg viewBox="0 0 48 48" fill="none" aria-hidden="true" width="48" height="48" className="text-slate-300">
+            <circle cx="24" cy="24" r="22" stroke="currentColor" strokeWidth="2" />
+            <path d="M16 24h16M24 16v16" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
           </svg>
-          <p>{t('noSuppliers')}</p>
+          <p className="text-slate-600 font-semibold text-sm">{t('noSuppliers')}</p>
         </div>
       ) : (
-        <div className="sdc-grid">
+        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
           {filteredSuppliers.map((supplier) => (
             <SupplierCard
               key={supplier.id}
