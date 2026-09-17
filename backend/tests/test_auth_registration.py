@@ -180,6 +180,24 @@ def test_supplier_dashboard_includes_today_revenue_metric():
         for metric in metrics
     )
 
+def test_gruh_udyog_dashboard_and_orders_access():
+    login_response = client.post("/api/auth/login", json={
+        "emailOrPhone": "gruhudyog@example.com",
+        "password": "Password123!",
+    })
+    assert login_response.status_code == 200, login_response.json()
+
+    # Verify Gruh Udyog can access dashboard
+    dashboard_res = client.get("/api/supplier/dashboard")
+    assert dashboard_res.status_code == 200, dashboard_res.json()
+    assert dashboard_res.json()["success"] is True
+
+    # Verify Gruh Udyog can access orders
+    orders_res = client.get("/api/supplier/orders")
+    assert orders_res.status_code == 200, orders_res.json()
+    assert orders_res.json()["success"] is True
+
+
 if __name__ == "__main__":
     print("Resetting test database...")
     reset_db()

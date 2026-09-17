@@ -52,7 +52,7 @@ export default function Sidebar({ role: routeRole }) {
               className={({ isActive }) =>
                 `flex items-center justify-between px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-colors ${
                   isActive
-                    ? 'bg-orange-50 text-[#f06535] font-semibold'
+                    ? (role === 'gruh-udyog' ? 'bg-[#eaf5ef] text-[#1b6442] font-semibold' : 'bg-orange-50 text-[#f06535] font-semibold')
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`
               }
@@ -73,6 +73,18 @@ export default function Sidebar({ role: routeRole }) {
           </Fragment>
         )
       })}
+      <div className="mt-auto pt-6 px-2 pb-2 flex items-start gap-3 border-t border-slate-100/80">
+        <div className="w-8 h-8 rounded-lg bg-[#eaf5ef] text-[#1b6442] flex items-center justify-center shrink-0">
+          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
+            <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
+          </svg>
+        </div>
+        <div>
+          <div className="text-xs font-bold text-slate-800 leading-tight">Supporting Local Businesses</div>
+          <div className="text-[11px] text-slate-400 mt-1 leading-snug">Handmade today for a better tomorrow.</div>
+        </div>
+      </div>
     </aside>
   )
 }

@@ -58,6 +58,7 @@ class GruhUdyogRegisterRequest(BaseModel):
     name: str
     area: str
     category: Optional[str] = None
+    serviceAreas: List[str] = Field(default_factory=list)
     phone: str
     email: str = ""
     password: str
@@ -73,15 +74,18 @@ class LoginRequest(BaseModel):
     role: Optional[str] = None
 
 class ProductRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
     name: str
-    brand: str
+    brand: Optional[str] = "Handmade"
     category: str
+    description: Optional[str] = ""
     packSize: str
     price: float = Field(gt=0)
-    minimumQuantity: int = Field(gt=0)
-    unitsPerBox: int = Field(default=1, gt=0)
-    availableStock: int = Field(default=0, ge=0)
+    minimumQuantity: Optional[int] = Field(default=1, gt=0)
+    unitsPerBox: Optional[int] = Field(default=1, gt=0)
+    availableStock: Optional[int] = Field(default=0, ge=0)
     imageUrl: str = ""
+    isActive: Optional[bool] = True
 
     @field_validator('imageUrl')
     @classmethod

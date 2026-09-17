@@ -32,7 +32,7 @@ export default function RoleLayout({ role: routeRole }) {
           </Link>
         </div>
 
-        {role !== 'supplier' && role !== 'shop-owner' ? (
+        {role !== 'supplier' && role !== 'shop-owner' && role !== 'gruh-udyog' ? (
           <div className="relative flex-1 max-w-md hidden md:flex items-center">
             <span className="absolute left-3 text-slate-400"><FiSearch size={16} /></span>
             <input
@@ -69,7 +69,7 @@ export default function RoleLayout({ role: routeRole }) {
           </div>
 
           <Link className="flex items-center gap-2.5 p-1 sm:px-2 sm:py-1.5 rounded-xl hover:bg-slate-100/60 transition-colors" to={`/dashboard/${role}/profile`} aria-label={`${displayName}, ${roleLabel}. ${t('profile')}`}>
-            <span className="w-8 h-8 rounded-full bg-orange-100 text-[#f06535] flex items-center justify-center font-bold text-sm shrink-0" aria-hidden="true">
+            <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${role === 'gruh-udyog' ? 'bg-[#ea6a53] text-white' : 'bg-orange-100 text-[#f06535]'}`} aria-hidden="true">
               {avatarInitial}
             </span>
             <div className="hidden md:flex flex-col text-left leading-tight">

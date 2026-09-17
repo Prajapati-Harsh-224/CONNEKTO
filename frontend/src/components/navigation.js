@@ -9,7 +9,10 @@ export const roleNavigation = {
     { key: 'customers', section: 'customers' },
   ],
   'gruh-udyog': [
-    { key: 'dashboard', section: 'home' }, { key: 'products', section: 'products' }, { key: 'serviceAreas', section: 'service-areas' }, { key: 'orders', section: 'orders' },
+    { key: 'home', section: 'home' },
+    { key: 'orders', section: 'orders' },
+    { key: 'products', section: 'products' },
+    { key: 'customers', section: 'customers' },
   ],
 }
 

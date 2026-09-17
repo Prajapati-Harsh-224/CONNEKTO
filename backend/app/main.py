@@ -250,7 +250,58 @@ def order_json(order: SupplierOrder) -> dict:
             "unitPrice": float(item.unit_price_snapshot),
             "lineTotal": float(item.line_total)
         })
-    return {"id": order.id, "checkoutId": order.checkout_id, "supplierId": order.supplier_id, "supplierName": order.supplier_name, "serviceArea": order.service_area, "shopOwnerId": order.shop_owner_id, "shopOwnerName": order.shop_owner.name if order.shop_owner else "", "shopOwnerPhone": order.shop_owner.phone if order.shop_owner else "", "shopName": shop.name if shop else "", "shopAddress": shop.address if shop else "", "subtotal": float(order.subtotal), "amount": float(order.subtotal), "status": order.status, "paymentMethod": order.checkout.payment_method if order.checkout else None, "createdAt": order.created_at.isoformat(), "updatedAt": order.updated_at.isoformat(), "items": items_json}
+    customer_name = shop.name if shop else (order.shop_owner.name if order.shop_owner else "Retail Shop")
+    return {
+        "id": order.id,
+        "checkoutId": order.checkout_id,
+        "supplierId": order.supplier_id,
+        "supplierName": order.supplier_name,
+        "serviceArea": order.service_area,
+        "area": order.service_area,
+        "shopOwnerId": order.shop_owner_id,
+        "shopOwner": order.shop_owner.name if order.shop_owner else "",
+        "shopOwnerName": order.shop_owner.name if order.shop_owner else "",
+        "shopOwnerPhone": order.shop_owner.phone if order.shop_owner else "",
+        "shopName": shop.name if shop else "",
+        "shopAddress": shop.address if shop else "",
+        "customer": customer_name,
+        "subtotal": float(order.subtotal),
+        "amount": float(order.subtotal),
+        "status": order.status,
+        "paymentMethod": order.checkout.payment_method if order.checkout else None,
+        "createdAt": order.created_at.isoformat(),
+        "updatedAt": order.updated_at.isoformat(),
+        "items": items_json
+    }
+
+
+def owned_supplier(user: User, db: Session):
+    supplier = db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
+    if not supplier and user.role in {"SUPPLIER", "GRUH_UDYOG"}:
+        clean_area = user.area or "Ahmedabad"
+        name_suffix = "Gruh Udyog" if user.role == "GRUH_UDYOG" else "Supply Desk"
+        supplier = Supplier(
+            id=f"supplier-{user.id[:8]}",
+            owner_id=user.id,
+            name=f"{user.name}'s {name_suffix}",
+            category="Food & Beverages" if user.role == "GRUH_UDYOG" else "FMCG",
+            description="",
+            location=clean_area,
+            service_areas_raw=clean_area,
+            minimum_order="",
+            phone=user.phone or "",
+            email=user.email or "",
+            is_verified=False,
+            rating=None,
+            review_count=0
+        )
+        db.add(supplier)
+        db.flush()
+        db.add(SupplierServiceArea(supplier_id=supplier.id, area_key=normalize_area_key(clean_area), area=clean_area))
+        db.commit()
+        db.refresh(supplier)
+    return supplier
+
 
 @app.get("/api/health")
 def health():
@@ -401,7 +452,8 @@ def register_gruh_udyog(payload: GruhUdyogRegisterRequest, response: Response, d
         email=payload.email,
         password=payload.password,
         confirm_password=payload.confirmPassword,
-        category=payload.category
+        category=payload.category,
+        service_areas=payload.serviceAreas
     )
 
 @app.post("/api/auth/login")
@@ -578,7 +630,7 @@ def logout(request: Request, response: Response, db: Session = Depends(get_db)):
 
 @app.get("/api/supplier/dashboard")
 def supplier_dashboard(user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "SUPPLIER": return role_error("Suppliers", user)
+    if user.role not in {"SUPPLIER", "GRUH_UDYOG"}: return role_error("Suppliers", user)
     supplier = db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
     orders = db.scalars(select(SupplierOrder).where(SupplierOrder.supplier_id == supplier.id).options(joinedload(SupplierOrder.items))).unique().all() if supplier else []
 
@@ -607,34 +659,213 @@ def supplier_dashboard(user: User = Depends(require_user), db: Session = Depends
 
 @app.get("/api/supplier/orders")
 def supplier_orders(user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "SUPPLIER": return role_error("Suppliers", user)
-    supplier = db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
-    orders = db.scalars(select(SupplierOrder).where(SupplierOrder.supplier_id == supplier.id).options(joinedload(SupplierOrder.items))).unique().all() if supplier else []
+    if user.role not in {"SUPPLIER", "GRUH_UDYOG"}: return role_error("Suppliers", user)
+    supplier = owned_supplier(user, db)
+    orders = db.scalars(
+        select(SupplierOrder)
+        .where(SupplierOrder.supplier_id == supplier.id)
+        .options(
+            joinedload(SupplierOrder.items),
+            joinedload(SupplierOrder.shop_owner).joinedload(User.shop)
+        )
+        .order_by(SupplierOrder.created_at.desc())
+    ).unique().all() if supplier else []
     return envelope({"orders": [order_json(o) for o in orders]}, "Incoming orders returned")
 
 @app.get("/api/supplier/orders/{order_id}")
 def supplier_order(order_id: str, user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "SUPPLIER": return role_error("Suppliers", user)
-    supplier = db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
-    order = db.scalar(select(SupplierOrder).where(SupplierOrder.id == order_id, SupplierOrder.supplier_id == supplier.id).options(joinedload(SupplierOrder.items))) if supplier else None
+    if user.role not in {"SUPPLIER", "GRUH_UDYOG"}: return role_error("Suppliers", user)
+    supplier = owned_supplier(user, db)
+    order = db.scalar(
+        select(SupplierOrder)
+        .where(SupplierOrder.id == order_id, SupplierOrder.supplier_id == supplier.id)
+        .options(
+            joinedload(SupplierOrder.items),
+            joinedload(SupplierOrder.shop_owner).joinedload(User.shop)
+        )
+    ) if supplier else None
     return envelope({"order": order_json(order)}, "Incoming order returned") if order else error("Incoming order not found.", "NOT_FOUND", 404)
 
 @app.put("/api/supplier/orders/{order_id}/status")
 def update_supplier_order(order_id: str, payload: StatusRequest, user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "SUPPLIER": return role_error("Suppliers", user)
-    supplier = db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
-    order = db.scalar(select(SupplierOrder).where(SupplierOrder.id == order_id, SupplierOrder.supplier_id == supplier.id).options(joinedload(SupplierOrder.items))) if supplier else None
+    if user.role not in {"SUPPLIER", "GRUH_UDYOG"}: return role_error("Suppliers", user)
+    supplier = owned_supplier(user, db)
+    order = db.scalar(
+        select(SupplierOrder)
+        .where(SupplierOrder.id == order_id, SupplierOrder.supplier_id == supplier.id)
+        .options(
+            joinedload(SupplierOrder.items),
+            joinedload(SupplierOrder.shop_owner).joinedload(User.shop)
+        )
+    ) if supplier else None
     if not order: return error("Incoming order not found.", "NOT_FOUND", 404)
     if payload.status not in TRANSITIONS.get(order.status, set()): return error(f"Cannot move an order from {order.status} to {payload.status}.", "INVALID_STATUS_TRANSITION", 400)
     order.status = payload.status; db.commit(); db.refresh(order)
     return envelope({"order": order_json(order)}, "Order status updated")
 
+
+@app.get("/api/gruh-udyog/dashboard")
+def gruh_udyog_dashboard(user: User = Depends(require_user), db: Session = Depends(get_db)):
+    if user.role != "GRUH_UDYOG":
+        return role_error("Gruh Udyog", user)
+    supplier = owned_supplier(user, db)
+    orders = db.scalars(
+        select(SupplierOrder)
+        .where(SupplierOrder.supplier_id == supplier.id)
+        .options(
+            joinedload(SupplierOrder.items),
+            joinedload(SupplierOrder.shop_owner).joinedload(User.shop)
+        )
+        .order_by(SupplierOrder.created_at.desc())
+    ).unique().all() if supplier else []
+
+    total_orders = len(orders)
+    pending_orders = sum(1 for o in orders if o.status in {"Pending", "Preparing", "Accepted", "Out for Delivery"})
+    completed_orders = sum(1 for o in orders if o.status == "Delivered")
+    total_sales = sum(float(o.subtotal) for o in orders if o.status != "Cancelled")
+
+    orders_data = [order_json(o) for o in orders]
+    attention_orders = [o for o in orders_data if o["status"] in {"Pending", "Preparing", "Accepted", "Out for Delivery"}]
+
+    return envelope({
+        "businessName": supplier.name if supplier else f"{user.name}'s Gruh Udyog",
+        "supplierId": supplier.id if supplier else None,
+        "metrics": {
+            "totalOrders": total_orders,
+            "pendingOrders": pending_orders,
+            "completedOrders": completed_orders,
+            "totalSales": total_sales,
+            "totalSalesFormatted": f"₹{total_sales:,.0f}",
+        },
+        "orders": orders_data,
+        "recentOrders": orders_data[:10],
+        "needsAttentionOrders": attention_orders[:5],
+        "hasRealOrders": total_orders > 0,
+    }, "Gruh Udyog dashboard returned")
+
+
+@app.get("/api/gruh-udyog/orders")
+def gruh_udyog_orders(user: User = Depends(require_user), db: Session = Depends(get_db)):
+    if user.role != "GRUH_UDYOG":
+        return role_error("Gruh Udyog", user)
+    return supplier_orders(user=user, db=db)
+
+
+@app.get("/api/gruh-udyog/orders/{order_id}")
+def gruh_udyog_order(order_id: str, user: User = Depends(require_user), db: Session = Depends(get_db)):
+    if user.role != "GRUH_UDYOG":
+        return role_error("Gruh Udyog", user)
+    return supplier_order(order_id=order_id, user=user, db=db)
+
+
+@app.put("/api/gruh-udyog/orders/{order_id}/status")
+def update_gruh_udyog_order(order_id: str, payload: StatusRequest, user: User = Depends(require_user), db: Session = Depends(get_db)):
+    if user.role != "GRUH_UDYOG":
+        return role_error("Gruh Udyog", user)
+    return update_supplier_order(order_id=order_id, payload=payload, user=user, db=db)
+
+
+@app.get("/api/gruh-udyog/customers")
+def gruh_udyog_customers(user: User = Depends(require_user), db: Session = Depends(get_db)):
+    if user.role != "GRUH_UDYOG":
+        return role_error("Gruh Udyog", user)
+    supplier = owned_supplier(user, db)
+    if not supplier:
+        return envelope({"customers": []}, "Gruh Udyog customers returned")
+
+    orders = db.scalars(
+        select(SupplierOrder)
+        .where(SupplierOrder.supplier_id == supplier.id)
+        .options(
+            joinedload(SupplierOrder.items),
+            joinedload(SupplierOrder.shop_owner).joinedload(User.shop)
+        )
+        .order_by(SupplierOrder.created_at.desc())
+    ).unique().all()
+
+    customers_map = {}
+    for order in orders:
+        owner = order.shop_owner
+        shop = owner.shop if owner else None
+        cid = owner.id if owner else (order.shop_owner_id or order.id)
+
+        if cid not in customers_map:
+            shop_name = shop.name if shop else (owner.name if owner else "Retail Store")
+            area = shop.area if shop else (owner.area if owner else order.service_area or "Ahmedabad")
+            address = shop.address if shop else f"{area}, Ahmedabad"
+            
+            # Determine status: inactive if order status is Cancelled or marked
+            is_inactive = order.status == "Cancelled"
+
+            created_date = order.created_at.isoformat() if hasattr(order.created_at, "isoformat") else str(order.created_at)
+            since_date = owner.created_at.isoformat() if owner and hasattr(owner.created_at, "isoformat") else created_date
+
+            customers_map[cid] = {
+                "id": cid,
+                "name": shop_name,
+                "shopOwner": owner.name if owner else "Shop Owner",
+                "phone": owner.phone if owner and owner.phone else "",
+                "email": owner.email if owner and owner.email else "",
+                "area": area,
+                "city": "Ahmedabad",
+                "address": address,
+                "location": f"{area}, Ahmedabad" if area else "Ahmedabad",
+                "totalOrders": 0,
+                "totalSpent": 0.0,
+                "lastOrder": created_date,
+                "customerSince": since_date,
+                "status": "Inactive" if is_inactive else "Active",
+                "category": "Retail Store",
+                "orders": []
+            }
+
+        customer_entry = customers_map[cid]
+        customer_entry["totalOrders"] += 1
+        customer_entry["totalSpent"] = round(customer_entry["totalSpent"] + float(order.subtotal), 2)
+        customer_entry["orders"].append(order_json(order))
+
+        # Keep latest order as lastOrder
+        order_date_str = order.created_at.isoformat() if hasattr(order.created_at, "isoformat") else str(order.created_at)
+        if order_date_str > customer_entry["lastOrder"]:
+            customer_entry["lastOrder"] = order_date_str
+            if order.status == "Cancelled":
+                customer_entry["status"] = "Inactive"
+        if order_date_str < customer_entry["customerSince"]:
+            customer_entry["customerSince"] = order_date_str
+
+    customers_list = list(customers_map.values())
+    return envelope({"customers": customers_list}, "Gruh Udyog customers returned")
+
+
+@app.get("/api/gruh-udyog/customers/{customer_id}")
+def gruh_udyog_customer(customer_id: str, user: User = Depends(require_user), db: Session = Depends(get_db)):
+    if user.role != "GRUH_UDYOG":
+        return role_error("Gruh Udyog", user)
+    all_customers = gruh_udyog_customers(user=user, db=db)
+    cust_list = all_customers.get("data", {}).get("customers", [])
+    found = next((c for c in cust_list if c["id"] == customer_id), None)
+    return envelope({"customer": found}, "Customer returned") if found else error("Customer not found.", "NOT_FOUND", 404)
+
+
 def product_json(product: Product) -> dict:
     upb = product.minimum_quantity or getattr(product, "units_per_box", 1) or 1
-    return {"id": product.id, "supplierId": product.supplier_id, "name": product.name, "brand": product.brand, "category": product.category, "packSize": product.pack_size, "price": float(product.price), "minimumQuantity": product.minimum_quantity, "unitsPerBox": upb, "availableStock": getattr(product, "available_stock", 0) or 0, "imageUrl": product.image_url or "", "isActive": product.is_active, "isDemoData": product.is_demo_data}
+    return {
+        "id": product.id,
+        "supplierId": product.supplier_id,
+        "name": product.name,
+        "brand": product.brand,
+        "category": product.category,
+        "description": getattr(product, "description", "") or "",
+        "packSize": product.pack_size,
+        "price": float(product.price),
+        "minimumQuantity": product.minimum_quantity,
+        "unitsPerBox": upb,
+        "availableStock": getattr(product, "available_stock", 0) or 0,
+        "imageUrl": product.image_url or "",
+        "isActive": product.is_active,
+        "isDemoData": product.is_demo_data
+    }
 
-def owned_supplier(user: User, db: Session):
-    return db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
 
 def public_supplier_json(supplier: Supplier, products: list[Product]) -> dict:
     product_categories = [product.category.strip() for product in products if product.category and product.category.strip()]
@@ -653,6 +884,12 @@ def public_supplier_json(supplier: Supplier, products: list[Product]) -> dict:
         "packaged foods": "Snacks & Packaged Foods",
         "manufacturing": "Local Manufacturers",
         "local manufacturers": "Local Manufacturers",
+        "handmade": "Local Manufacturers",
+        "food & beverages": "Food & Beverages",
+        "handicrafts": "Handicrafts",
+        "pooja items": "Pooja Items",
+        "home decor": "Home Decor",
+        "health & wellness": "Health & Wellness",
     }
     category_values = [mapped_categories.get(category.lower(), category) for category in product_categories]
     category = supplier.category.strip() if (supplier.category and supplier.category.strip()) else next((value for value in category_values if value), "FMCG")
@@ -674,7 +911,13 @@ def public_supplier_json(supplier: Supplier, products: list[Product]) -> dict:
         "Dairy & Bakery": "Sources fresh dairy, bakery staples, and ready-to-sell everyday food favourites.",
         "Snacks & Packaged Foods": "Carries crunchy, ready-to-ship packaged food items for fast-moving demand.",
         "Local Manufacturers": "Supports locally manufactured goods and regionally trusted speciality products.",
+        "Food & Beverages": "Crafts authentic homemade snacks, pickles, and traditional delicacies.",
+        "Handicrafts": "Offers handcrafted artisan goods, festive items, and decorative creations.",
+        "Pooja Items": "Provides pure, traditional incense, pooja essentials, and spiritual items.",
+        "Home Decor": "Handmade decorative candles, artistic pieces, and home accessories.",
+        "Health & Wellness": "Natural, herbal preparations and wellness formulations made with care.",
     }.get(category, f"Offers {len(products)} active products across {len(unique_tags)} categories.")
+
     service_areas = [service_area.area for service_area in sorted(supplier.service_areas, key=lambda service_area: service_area.area_key)]
     location = service_areas[0] if service_areas else (supplier.owner.area if (supplier.owner and supplier.owner.area) else "")
     phone = supplier.owner.phone if (supplier.owner and supplier.owner.phone) else "+91 98765 43210"
@@ -750,7 +993,23 @@ def create_product(payload: ProductRequest, user: User = Depends(require_user), 
     supplier = owned_supplier(user, db)
     if not supplier: return error("Supplier profile not found.", "NOT_FOUND", 404)
     image_url = payload.imageUrl.strip() if payload.imageUrl else ""
-    product = Product(id=str(uuid4()), supplier_id=supplier.id, name=payload.name.strip(), brand=payload.brand.strip(), category=payload.category.strip(), pack_size=payload.packSize.strip(), price=payload.price, minimum_quantity=payload.minimumQuantity, units_per_box=payload.unitsPerBox, available_stock=payload.availableStock or 0, image_url=image_url, is_active=True)
+    desc = (getattr(payload, "description", "") or "").strip()
+    is_active = payload.isActive if hasattr(payload, 'isActive') and payload.isActive is not None else True
+    product = Product(
+        id=str(uuid4()),
+        supplier_id=supplier.id,
+        name=payload.name.strip(),
+        brand=(payload.brand or "Handmade").strip(),
+        category=payload.category.strip(),
+        description=desc,
+        pack_size=payload.packSize.strip(),
+        price=payload.price,
+        minimum_quantity=payload.minimumQuantity or 1,
+        units_per_box=payload.unitsPerBox or 1,
+        available_stock=payload.availableStock or 0,
+        image_url=image_url,
+        is_active=is_active
+    )
     db.add(product); db.commit(); db.refresh(product)
     return envelope({"product": product_json(product)}, "Product created")
 
@@ -767,7 +1026,19 @@ def edit_product(product_id: str, payload: ProductRequest, user: User = Depends(
     supplier = owned_supplier(user, db)
     product = db.scalar(select(Product).where(Product.id == product_id, Product.supplier_id == supplier.id)) if supplier else None
     if not product: return error("Product not found.", "NOT_FOUND", 404)
-    product.name = payload.name.strip(); product.brand = payload.brand.strip(); product.category = payload.category.strip(); product.pack_size = payload.packSize.strip(); product.price = payload.price; product.minimum_quantity = payload.minimumQuantity; product.units_per_box = payload.unitsPerBox; product.available_stock = payload.availableStock or 0; product.image_url = payload.imageUrl.strip() if payload.imageUrl else ""
+    product.name = payload.name.strip()
+    product.brand = (payload.brand or "Handmade").strip()
+    product.category = payload.category.strip()
+    if hasattr(payload, 'description') and payload.description is not None:
+        product.description = payload.description.strip()
+    product.pack_size = payload.packSize.strip()
+    product.price = payload.price
+    product.minimum_quantity = payload.minimumQuantity or 1
+    product.units_per_box = payload.unitsPerBox or 1
+    product.available_stock = payload.availableStock or 0
+    product.image_url = payload.imageUrl.strip() if payload.imageUrl else ""
+    if hasattr(payload, 'isActive') and payload.isActive is not None:
+        product.is_active = payload.isActive
     db.commit(); db.refresh(product)
     return envelope({"product": product_json(product)}, "Product updated")
 
@@ -779,6 +1050,41 @@ def deactivate_product(product_id: str, user: User = Depends(require_user), db: 
     if not product: return error("Product not found.", "NOT_FOUND", 404)
     product.is_active = False; db.commit(); db.refresh(product)
     return envelope({"product": product_json(product)}, "Product deactivated")
+
+
+@app.get("/api/gruh-udyog/products")
+def gruh_udyog_products(user: User = Depends(require_user), db: Session = Depends(get_db)):
+    if user.role != "GRUH_UDYOG":
+        return role_error("Gruh Udyog", user)
+    return products(user=user, db=db)
+
+
+@app.post("/api/gruh-udyog/products", status_code=201)
+def gruh_udyog_create_product(payload: ProductRequest, user: User = Depends(require_user), db: Session = Depends(get_db)):
+    if user.role != "GRUH_UDYOG":
+        return role_error("Gruh Udyog", user)
+    return create_product(payload=payload, user=user, db=db)
+
+
+@app.get("/api/gruh-udyog/products/{product_id}")
+def gruh_udyog_get_product(product_id: str, user: User = Depends(require_user), db: Session = Depends(get_db)):
+    if user.role != "GRUH_UDYOG":
+        return role_error("Gruh Udyog", user)
+    return get_product(product_id=product_id, user=user, db=db)
+
+
+@app.put("/api/gruh-udyog/products/{product_id}")
+def gruh_udyog_edit_product(product_id: str, payload: ProductRequest, user: User = Depends(require_user), db: Session = Depends(get_db)):
+    if user.role != "GRUH_UDYOG":
+        return role_error("Gruh Udyog", user)
+    return edit_product(product_id=product_id, payload=payload, user=user, db=db)
+
+
+@app.delete("/api/gruh-udyog/products/{product_id}")
+def gruh_udyog_deactivate_product(product_id: str, user: User = Depends(require_user), db: Session = Depends(get_db)):
+    if user.role != "GRUH_UDYOG":
+        return role_error("Gruh Udyog", user)
+    return deactivate_product(product_id=product_id, user=user, db=db)
 
 @app.get("/api/orders")
 def shop_orders(user: User = Depends(require_user), db: Session = Depends(get_db)):

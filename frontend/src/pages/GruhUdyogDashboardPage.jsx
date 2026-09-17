@@ -1,114 +1,388 @@
-import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
-import { FiPackage, FiClock, FiCheckCircle, FiArrowRight } from 'react-icons/fi'
+import { useEffect, useMemo, useState } from 'react'
+import { Link, useNavigate } from 'react-router-dom'
+import { 
+  FiPackage, 
+  FiClock, 
+  FiCheck, 
+  FiHome, 
+  FiFileText, 
+  FiBell, 
+  FiChevronRight, 
+  FiArrowRight 
+} from 'react-icons/fi'
 import LoadingState from '../components/LoadingState.jsx'
-import MetricCard from '../components/MetricCard.jsx'
-import StatusBadge from '../components/StatusBadge.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { getGruhUdyogDashboard } from '../services/gruhUdyogService.js'
 
-const metricIcons = {
-  'New orders': <FiPackage className="w-5 h-5" />,
-  'Pending orders': <FiClock className="w-5 h-5" />,
-  'Completed orders': <FiCheckCircle className="w-5 h-5" />,
+function formatDashboardOrderId(orderId = '') {
+  const value = String(orderId || '').trim()
+  if (!value) return '—'
+  if (value.startsWith('ORD-')) return value
+  const hexMatch = value.match(/[A-Fa-f0-9]{4,8}/)
+  if (hexMatch) return `ORD-${hexMatch[0].toUpperCase()}`
+  const sanitized = value.replace(/[^A-Za-z0-9]/g, '').slice(-6).toUpperCase()
+  return sanitized ? `ORD-${sanitized}` : value
 }
 
-function getMetricIcon(label = '') {
-  if (metricIcons[label]) return metricIcons[label]
-  const normalized = label.toLowerCase().trim()
-  if (normalized.includes('new') || normalized.includes('received')) return <FiPackage className="w-5 h-5" />
-  if (normalized.includes('pending') || normalized.includes('awaiting')) return <FiClock className="w-5 h-5" />
-  if (normalized.includes('complete') || normalized.includes('delivered')) return <FiCheckCircle className="w-5 h-5" />
-  return <FiPackage className="w-5 h-5" />
+function StatusPill({ status }) {
+  const normalized = String(status || '').toLowerCase()
+  if (normalized === 'pending') {
+    return (
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#fef4ea] text-[#d95d2c] border border-[#fbd8c0]">
+        Pending
+      </span>
+    )
+  }
+  if (normalized === 'preparing') {
+    return (
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#edf5fd] text-[#2563eb] border border-[#d2e5fa]">
+        Preparing
+      </span>
+    )
+  }
+  if (normalized === 'confirmed' || normalized === 'accepted') {
+    return (
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#eaf5ef] text-[#1b6442] border border-[#c4e4d0]">
+        Confirmed
+      </span>
+    )
+  }
+  return (
+    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#eaf5ef] text-[#1b6442] border border-[#c4e4d0]">
+      Delivered
+    </span>
+  )
 }
 
 export default function GruhUdyogDashboardPage() {
+  const { user } = useAuth()
   const { t } = useLocale()
+  const navigate = useNavigate()
   const [dashboard, setDashboard] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
   useEffect(() => {
     getGruhUdyogDashboard()
-      .then((response) => setDashboard(response.data))
+      .then((response) => setDashboard(response?.data || null))
       .catch((requestError) => setError(requestError.message))
       .finally(() => setIsLoading(false))
   }, [])
 
+  // Process live authenticated backend data
+  const { orders, attentionOrders, metrics } = useMemo(() => {
+    const rawOrders = dashboard?.orders || dashboard?.recentOrders || []
+
+    const formattedOrders = rawOrders.map((order) => {
+      const rawDate = order.createdAt ? new Date(order.createdAt) : null
+      const dateLabel = rawDate && !Number.isNaN(rawDate.getTime())
+        ? new Intl.DateTimeFormat('en-IN', {
+            day: 'numeric',
+            month: 'short',
+            year: 'numeric',
+          }).format(rawDate)
+        : '—'
+      return {
+        id: formatDashboardOrderId(order.id),
+        rawId: order.id,
+        customer: order.customer || order.shopName || order.shopOwner || order.shopOwnerName || 'Retail Shop',
+        items: (order.items || []).length || 1,
+        amount: Number(order.amount || order.subtotal || 0),
+        status: order.status || 'Pending',
+        date: dateLabel,
+      }
+    })
+
+    const rawAttention = dashboard?.needsAttentionOrders || []
+    const formattedAttention = (rawAttention.length > 0
+      ? rawAttention
+      : formattedOrders.filter((o) => ['Pending', 'Preparing', 'Accepted', 'Out for Delivery'].includes(o.status))
+    ).map((order) => ({
+      id: formatDashboardOrderId(order.id),
+      rawId: order.id,
+      customer: order.customer || order.shopName || order.shopOwner || order.shopOwnerName || 'Retail Shop',
+      status: order.status || 'Pending',
+    })).slice(0, 5)
+
+    const totalCount = dashboard?.metrics?.totalOrders ?? formattedOrders.length
+    const pendingCount = dashboard?.metrics?.pendingOrders ?? formattedOrders.filter((o) => o.status !== 'Delivered' && o.status !== 'Cancelled').length
+    const completedCount = dashboard?.metrics?.completedOrders ?? formattedOrders.filter((o) => o.status === 'Delivered').length
+    const totalSalesAmount = dashboard?.metrics?.totalSales ?? formattedOrders.filter((o) => o.status !== 'Cancelled').reduce((sum, o) => sum + (o.amount || 0), 0)
+
+    const totalSalesFormatted = dashboard?.metrics?.totalSalesFormatted || `₹${Number(totalSalesAmount).toLocaleString('en-IN')}`
+
+    return {
+      orders: formattedOrders.slice(0, 5),
+      attentionOrders: formattedAttention,
+      metrics: {
+        totalOrders: totalCount,
+        pendingOrders: pendingCount,
+        completedOrders: completedCount,
+        totalSales: totalSalesFormatted,
+      },
+    }
+  }, [dashboard])
+
+  const firstName = user?.name?.split(' ')[0] || dashboard?.businessName?.split(' ')[0] || 'there'
+
+  const dynamicGreeting = useMemo(() => {
+    const hour = new Date().getHours()
+    const prefix = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+    return `${prefix}, ${firstName}`
+  }, [firstName])
+
   if (isLoading) return <LoadingState message={t('loadingWorkspace')} />
   if (error) {
     return (
-      <section className="space-y-4">
-        <div className="text-xs font-bold uppercase tracking-wider text-purple-600">{t('gruhUdyogWorkspace')}</div>
-        <h1 className="text-2xl font-bold text-slate-900">{t('dashboardUnavailable')}</h1>
-        <p className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-xl" role="alert">{error}</p>
+      <section className="p-4 sm:p-6 max-w-7xl mx-auto">
+        <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium" role="alert">
+          {error}
+        </div>
       </section>
     )
   }
-  if (!dashboard) return null
 
   return (
-    <section className="space-y-6">
-      {/* Header */}
-      <div>
-        <div className="text-xs font-bold uppercase tracking-wider text-purple-600 mb-1">{t('gruhUdyogWorkspace')}</div>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900">{dashboard.businessName}</h1>
-        <p className="text-sm text-slate-500 mt-1">{t('gruhUdyogDashboardMessage')}</p>
+    <section className="space-y-6 sm:space-y-7 pb-10">
+      {/* Top Header: Greeting on Left & Empowering Local Makers banner on Right */}
+      <header className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+        <div>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
+            <span>{dynamicGreeting}</span>
+            {/* <span aria-hidden="true">👋</span> */}
+          </h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">
+            Manage your products, orders and customers from one place.
+          </p>
+        </div>
+
+        {/* Empowering Local Makers Banner Card */}
+        <div className="relative overflow-hidden rounded-2xl border border-emerald-100/90 bg-[#f4f9f5] px-4 py-3 sm:px-5 sm:py-3.5 flex items-center gap-3.5 shadow-xs max-w-sm shrink-0">
+          <div className="w-10 h-10 rounded-xl bg-emerald-100/90 text-[#1b6442] flex items-center justify-center shrink-0 z-10">
+            <FiHome className="w-5 h-5" />
+          </div>
+          <div className="z-10">
+            <h2 className="text-xs sm:text-sm font-bold text-[#1b6442] tracking-tight leading-tight">
+              Empowering Local Makers
+            </h2>
+            <p className="text-[11px] text-slate-500 mt-0.5 leading-tight">
+              Turn your skills into opportunities with Connekto.
+            </p>
+          </div>
+          {/* Subtle Decorative Leaf Watermark */}
+          <div className="absolute -right-2 -bottom-2 text-emerald-600/10 pointer-events-none" aria-hidden="true">
+            <svg className="w-20 h-20" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z" />
+              <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12" />
+            </svg>
+          </div>
+        </div>
+      </header>
+
+      {/* 4 Metric Cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+        {/* Total Orders */}
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-xs flex items-center gap-4 hover:border-slate-200 transition-colors">
+          <div className="w-12 h-12 rounded-xl bg-[#eaf5ef] text-[#1b6442] flex items-center justify-center shrink-0">
+            <FiPackage className="w-6 h-6" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-slate-500 truncate">Total Orders</p>
+            <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-0.5">
+              {metrics.totalOrders}
+            </p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">All orders received</p>
+          </div>
+        </div>
+
+        {/* Pending Orders */}
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-xs flex items-center gap-4 hover:border-slate-200 transition-colors">
+          <div className="w-12 h-12 rounded-xl bg-[#fef4ea] text-[#d95d2c] flex items-center justify-center shrink-0">
+            <FiClock className="w-6 h-6" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-slate-500 truncate">Pending Orders</p>
+            <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-0.5">
+              {metrics.pendingOrders}
+            </p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">Need your action</p>
+          </div>
+        </div>
+
+        {/* Completed Orders */}
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-xs flex items-center gap-4 hover:border-slate-200 transition-colors">
+          <div className="w-12 h-12 rounded-xl bg-[#f2effb] text-[#7c3aed] flex items-center justify-center shrink-0">
+            <FiCheck className="w-6 h-6 stroke-[2.5]" />
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-slate-500 truncate">Completed Orders</p>
+            <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-0.5">
+              {metrics.completedOrders}
+            </p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">Successfully delivered</p>
+          </div>
+        </div>
+
+        {/* Total Sales */}
+        <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-xs flex items-center gap-4 hover:border-slate-200 transition-colors">
+          <div className="w-12 h-12 rounded-xl bg-[#eaf5ef] text-[#1b6442] flex items-center justify-center shrink-0 text-xl font-bold">
+            ₹
+          </div>
+          <div className="min-w-0">
+            <p className="text-xs font-medium text-slate-500 truncate">Total Sales</p>
+            <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-0.5">
+              {metrics.totalSales}
+            </p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">From all orders</p>
+          </div>
+        </div>
       </div>
 
-      {/* Metrics Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-        {dashboard.metrics.map((metric) => (
-          <MetricCard
-            key={metric.label}
-            {...metric}
-            icon={metric.icon || getMetricIcon(metric.label)}
-            label={t(metric.label.toLowerCase().replace(/\s+/g, '')) || metric.label}
-          />
-        ))}
-      </div>
-
-      {/* Main Grid */}
-      <div className="grid grid-cols-1 gap-6">
-        <section className="bg-white rounded-2xl border border-slate-200/80 p-5 sm:p-6 shadow-xs">
-          <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-100 mb-4">
-            <div>
-              <span className="text-xs font-semibold text-purple-600 uppercase tracking-wider block">{t('recentRetailRequests')}</span>
-              <h2 className="text-lg font-bold text-slate-900">{t('recentOrders')}</h2>
+      {/* Main Content Grid: Recent Orders (Left) and Needs Attention (Right) */}
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-6 items-start">
+        {/* Left Column: Recent Orders Table Card */}
+        <section className="lg:col-span-8 bg-white rounded-2xl border border-slate-100 shadow-xs p-5 sm:p-6">
+          <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-100">
+            <div className="flex items-center gap-3">
+              <div className="w-9 h-9 rounded-xl bg-slate-100 text-slate-600 flex items-center justify-center shrink-0">
+                <FiFileText className="w-5 h-5" />
+              </div>
+              <div>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">Recent Orders</h2>
+                <p className="text-xs text-slate-400 mt-0.5">Latest orders from your customers</p>
+              </div>
             </div>
-            <span className="inline-flex items-center justify-center px-2.5 py-1 text-xs font-bold text-purple-700 bg-purple-50 rounded-full border border-purple-200">
-              {dashboard.orders.length}
-            </span>
-          </div>
-
-          <div className="space-y-3">
-            {dashboard.orders.slice(0, 3).map((order) => (
-              <article
-                key={order.id}
-                className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 rounded-xl border border-slate-100 bg-slate-50/50 hover:bg-slate-50 transition-colors"
-              >
-                <div>
-                  <strong className="block text-sm font-semibold text-slate-900">{order.id}</strong>
-                  <span className="text-xs text-slate-500">{order.shopOwner}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <strong className="text-sm font-bold text-slate-900">Rs {Number(order.amount).toLocaleString('en-IN')}</strong>
-                  <StatusBadge status={order.status} />
-                </div>
-                <small className="text-xs text-slate-400">{order.date}</small>
-              </article>
-            ))}
-          </div>
-
-          <div className="mt-5 pt-4 border-t border-slate-100">
             <Link
               to="/dashboard/gruh-udyog/orders"
-              className="inline-flex items-center gap-1.5 text-sm font-semibold text-purple-700 hover:text-purple-800 transition-colors"
+              className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#1b6442] hover:text-[#144d32] transition-colors"
             >
-              <span>{t('viewIncomingOrders')}</span>
+              <span>View all</span>
               <FiArrowRight className="w-4 h-4" />
             </Link>
           </div>
+
+          {/* Table Container */}
+          <div className="overflow-x-auto -mx-5 sm:-mx-6 px-5 sm:px-6">
+            <table className="w-full min-w-[620px] text-left border-collapse mt-2">
+              <thead>
+                <tr className="text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
+                  <th className="py-3 px-3">Order ID</th>
+                  <th className="py-3 px-3">Customer</th>
+                  <th className="py-3 px-3">Items</th>
+                  <th className="py-3 px-3">Amount</th>
+                  <th className="py-3 px-3">Status</th>
+                  <th className="py-3 px-3">Date</th>
+                  <th className="py-3 px-3 text-right">Action</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-slate-100">
+                {orders.length > 0 ? (
+                  orders.map((order) => (
+                    <tr key={order.rawId || order.id} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="py-3.5 px-3 text-xs font-semibold text-slate-800">
+                        {order.id}
+                      </td>
+                      <td className="py-3.5 px-3 text-xs font-medium text-slate-900">
+                        {order.customer}
+                      </td>
+                      <td className="py-3.5 px-3 text-xs text-slate-500">
+                        {order.items} {order.items === 1 ? 'item' : 'items'}
+                      </td>
+                      <td className="py-3.5 px-3 text-xs font-bold text-slate-900">
+                        ₹{order.amount.toLocaleString('en-IN')}
+                      </td>
+                      <td className="py-3.5 px-3">
+                        <StatusPill status={order.status} />
+                      </td>
+                      <td className="py-3.5 px-3 text-xs text-slate-500 whitespace-nowrap">
+                        {order.date}
+                      </td>
+                      <td className="py-3.5 px-3 text-right">
+                        <button
+                          type="button"
+                          onClick={() => navigate('/dashboard/gruh-udyog/orders')}
+                          className="px-3 py-1 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:border-[#1b6442] hover:text-[#1b6442] hover:bg-emerald-50/30 transition-colors cursor-pointer"
+                        >
+                          View
+                        </button>
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={7} className="py-10 text-center text-xs text-slate-400 font-medium">
+                      No orders received yet.
+                    </td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        {/* Right Column: Needs Attention Card */}
+        <section className="lg:col-span-4 bg-white rounded-2xl border border-slate-100 shadow-xs p-5 sm:p-6 flex flex-col justify-between space-y-4">
+          <div>
+            {/* Header */}
+            <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
+              <div className="w-9 h-9 rounded-full bg-[#fef4ea] text-[#d95d2c] flex items-center justify-center shrink-0">
+                <FiBell className="w-4 h-4" />
+              </div>
+              <div>
+                <h2 className="text-base font-bold text-slate-900">Needs Attention</h2>
+                <p className="text-xs text-slate-400 mt-0.5">Orders that require your action</p>
+              </div>
+            </div>
+
+            {/* Orange Highlight Callout Box */}
+            <Link
+              to="/dashboard/gruh-udyog/orders"
+              className="mt-4 rounded-2xl bg-[#fef6f0] border border-[#fbd8c0] p-4 flex items-center justify-between hover:bg-[#fdeee4] transition-colors cursor-pointer group"
+            >
+              <div className="flex items-center gap-3.5">
+                <span className="text-3xl sm:text-4xl font-black text-[#d95d2c] leading-none">
+                  {metrics.pendingOrders}
+                </span>
+                <p className="text-xs sm:text-[13px] font-medium text-slate-800 leading-snug">
+                  {metrics.pendingOrders === 1 ? 'order is waiting' : 'orders are waiting'}<br />for your action.
+                </p>
+              </div>
+              <FiChevronRight className="w-5 h-5 text-[#d95d2c] group-hover:translate-x-0.5 transition-transform shrink-0" />
+            </Link>
+
+            {/* List of Orders Needing Attention */}
+            <div className="mt-3 divide-y divide-slate-100">
+              {attentionOrders.length > 0 ? (
+                attentionOrders.map((item) => (
+                  <div
+                    key={item.rawId || item.id}
+                    className="py-3 flex items-center justify-between gap-2 hover:bg-slate-50/50 px-1 rounded-lg transition-colors"
+                  >
+                    <div className="flex items-center gap-2.5 min-w-0">
+                      <span className="text-xs font-semibold text-slate-900 shrink-0">{item.id}</span>
+                      <span className="text-xs text-slate-600 truncate">{item.customer}</span>
+                    </div>
+                    <StatusPill status={item.status} />
+                  </div>
+                ))
+              ) : (
+                <div className="py-6 text-center text-xs text-slate-400 font-medium">
+                  No orders currently require attention.
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Bottom CTA Button */}
+          <button
+            type="button"
+            onClick={() => navigate('/dashboard/gruh-udyog/orders')}
+            className="w-full py-3 px-4 rounded-xl font-bold text-sm text-white bg-[#1b6442] hover:bg-[#144d32] active:scale-[0.99] shadow-sm shadow-emerald-900/10 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
+          >
+            <span>View All Orders</span>
+            <FiArrowRight className="w-4 h-4" />
+          </button>
         </section>
       </div>
     </section>

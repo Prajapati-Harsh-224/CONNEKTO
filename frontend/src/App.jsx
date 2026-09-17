@@ -28,6 +28,7 @@ import GruhUdyogDashboardPage from './pages/GruhUdyogDashboardPage.jsx'
 import GruhUdyogProductsPage from './pages/GruhUdyogProductsPage.jsx'
 import GruhUdyogServiceAreasPage from './pages/GruhUdyogServiceAreasPage.jsx'
 import GruhUdyogOrdersPage from './pages/GruhUdyogOrdersPage.jsx'
+import GruhUdyogCustomersPage from './pages/GruhUdyogCustomersPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 
 export default function App() {
@@ -73,9 +74,10 @@ export default function App() {
           <Route path="dashboard/gruh-udyog" element={<ProtectedRoute allowedRole="GRUH_UDYOG"><RoleLayout role="gruh-udyog" /></ProtectedRoute>}>
             <Route index element={<GruhUdyogDashboardPage />} />
             <Route path="home" element={<GruhUdyogDashboardPage />} />
-            <Route path="products" element={<GruhUdyogProductsPage />} />
-            <Route path="service-areas" element={<GruhUdyogServiceAreasPage />} />
             <Route path="orders" element={<GruhUdyogOrdersPage />} />
+            <Route path="products" element={<GruhUdyogProductsPage />} />
+            <Route path="customers" element={<GruhUdyogCustomersPage />} />
+            <Route path="service-areas" element={<GruhUdyogServiceAreasPage />} />
             <Route path="profile" element={<ProfilePage role="gruh-udyog" />} />
             <Route path=":section" element={<DashboardPlaceholderPage />} />
           </Route>

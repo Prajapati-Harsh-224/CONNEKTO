@@ -1,20 +1,7 @@
 import { apiRequest } from './api.js'
 
 export function getGruhUdyogDashboard() {
-  return apiRequest('/supplier/dashboard').then((res) => {
-    const data = res.data || {}
-    return {
-      data: {
-        businessName: data.businessName || 'Gruh Udyog',
-        metrics: data.metrics || [
-          { label: 'New orders', value: '00', detail: 'Received this week', accent: 'metric-primary' },
-          { label: 'Pending orders', value: '00', detail: 'Awaiting fulfillment', accent: 'metric-warning' },
-          { label: 'Completed orders', value: '00', detail: 'Delivered successfully', accent: 'metric-success' },
-        ],
-        orders: data.recentOrders || []
-      }
-    }
-  })
+  return apiRequest('/gruh-udyog/dashboard')
 }
 
 export function getGruhUdyogProducts() {
@@ -30,13 +17,37 @@ export function getGruhUdyogServiceAreas() {
 }
 
 export function getGruhUdyogOrders() {
-  return apiRequest('/supplier/orders')
+  return apiRequest('/gruh-udyog/orders')
+}
+
+export function getGruhUdyogCustomers() {
+  return apiRequest('/gruh-udyog/customers')
 }
 
 export function updateGruhUdyogOrderStatus(orderId, status) {
   return apiRequest(`/supplier/orders/${encodeURIComponent(orderId)}/status`, {
     method: 'PUT',
     body: { status }
+  })
+}
+
+export function createGruhUdyogProduct(payload) {
+  return apiRequest('/supplier/products', {
+    method: 'POST',
+    body: payload
+  })
+}
+
+export function updateGruhUdyogProduct(productId, payload) {
+  return apiRequest(`/supplier/products/${encodeURIComponent(productId)}`, {
+    method: 'PUT',
+    body: payload
+  })
+}
+
+export function deactivateGruhUdyogProduct(productId) {
+  return apiRequest(`/supplier/products/${encodeURIComponent(productId)}`, {
+    method: 'DELETE'
   })
 }
 
