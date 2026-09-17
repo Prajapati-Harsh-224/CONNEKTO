@@ -34,7 +34,6 @@ export default function SupplierCustomersPage() {
   const [locationFilter, setLocationFilter] = useState('All cities')
   const [page, setPage] = useState(1)
   const [selectedCustomerId, setSelectedCustomerId] = useState(null)
-  const [menuCustomerId, setMenuCustomerId] = useState(null)
 
   useEffect(() => {
     let isMounted = true
@@ -115,6 +114,11 @@ export default function SupplierCustomersPage() {
     }
   }, [customers])
 
+  function callCustomer(phone) {
+    if (!phone) return
+    window.location.href = `tel:${String(phone).replace(/\s+/g, '')}`
+  }
+
   function clearFilters() {
     setSearch('')
     setStatusFilter('All status')
@@ -125,7 +129,7 @@ export default function SupplierCustomersPage() {
   function exportCustomers() {
     const rows = [
       ['Customer name', 'Contact', 'Location', 'Orders', 'Total spent', 'Last order', 'Status'].join(','),
-      ...filteredCustomers.map((customer) => [customer.name, customer.contact, customer.location, customer.totalOrders, customer.totalSpent, formatDate(customer.lastOrder), customer.status].map((value) => `"${String(value).replaceAll('"', '""')}"`).join(',') ),
+      ...filteredCustomers.map((customer) => [customer.name, customer.phone || customer.shopOwnerPhone || '', customer.location, customer.totalOrders, customer.totalSpent, formatDate(customer.lastOrder), customer.status].map((value) => `"${String(value).replaceAll('"', '""')}"`).join(',')),
     ].join('\n')
 
     const blob = new Blob([rows], { type: 'text/csv;charset=utf-8;' })
@@ -191,11 +195,11 @@ export default function SupplierCustomersPage() {
           </div>
         </div>
         <div className="metric-card customer-stat-card">
-          <div className="metric-card-icon">★</div>
+          <div className="metric-card-icon">✓</div>
           <div className="metric-card-content">
-            <span>Retention</span>
-            <strong>86%</strong>
-            <small>Repeat buyers</small>
+            <span>Active customers</span>
+            <strong>{stats.activeCustomers}</strong>
+            <small>Currently active</small>
           </div>
         </div>
       </div>
@@ -233,46 +237,39 @@ export default function SupplierCustomersPage() {
             <span>Location</span>
             <span>Orders</span>
             <span>Total spent</span>
-            <span>Last order</span>
-            <span>Status</span>
-            <span>Action</span>
           </div>
 
           {visibleCustomers.length ? (
             <>
               {visibleCustomers.map((customer) => (
-                <div className={`supplier-table-row ${selectedCustomer?.id === customer.id ? 'is-selected' : ''}`} key={customer.id}>
+                <div
+                  className={`supplier-table-row ${selectedCustomer?.id === customer.id ? 'is-selected' : ''}`}
+                  key={customer.id}
+                  onClick={() => setSelectedCustomerId(customer.id)}
+                  onKeyDown={(event) => {
+                    if (event.key === 'Enter' || event.key === ' ') {
+                      event.preventDefault()
+                      setSelectedCustomerId(customer.id)
+                    }
+                  }}
+                  role="button"
+                  tabIndex={0}
+                >
                   <div className="supplier-customer-cell">
-                    <span className={`supplier-customer-avatar color-${customer.color || 'green'}`}>{getInitials(customer.name)}</span>
-                    <div>
+                    <div className="supplier-customer-info">
                       <strong>{customer.name}</strong>
                       <small>{customer.category}</small>
                     </div>
                   </div>
 
                   <div className="supplier-customer-contact">
-                    <strong>{customer.phone}</strong>
-                    <small>{customer.shopOwner}</small>
+                    <strong>{customer.shopOwner}</strong>
+                    <small>{customer.phone || 'No phone available'}</small>
                   </div>
 
                   <div className="supplier-customer-location">{customer.location}</div>
                   <div className="supplier-amount-cell">{customer.totalOrders}</div>
                   <div className="supplier-amount-cell">{formatCurrency(customer.totalSpent)}</div>
-                  <div className="supplier-date-cell">{formatDate(customer.lastOrder)}</div>
-                  <div className="supplier-status-cell"><StatusBadge status={customer.status} /></div>
-                  <div className="supplier-action-cell">
-                    <button className="supplier-view-button" onClick={() => setSelectedCustomerId(customer.id)} type="button">View</button>
-                    <div className="supplier-menu-wrap">
-                      <button aria-label={`More actions for ${customer.name}`} className="supplier-menu-button" onClick={() => setMenuCustomerId(menuCustomerId === customer.id ? null : customer.id)} type="button">⋮</button>
-                      {menuCustomerId === customer.id && (
-                        <div className="supplier-menu-popover">
-                          <button onClick={() => setSelectedCustomerId(customer.id)} type="button">View profile</button>
-                          <button onClick={() => setMenuCustomerId(null)} type="button">Call customer</button>
-                          <button onClick={() => setMenuCustomerId(null)} type="button">Mark inactive</button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
                 </div>
               ))}
 
@@ -308,7 +305,7 @@ export default function SupplierCustomersPage() {
                 <strong>{selectedCustomer.totalOrders}</strong>
               </div>
               <div>
-                <span>Revenue</span>
+                <span>Spend</span>
                 <strong>{formatCurrency(selectedCustomer.totalSpent)}</strong>
               </div>
             </div>
@@ -320,7 +317,7 @@ export default function SupplierCustomersPage() {
               </div>
               <div>
                 <label>Phone</label>
-                <strong>{selectedCustomer.phone}</strong>
+                <strong>{selectedCustomer.phone || '—'}</strong>
               </div>
               <div>
                 <label>Location</label>
@@ -337,8 +334,7 @@ export default function SupplierCustomersPage() {
             </div>
 
             <div className="customer-detail-actions">
-              <button className="supplier-view-button" type="button">Call now</button>
-              <button className="supplier-detail-secondary" type="button">View notes</button>
+              <button className="supplier-view-button" disabled={!selectedCustomer.phone} onClick={() => callCustomer(selectedCustomer.phone)} type="button">Call customer</button>
             </div>
           </aside>
         )}
