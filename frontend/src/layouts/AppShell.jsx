@@ -2,6 +2,7 @@ import { useEffect } from 'react'
 import { Link, Outlet, useLocation } from 'react-router-dom'
 import { useLocale } from '../context/LocaleContext.jsx'
 import Navbar from '../components/Navbar.jsx'
+import Footer from '../components/Footer.jsx'
 import LanguageSelector from '../components/LanguageSelector.jsx'
 import { getSelectedRole } from '../utils/roleStorage.js'
 
@@ -14,7 +15,9 @@ export default function AppShell() {
   const isNoScrollPage = isAuthPage || pathname === '/'
 
   useEffect(() => {
-    window.scrollTo(0, 0)
+    if (!['/about', '/for-businesses', '/how-it-works', '/contact'].includes(pathname)) {
+      window.scrollTo(0, 0)
+    }
     if (isNoScrollPage) {
       document.documentElement.classList.add('auth-no-scroll')
       document.body.classList.add('auth-no-scroll')
@@ -36,7 +39,7 @@ export default function AppShell() {
   const isForgotPassword = pathname === '/forgot-password'
 
   return (
-    <div className={`min-h-screen flex flex-col ${isWorkspace ? '' : 'bg-[#fbfaf8]'}`}>
+    <div className={`min-h-screen flex flex-col ${isWorkspace ? '' : 'bg-[#f4f6f9]'}`}>
       {!isWorkspace && (
         <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
@@ -67,29 +70,7 @@ export default function AppShell() {
         <Outlet />
       </main>
       {!isWorkspace && !isShopOwnerSignup && !isSupplierSignup && !isGruhUdyogSignup && !isShopOwnerLogin && !isSupplierLogin && !isGruhUdyogLogin && !isForgotPassword && (
-        <footer className="bg-slate-900 text-white border-t border-slate-800 mt-auto">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-            <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-8 border-b border-slate-800">
-              <div className="flex flex-col items-center md:items-start text-center md:text-left">
-                <Link className="flex items-center gap-2 font-bold text-base text-white" to="/" aria-label={t('connectoHome')}>
-                  <span className="w-6 h-6 rounded-full bg-[#f06535] text-white flex items-center justify-center font-bold text-xs">C</span>
-                  <span>{messages.appName}</span>
-                </Link>
-                <p className="text-xs text-slate-400 mt-1">{t('strongerLocalBusinesses')}</p>
-              </div>
-              <nav className="flex flex-wrap items-center justify-center gap-4 sm:gap-6 text-xs text-slate-400" aria-label="Footer navigation">
-                <a href="#home" className="hover:text-white transition-colors" onClick={e => { e.preventDefault(); document.getElementById('home')?.scrollIntoView({ behavior: 'smooth' }) }}>{t('home')}</a>
-                <a href="#about" className="hover:text-white transition-colors" onClick={e => { e.preventDefault(); document.getElementById('about')?.scrollIntoView({ behavior: 'smooth' }) }}>{t('about')}</a>
-                <a href="#for-businesses" className="hover:text-white transition-colors" onClick={e => { e.preventDefault(); document.getElementById('for-businesses')?.scrollIntoView({ behavior: 'smooth' }) }}>{t('forBusinesses')}</a>
-                <a href="#how-it-works" className="hover:text-white transition-colors" onClick={e => { e.preventDefault(); document.getElementById('how-it-works')?.scrollIntoView({ behavior: 'smooth' }) }}>{t('howItWorks')}</a>
-                <a href="#contact" className="hover:text-white transition-colors" onClick={e => { e.preventDefault(); document.getElementById('contact')?.scrollIntoView({ behavior: 'smooth' }) }}>{t('contact')}</a>
-              </nav>
-            </div>
-            <div className="pt-6 text-center text-xs text-slate-500">
-              <span>© 2026 Connekto · {t('prototypeFoundation')}</span>
-            </div>
-          </div>
-        </footer>
+        <Footer />
       )}
     </div>
   )

@@ -37,6 +37,10 @@ export default function App() {
       <Routes>
         <Route element={<AppShell />}>
           <Route index element={<WelcomePage />} />
+          <Route path="about" element={<WelcomePage />} />
+          <Route path="for-businesses" element={<WelcomePage />} />
+          <Route path="how-it-works" element={<WelcomePage />} />
+          <Route path="contact" element={<WelcomePage />} />
           <Route path="role-selection" element={<RoleSelectionPage />} />
           <Route path="login" element={<LoginPage />} />
           <Route path="signup" element={<SignupPage />} />
