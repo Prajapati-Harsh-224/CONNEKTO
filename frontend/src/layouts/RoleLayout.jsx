@@ -10,7 +10,7 @@ import { useLocale } from '../context/LocaleContext.jsx'
 
 export default function RoleLayout({ role: routeRole }) {
   const { role: paramRole } = useParams()
-  const role = routeRole || paramRole
+  const role = (routeRole || paramRole || '').replaceAll('_', '-')
   const { user } = useAuth()
   const { t, messages } = useLocale()
   const [isNotifOpen, setIsNotifOpen] = useState(false)

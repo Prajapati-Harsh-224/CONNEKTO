@@ -4,6 +4,7 @@ import { Link } from 'react-router-dom'
 import EmptyState from '../components/EmptyState.jsx'
 import LoadingState from '../components/LoadingState.jsx'
 import ProductImage from '../components/ProductImage.jsx'
+import StatusBadge from '../components/StatusBadge.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { getOrders } from '../services/orderService.js'
 
@@ -61,15 +62,6 @@ function formatOrderDate(value) {
   return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
 }
 
-function statusClass(status) {
-  return status.toLowerCase().replaceAll(' ', '-').replaceAll('_', '-')
-}
-
-function OrderStatus({ status }) {
-  const label = displayStatus(status)
-  return <span className={`orders-status orders-status--${statusClass(label)}`}><span aria-hidden="true" />{label}</span>
-}
-
 function getSupplierDetails(order) {
   return {
     category: '',
@@ -95,7 +87,10 @@ export default function ShopOwnerOrdersPage() {
   const [error, setError] = useState('')
 
   useEffect(() => {
-    getOrders().then((response) => setOrders(response.data.orders || [])).catch((requestError) => setError(requestError.message)).finally(() => setIsLoading(false))
+    getOrders()
+      .then((response) => setOrders(response?.data?.orders || []))
+      .catch((requestError) => setError(requestError.message))
+      .finally(() => setIsLoading(false))
   }, [])
 
   const suppliers = useMemo(() => ['All Suppliers', ...new Set(orders.map((order) => order.supplierName).filter(Boolean))], [orders])

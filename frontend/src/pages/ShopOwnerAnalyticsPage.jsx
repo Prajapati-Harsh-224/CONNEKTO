@@ -50,41 +50,240 @@ function deriveAnalytics(orders, period) {
 }
 
 function TrendChart({ items }) {
-  const maximum = Math.max(...items.map((item) => item.value), 1)
-  const points = items.map((item, index) => `${(index / Math.max(items.length - 1, 1)) * 100},${90 - (item.value / maximum) * 70}`).join(' ')
-  const areaPoints = `0,90 ${points} 100,90`
+  const [hoveredIndex, setHoveredIndex] = useState(null)
+
+  const totalValue = items.reduce((sum, item) => sum + Number(item.value || 0), 0)
+  const averageValue = items.length > 0 ? totalValue / items.length : 0
+
+  const width = 520
+  const height = 185
+  const padding = { top: 32, right: 28, bottom: 26, left: 56 }
+  const chartWidth = width - padding.left - padding.right
+  const chartHeight = height - padding.top - padding.bottom
+  const baselineY = padding.top + chartHeight
+
+  const rawMax = Math.max(...items.map((item) => Number(item.value || 0)), 0)
+  const niceMax = rawMax <= 0 ? 500 : Math.ceil((rawMax * 1.25) / 100) * 100
+  const ticks = [niceMax, Math.round(niceMax / 2), 0]
+
+  const colWidth = items.length > 1 ? chartWidth / (items.length - 1) : chartWidth
+  const points = items.map((item, index) => {
+    const x = items.length === 1 ? padding.left + chartWidth / 2 : padding.left + colWidth * index
+    const y = baselineY - (Number(item.value || 0) / niceMax) * chartHeight
+    return { ...item, x: Math.round(x * 10) / 10, y: Math.round(y * 10) / 10 }
+  })
+
+  const maxPointIndex = useMemo(() => {
+    let bestIdx = points.length - 1
+    let bestVal = -1
+    points.forEach((pt, idx) => {
+      if (pt.value > bestVal) {
+        bestVal = pt.value
+        bestIdx = idx
+      }
+    })
+    return bestVal > 0 ? bestIdx : -1
+  }, [points])
+
+  const activeIndex = hoveredIndex !== null ? hoveredIndex : maxPointIndex
+  const activePoint = activeIndex >= 0 ? points[activeIndex] : null
+
+  const linePath = points.length === 1
+    ? `M ${points[0].x - 20} ${points[0].y} L ${points[0].x + 20} ${points[0].y}`
+    : points.map((p, i) => `${i === 0 ? 'M' : 'L'} ${p.x} ${p.y}`).join(' ')
+
+  const areaPath = points.length === 1
+    ? `M ${points[0].x - 20} ${points[0].y} L ${points[0].x + 20} ${points[0].y} L ${points[0].x + 20} ${baselineY} L ${points[0].x - 20} ${baselineY} Z`
+    : `${linePath} L ${points[points.length - 1].x} ${baselineY} L ${points[0].x} ${baselineY} Z`
 
   return (
-    <div className="space-y-4 pt-2">
-      <div className="relative w-full h-44 sm:h-52">
-        <svg className="w-full h-full overflow-visible" viewBox="0 0 100 100" preserveAspectRatio="none" aria-label="Spending trend chart" role="img">
-          <defs>
-            <linearGradient id="spendingGrad" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="#f97316" stopOpacity="0.25" />
-              <stop offset="100%" stopColor="#f97316" stopOpacity="0.0" />
-            </linearGradient>
-          </defs>
-          <polygon fill="url(#spendingGrad)" points={areaPoints} />
-          <polyline fill="none" stroke="#ea580c" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" points={points} />
-        </svg>
-
-        {items.map((item, index) => (
-          <span 
-            key={`${item.label}-${index}`} 
-            className="absolute w-2.5 h-2.5 rounded-full bg-white border-2 border-brand-orange shadow-xs -ml-1 -mb-1"
-            style={{ 
-              left: `${(index / Math.max(items.length - 1, 1)) * 100}%`, 
-              bottom: `${10 + (item.value / maximum) * 70}%` 
-            }} 
-            title={`${item.label}: ${formatPrice(item.value)}`} 
-          />
-        ))}
+    <div className="space-y-3 pt-1">
+      {/* Metric summary header */}
+      <div className="flex items-baseline justify-between px-1">
+        <div>
+          <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">
+            {hoveredIndex !== null ? `${items[hoveredIndex].label} Spending` : 'Total Spent'}
+          </span>
+          <div className="text-2xl font-extrabold text-slate-900 tracking-tight">
+            ₹{Number(hoveredIndex !== null ? items[hoveredIndex].value : totalValue).toLocaleString('en-IN')}
+          </div>
+        </div>
+        {items.length > 1 && (
+          <div className="text-right">
+            <span className="text-[11px] font-medium text-slate-400">Monthly Avg</span>
+            <div className="text-xs font-bold text-slate-600">
+              ₹{Math.round(averageValue).toLocaleString('en-IN')}
+            </div>
+          </div>
+        )}
       </div>
 
-      <div className="flex items-center justify-between text-xs font-semibold text-slate-400 border-t border-slate-100 pt-2 px-1">
-        {items.map((item) => (
-          <span key={item.label}>{item.label}</span>
-        ))}
+      {/* SVG Chart */}
+      <div className="relative w-full">
+        <svg
+          className="w-full h-auto overflow-visible select-none"
+          viewBox={`0 0 ${width} ${height}`}
+          role="img"
+          aria-label="Spending trend chart"
+        >
+          <defs>
+            <linearGradient id="spendingGradient" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stopColor="#f06535" stopOpacity="0.14" />
+              <stop offset="90%" stopColor="#f06535" stopOpacity="0.01" />
+            </linearGradient>
+          </defs>
+
+          {/* Horizontal gridlines & Y-axis labels */}
+          {ticks.map((tick) => {
+            const y = baselineY - (tick / niceMax) * chartHeight
+            return (
+              <g key={`tick-${tick}`}>
+                <line
+                  x1={padding.left}
+                  x2={width - padding.right}
+                  y1={y}
+                  y2={y}
+                  stroke={tick === 0 ? '#e2e8f0' : '#f1f5f9'}
+                  strokeWidth="1"
+                  strokeDasharray={tick === 0 ? undefined : '3 3'}
+                />
+                <text
+                  x={padding.left - 10}
+                  y={y + 3.5}
+                  textAnchor="end"
+                  fill="#94a3b8"
+                  fontSize="10"
+                  fontWeight="600"
+                >
+                  ₹{tick >= 1000 ? `${(tick / 1000).toFixed(tick % 1000 === 0 ? 0 : 1)}k` : tick}
+                </text>
+              </g>
+            )
+          })}
+
+          {/* Area fill */}
+          <path d={areaPath} fill="url(#spendingGradient)" />
+
+          {/* Line stroke */}
+          <path
+            d={linePath}
+            fill="none"
+            stroke="#ea580c"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          />
+
+          {/* Active vertical guideline */}
+          {activePoint && (
+            <line
+              x1={activePoint.x}
+              x2={activePoint.x}
+              y1={padding.top - 8}
+              y2={baselineY}
+              stroke="#cbd5e1"
+              strokeWidth="1"
+              strokeDasharray="2 2"
+            />
+          )}
+
+          {/* Data points */}
+          {points.map((point, index) => {
+            const isHovered = activeIndex === index
+            const isZero = point.value === 0
+
+            return (
+              <g key={`point-${point.label}-${index}`}>
+                {isHovered && (
+                  <circle
+                    cx={point.x}
+                    cy={point.y}
+                    r="8"
+                    fill="#f06535"
+                    fillOpacity="0.15"
+                  />
+                )}
+                <circle
+                  cx={point.x}
+                  cy={point.y}
+                  r={isHovered ? 4.5 : isZero ? 2.5 : 3.5}
+                  fill={isZero && !isHovered ? '#cbd5e1' : '#ffffff'}
+                  stroke={isZero && !isHovered ? '#cbd5e1' : '#ea580c'}
+                  strokeWidth={isZero && !isHovered ? 1 : 2}
+                  className="transition-all duration-150"
+                />
+              </g>
+            )
+          })}
+
+          {/* Tooltip badge on active point */}
+          {activePoint && (
+            <g
+              key="tooltip-bubble"
+              className="pointer-events-none transition-all duration-150"
+            >
+              <rect
+                x={Math.max(padding.left, Math.min(width - padding.right - 64, activePoint.x - 32))}
+                y={Math.max(6, activePoint.y - 24)}
+                width="64"
+                height="18"
+                rx="5"
+                fill="#0f172a"
+                className="shadow-sm"
+              />
+              <text
+                x={Math.max(padding.left + 32, Math.min(width - padding.right - 32, activePoint.x))}
+                y={Math.max(18, activePoint.y - 12)}
+                textAnchor="middle"
+                fill="#ffffff"
+                fontSize="10"
+                fontWeight="700"
+              >
+                ₹{Number(activePoint.value).toLocaleString('en-IN')}
+              </text>
+            </g>
+          )}
+
+          {/* X-axis Month Labels */}
+          {points.map((point, index) => {
+            const isHovered = activeIndex === index
+            return (
+              <text
+                key={`label-${point.label}-${index}`}
+                x={point.x}
+                y={height - 8}
+                textAnchor="middle"
+                fill={isHovered ? '#ea580c' : '#64748b'}
+                fontSize="11"
+                fontWeight={isHovered ? '700' : '500'}
+                className="transition-colors duration-150"
+              >
+                {point.label}
+              </text>
+            )
+          })}
+
+          {/* Interactive touch/hover column zones */}
+          {points.map((point, index) => {
+            const step = items.length > 1 ? chartWidth / (items.length - 1) : chartWidth
+            const xZone = items.length === 1 ? padding.left : point.x - step / 2
+            const wZone = items.length === 1 ? chartWidth : step
+
+            return (
+              <rect
+                key={`hit-${point.label}-${index}`}
+                x={xZone}
+                y={padding.top - 12}
+                width={wZone}
+                height={chartHeight + 36}
+                fill="transparent"
+                className="cursor-pointer"
+                onMouseEnter={() => setHoveredIndex(index)}
+                onMouseLeave={() => setHoveredIndex(null)}
+              />
+            )
+          })}
+        </svg>
       </div>
     </div>
   )

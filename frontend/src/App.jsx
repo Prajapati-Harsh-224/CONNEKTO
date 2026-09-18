@@ -1,4 +1,4 @@
-import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
 import './App.css'
 import AppShell from './layouts/AppShell.jsx'
 import RoleLayout from './layouts/RoleLayout.jsx'
@@ -30,6 +30,12 @@ import GruhUdyogServiceAreasPage from './pages/GruhUdyogServiceAreasPage.jsx'
 import GruhUdyogOrdersPage from './pages/GruhUdyogOrdersPage.jsx'
 import GruhUdyogCustomersPage from './pages/GruhUdyogCustomersPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
+
+function RoleRedirect({ toRole }) {
+  const location = useLocation()
+  const nextPath = location.pathname.replace(/^\/dashboard\/[^/]+/, `/dashboard/${toRole}`)
+  return <Navigate replace to={`${nextPath}${location.search}${location.hash}`} />
+}
 
 export default function App() {
   return (
@@ -86,6 +92,10 @@ export default function App() {
             <Route path="profile" element={<ProfilePage role="gruh-udyog" />} />
             <Route path=":section" element={<DashboardPlaceholderPage />} />
           </Route>
+          <Route path="dashboard/shop_owner" element={<RoleRedirect toRole="shop-owner" />} />
+          <Route path="dashboard/shop_owner/*" element={<RoleRedirect toRole="shop-owner" />} />
+          <Route path="dashboard/gruh_udyog" element={<RoleRedirect toRole="gruh-udyog" />} />
+          <Route path="dashboard/gruh_udyog/*" element={<RoleRedirect toRole="gruh-udyog" />} />
           <Route path="dashboard/:role" element={<RoleLayout />}>
             <Route index element={<DashboardPlaceholderPage />} />
             <Route path=":section" element={<DashboardPlaceholderPage />} />

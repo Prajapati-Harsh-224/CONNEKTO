@@ -1,5 +1,15 @@
 import { useCallback, useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import {
+  TbPackage,
+  TbShoppingBag,
+  TbBottle,
+  TbSparkles,
+  TbSpray,
+  TbMilk,
+  TbCookie,
+  TbBuildingFactory2,
+} from 'react-icons/tb'
 import LoadingState from '../components/LoadingState.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { getSuppliers } from '../services/catalogService.js'
@@ -58,79 +68,24 @@ const categoryCatalog = [
 // Category SVG icons
 // ---------------------------------------------------------------------------
 const CategoryIcon = ({ type }) => {
+  const iconProps = { size: 20, strokeWidth: 1.8, 'aria-hidden': true }
   switch (type) {
     case 'fmcg':
-      return (
-        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-          <rect x="8" y="14" width="16" height="13" rx="2" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-          <path d="M11 14v-3a5 5 0 0 1 10 0v3" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          <path d="M12 20h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          <path d="M12 23.5h5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        </svg>
-      )
+      return <TbPackage {...iconProps} />
     case 'grocery':
-      return (
-        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-          <path d="M7 13h18l-2 12H9L7 13Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-          <path d="M12 13v-2a4 4 0 0 1 8 0v2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          <circle cx="13" cy="10" r="1.2" fill="currentColor" />
-          <circle cx="19" cy="10" r="1.2" fill="currentColor" />
-        </svg>
-      )
+      return <TbShoppingBag {...iconProps} />
     case 'beverage':
-      return (
-        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-          <path d="M11 7h10l-1.5 18H12.5L11 7Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-          <path d="M13 12h6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          <path d="M16 25v2.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          <path d="M9 7h14" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        </svg>
-      )
+      return <TbBottle {...iconProps} />
     case 'personal':
-      return (
-        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-          <path d="M12 17c0-2.8 1.8-4 4-4s4 1.2 4 4v6H12v-6Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-          <path d="M13 13v-1.5a3 3 0 0 1 6 0V13" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          <path d="M8 23h16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          <path d="M16 8v2" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        </svg>
-      )
+      return <TbSparkles {...iconProps} />
     case 'cleaning':
-      return (
-        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-          <path d="M13 7h6l2 14a4 4 0 0 1-4 5h-2a4 4 0 0 1-4-5L13 7Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-          <path d="M12 13h8" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          <path d="M16 7V4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          <path d="M14 4h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        </svg>
-      )
+      return <TbSpray {...iconProps} />
     case 'dairy':
-      return (
-        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-          <path d="M10 12h12l-1.5 14H11.5L10 12Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-          <path d="M13 12V9.5a3 3 0 0 1 6 0V12" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          <path d="M13 18h6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          <path d="M14 22h4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        </svg>
-      )
+      return <TbMilk {...iconProps} />
     case 'snacks':
-      return (
-        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-          <path d="M8 16h16l-2 9a2 2 0 0 1-2 2H10a2 2 0 0 1-2-2L8 16Z" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-          <path d="M11 16v-4a5 5 0 0 1 10 0v4" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          <path d="M13 21h6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        </svg>
-      )
+      return <TbCookie {...iconProps} />
     case 'local':
-      return (
-        <svg viewBox="0 0 32 32" fill="none" aria-hidden="true">
-          <path d="M6 26h20" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          <path d="M9 26V14h14v12" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-          <path d="M12 14V10h8v4" stroke="currentColor" strokeWidth="1.8" strokeLinejoin="round" />
-          <path d="M13 20h6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-          <path d="M16 10V7" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-        </svg>
-      )
+      return <TbBuildingFactory2 {...iconProps} />
     default:
       return null
   }
