@@ -26,6 +26,7 @@ function SupplierCatalogCard({ product, supplier, favorite, onFavorite, onAdd, o
   const unitsPerBox = Number(product.unitsPerBox || product.minimumQuantity || 1)
   const unitPrice = Number(product.price || 0)
   const boxPrice = unitPrice * unitsPerBox
+  const quantityLabel = `${t('packetSingular')}`
 
   const availableStock = Number(product.availableStock ?? 0)
   const isAvailable = availableStock > 0
@@ -69,10 +70,10 @@ function SupplierCatalogCard({ product, supplier, favorite, onFavorite, onAdd, o
 
           <div className="py-2 my-2 border-y border-slate-100 space-y-0.5">
             <div className="text-base sm:text-lg font-black text-slate-900">
-              {formatPrice(unitPrice)} <small className="text-xs text-slate-400 font-normal">/ packet</small>
+              {formatPrice(unitPrice)} <small className="text-xs text-slate-400 font-normal">/ {t('packetSingular')}</small>
             </div>
             <div className="text-xs text-emerald-700 font-semibold truncate">
-              1 Box = {unitsPerBox} packets ({formatPrice(boxPrice)}/box)
+              1 {t('boxSingular')} = {unitsPerBox} {t('packetPlural')} ({formatPrice(boxPrice)}/{t('boxSingular')})
             </div>
           </div>
         </div>
@@ -110,7 +111,7 @@ function SupplierCatalogCard({ product, supplier, favorite, onFavorite, onAdd, o
             type="button" 
             onClick={() => onAdd(product)}
           >
-            + Add 1 Box ({unitsPerBox} pkts)
+            {t('addOneBox', { packets: unitsPerBox })}
           </button>
         )}
       </div>
@@ -146,6 +147,7 @@ function SupplierReviewsSection({ supplier }) {
     }
   ])
 
+  const { t } = useLocale()
   const [newRating, setNewRating] = useState(5)
   const [newAuthor, setNewAuthor] = useState('')
   const [newComment, setNewComment] = useState('')
@@ -185,7 +187,7 @@ function SupplierReviewsSection({ supplier }) {
           <div className="text-amber-400 text-lg my-2">
             {'★'.repeat(Math.round(Number(avgRating)))}{'☆'.repeat(5 - Math.round(Number(avgRating)))}
           </div>
-          <div className="text-xs text-slate-400 font-medium">Based on {reviews.length} reviews</div>
+          <div className="text-xs text-slate-400 font-medium">{t('basedOnReviews', { count: reviews.length })}</div>
         </div>
 
         <div className="flex flex-col justify-center space-y-1.5">
@@ -207,7 +209,7 @@ function SupplierReviewsSection({ supplier }) {
 
       {/* Add Review Form */}
       <div className="p-5 sm:p-6 bg-white rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
-        <h3 className="text-base font-bold text-slate-900">Write a Review for {supplier.name}</h3>
+        <h3 className="text-base font-bold text-slate-900">{t('writeReviewFor', { supplier: supplier.name })}</h3>
         {successMsg && (
           <div className="p-3 bg-emerald-50 border border-emerald-200 text-emerald-700 rounded-xl text-xs font-semibold" role="status">
             {successMsg}
@@ -216,7 +218,7 @@ function SupplierReviewsSection({ supplier }) {
         <form onSubmit={handleSubmitReview} className="space-y-4">
           <div>
             <label className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-              Your Rating
+              {t('yourRating')}
             </label>
             <div className="flex gap-1 text-2xl cursor-pointer">
               {[1, 2, 3, 4, 5].map((star) => (
@@ -234,7 +236,7 @@ function SupplierReviewsSection({ supplier }) {
 
           <div>
             <label htmlFor="rev-author" className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-              Shop Name / Your Name
+              {t('shopNameOrYourName')}
             </label>
             <input
               id="rev-author"
@@ -248,13 +250,13 @@ function SupplierReviewsSection({ supplier }) {
 
           <div>
             <label htmlFor="rev-comment" className="block text-xs font-bold uppercase tracking-wider text-slate-500 mb-1">
-              Review Details
+              {t('reviewDetails')}
             </label>
             <textarea
               id="rev-comment"
               className="w-full px-3.5 py-2 rounded-xl bg-slate-50 border border-slate-200 text-sm text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange"
               onChange={(e) => setNewComment(e.target.value)}
-              placeholder="Share your experience ordering from this supplier..."
+              placeholder={t('reviewPlaceholder')}
               rows={3}
               value={newComment}
             />
@@ -264,20 +266,20 @@ function SupplierReviewsSection({ supplier }) {
             className="px-5 py-2.5 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white font-bold text-xs sm:text-sm transition-all shadow-xs cursor-pointer"
             type="submit"
           >
-            Submit Review
+            {t('submitReview')}
           </button>
         </form>
       </div>
 
       {/* Reviews List */}
       <div className="space-y-3">
-        <h3 className="text-sm font-bold text-slate-900">Customer Feedback ({reviews.length})</h3>
+        <h3 className="text-sm font-bold text-slate-900">{t('customerFeedback', { count: reviews.length })}</h3>
         {reviews.map((rev) => (
           <div key={rev.id} className="p-4 sm:p-5 bg-white rounded-2xl border border-slate-200/80 shadow-xs space-y-2">
             <div className="flex items-center justify-between gap-2">
               <div className="flex items-center gap-2">
                 <strong className="text-sm font-bold text-slate-900">{rev.author}</strong>
-                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold">Verified Shop</span>
+                <span className="px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold">{t('verifiedShop')}</span>
               </div>
               <span className="text-xs text-slate-400">{rev.date}</span>
             </div>
@@ -295,6 +297,8 @@ function SupplierReviewsSection({ supplier }) {
 export default function SupplierCatalogPage() {
   const { supplierId } = useParams()
   const { t } = useLocale()
+  const allProductsLabel = t('allProducts')
+  const allBrandsLabel = t('allBrands')
   const [activeTab, setActiveTab] = useState('products')
   const [supplier, setSupplier] = useState(null)
   const [products, setProducts] = useState([])
@@ -302,8 +306,8 @@ export default function SupplierCatalogPage() {
   const [error, setError] = useState('')
   const [notFound, setNotFound] = useState(false)
   const [query, setQuery] = useState('')
-  const [category, setCategory] = useState('All Products')
-  const [brand, setBrand] = useState('All Brands')
+  const [category, setCategory] = useState(allProductsLabel)
+  const [brand, setBrand] = useState(allBrandsLabel)
   const [sortBy, setSortBy] = useState('popular')
   const [favorites, setFavorites] = useState({})
   const [cartMessage, setCartMessage] = useState('')
@@ -347,14 +351,14 @@ export default function SupplierCatalogPage() {
     }
   }, [supplierId])
 
-  const categories = useMemo(() => ['All Categories', ...new Set(products.map((product) => product.category))], [products])
-  const brands = useMemo(() => ['All Brands', ...new Set(products.map((product) => product.brand))], [products])
+  const categories = useMemo(() => [t('allCategories'), ...new Set(products.map((product) => product.category))], [products, t])
+  const brands = useMemo(() => [allBrandsLabel, ...new Set(products.map((product) => product.brand))], [products, allBrandsLabel])
   const visibleProducts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
     return products.filter((product) => {
       const matchesQuery = !normalizedQuery || `${product.name} ${product.brand} ${product.category}`.toLowerCase().includes(normalizedQuery)
-      const matchesCategory = category === 'All Products' || category === 'All Categories' || product.category === category
-      const matchesBrand = brand === 'All Brands' || product.brand === brand
+      const matchesCategory = category === allProductsLabel || category === t('allCategories') || product.category === category
+      const matchesBrand = brand === allBrandsLabel || product.brand === brand
       return matchesQuery && matchesCategory && matchesBrand
     }).sort((first, second) => {
       if (sortBy === 'price-low') return first.price - second.price
@@ -390,7 +394,7 @@ export default function SupplierCatalogPage() {
       unitPrice: product.price
     })
     notifyCartUpdated()
-    const msg = `${product.name} added to cart (1 Box = ${actualQuantity} packets)`
+    const msg = t('addedToCart', { product: product.name })
     setCartMessage(msg)
     setTimeout(() => setCartMessage(''), 3000)
   }
@@ -431,9 +435,9 @@ export default function SupplierCatalogPage() {
   return (
     <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
       <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-        <Link className="hover:text-slate-600 transition-colors" to="/dashboard/shop-owner/suppliers">Shop Owner</Link>
+        <Link className="hover:text-slate-600 transition-colors" to="/dashboard/shop-owner/suppliers">{t('shopOwner')}</Link>
         <span aria-hidden="true">›</span>
-        <Link className="hover:text-slate-600 transition-colors" to="/dashboard/shop-owner/suppliers">Suppliers</Link>
+        <Link className="hover:text-slate-600 transition-colors" to="/dashboard/shop-owner/suppliers">{t('suppliers')}</Link>
         <span aria-hidden="true">›</span>
         <span className="text-slate-700">{supplier.name}</span>
       </div>
@@ -447,7 +451,7 @@ export default function SupplierCatalogPage() {
             <h1 className="text-xl sm:text-2xl lg:text-3xl font-black text-slate-900 tracking-tight">{supplier.name}</h1>
             {supplier.isVerified && (
               <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs font-bold">
-                ● Verified Supplier
+                ● {t('verifiedSupplier')}
               </span>
             )}
           </div>
@@ -476,7 +480,7 @@ export default function SupplierCatalogPage() {
           onClick={() => setActiveTab('products')} 
           type="button"
         >
-          Products
+          {t('products')}
         </button>
         <button 
           className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-colors cursor-pointer ${
@@ -487,7 +491,7 @@ export default function SupplierCatalogPage() {
           onClick={() => setActiveTab('reviews')} 
           type="button"
         >
-          Reviews
+          {t('reviews')}
         </button>
       </nav>
 
@@ -500,7 +504,7 @@ export default function SupplierCatalogPage() {
                 className="w-full bg-transparent text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden"
                 value={query} 
                 onChange={(event) => setQuery(event.target.value)} 
-                placeholder={`Search in ${supplier.name}...`} 
+                placeholder={t('searchInSupplier', { supplier: supplier.name })} 
               />
             </label>
 
@@ -509,7 +513,7 @@ export default function SupplierCatalogPage() {
               value={category} 
               onChange={(event) => setCategory(event.target.value)}
             >
-              <option value="All Products">All Categories</option>
+              <option value="All Products">{t('allCategories')}</option>
               {categories.filter((item) => item !== 'All Categories').map((item) => <option key={item}>{item}</option>)}
             </select>
 
@@ -526,16 +530,16 @@ export default function SupplierCatalogPage() {
               value={sortBy} 
               onChange={(event) => setSortBy(event.target.value)}
             >
-              <option value="popular">Sort: Popular</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="name">Name</option>
+              <option value="popular">{t('sortPopular')}</option>
+              <option value="price-low">{t('sortPriceLow')}</option>
+              <option value="price-high">{t('sortPriceHigh')}</option>
+              <option value="name">{t('sortName')}</option>
             </select>
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6 items-start">
             <aside className="bg-white rounded-2xl border border-slate-200/80 p-3 shadow-xs space-y-1 lg:sticky lg:top-20 self-start">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 py-2">Categories</h2>
+              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 py-2">{t('categoriesLabel')}</h2>
               <div className="flex flex-row lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
                 {categoryOrder.map((item) => (
                   <button 
@@ -556,7 +560,7 @@ export default function SupplierCatalogPage() {
 
             <div className="space-y-4">
               <div className="flex items-center justify-between text-xs sm:text-sm font-semibold text-slate-500 px-1">
-                <strong className="text-slate-900">{visibleProducts.length} products</strong>
+                <strong className="text-slate-900">{t('productsCount', { count: visibleProducts.length })}</strong>
                 {cartMessage && (
                   <span className="text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/60 text-xs" role="status">
                     {cartMessage}
@@ -585,7 +589,7 @@ export default function SupplierCatalogPage() {
                 </div>
               ) : (
                 <div className="flex items-center justify-center p-12 bg-white rounded-2xl border border-slate-200/80 shadow-xs text-center text-slate-500 text-sm font-medium">
-                  No products match these filters.
+                  {t('noProductsMatchFilters')}
                 </div>
               )}
             </div>

@@ -59,7 +59,7 @@ export default function ShopOwnerCartPage() {
     if (!Number.isInteger(numericValue) || numericValue < 1) {
       setQuantityErrors((current) => ({
         ...current,
-        [item.productId]: 'Minimum order is 1 box'
+        [item.productId]: t('minimumOrderIsOneBox')
       }))
       return
     }
@@ -124,7 +124,7 @@ export default function ShopOwnerCartPage() {
                         <h2 className="text-sm sm:text-base font-bold text-slate-900 truncate">{group.name}</h2>
                         {group.verified && (
                           <span className="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-50 text-emerald-700 text-[10px] font-bold">
-                            ● Verified
+                            ● {t('verified')}
                           </span>
                         )}
                       </div>
@@ -143,7 +143,7 @@ export default function ShopOwnerCartPage() {
                     <button 
                       className="p-1.5 rounded-lg border border-slate-200 hover:bg-white text-slate-600 transition-colors cursor-pointer text-xs font-bold" 
                       type="button" 
-                      aria-label={isCollapsed ? `Expand ${group.name}` : `Collapse ${group.name}`} 
+                      aria-label={isCollapsed ? t('expandSupplier', { supplier: group.name }) : t('collapseSupplier', { supplier: group.name })} 
                       aria-expanded={!isCollapsed} 
                       onClick={() => setCollapsedSuppliers((current) => ({ ...current, [group.supplierId]: !current[group.supplierId] }))}
                     >
@@ -171,7 +171,7 @@ export default function ShopOwnerCartPage() {
                               <strong className="text-sm sm:text-base font-bold text-slate-900 truncate">{item.name}</strong>
                               <span className="text-xs text-slate-400 font-medium">{item.packSize} • {item.brand}</span>
                               <div className="text-xs text-emerald-700 font-semibold mt-1">
-                                1 Box = {unitsPerBox} pkts ({formatPrice(parsePrice(item.unitPrice) * unitsPerBox)}/box)
+                                1 {t('box')} = {unitsPerBox} {t('packetsShort')} ({formatPrice(parsePrice(item.unitPrice) * unitsPerBox)}/box)
                               </div>
                             </div>
                           </div>
@@ -188,7 +188,7 @@ export default function ShopOwnerCartPage() {
                               <strong className="text-sm sm:text-base font-black text-slate-900 block">
                                 {formatPrice(parsePrice(item.unitPrice) * Number(item.quantity))}
                               </strong>
-                              <span className="text-[11px] text-slate-400">{item.quantity} pkts</span>
+                              <span className="text-[11px] text-slate-400">{item.quantity} {t('packetsShort')}</span>
                             </div>
                             <button 
                               className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer text-lg font-bold" 
@@ -208,7 +208,7 @@ export default function ShopOwnerCartPage() {
                 <div className="flex items-center justify-between px-5 py-3 bg-slate-50/50 border-t border-slate-100 text-xs text-slate-500 font-medium">
                   <span>{group.items.length} {group.items.length === 1 ? t('itemCount') : t('itemsCount')}</span>
                   <button className="text-rose-600 hover:text-rose-800 font-semibold cursor-pointer" type="button" onClick={() => group.items.forEach(removeItem)}>
-                    Clear supplier cart
+                    {t('clearSupplierCart')}
                   </button>
                 </div>
               </section>
@@ -221,15 +221,15 @@ export default function ShopOwnerCartPage() {
           
           <div className="space-y-2 text-xs sm:text-sm text-slate-600">
             <div className="flex justify-between">
-              <span>Total Suppliers</span>
+              <span>{t('totalSuppliers')}</span>
               <strong className="font-bold text-slate-800">{groups.length}</strong>
             </div>
             <div className="flex justify-between">
-              <span>Total Boxes</span>
+              <span>{t('totalBoxes')}</span>
               <strong className="font-bold text-slate-800">{totalBoxes}</strong>
             </div>
             <div className="flex items-center justify-between text-base font-black text-slate-900 pt-3 border-t border-slate-100">
-              <span>Total Amount</span>
+              <span>{t('totalAmount')}</span>
               <span>{formatPrice(total)}</span>
             </div>
           </div>
@@ -242,15 +242,15 @@ export default function ShopOwnerCartPage() {
           </Link>
 
           <div className="p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-500 space-y-0.5">
-            <strong className="font-bold text-slate-700 block">Secure & split payments</strong>
-            <span>Your payment will be securely processed for each supplier.</span>
+            <strong className="font-bold text-slate-700 block">{t('secureSplitPayments')}</strong>
+            <span>{t('secureSplitPaymentsDescription')}</span>
           </div>
 
           <Link 
             className="block text-center text-xs font-bold text-brand-orange hover:text-brand-orange-dark transition-colors pt-1" 
             to="/dashboard/shop-owner/suppliers"
           >
-            ← Continue Shopping
+            ← {t('continueShopping')}
           </Link>
         </aside>
       </div>

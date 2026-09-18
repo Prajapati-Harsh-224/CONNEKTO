@@ -47,9 +47,9 @@ export default function ShopOwnerDashboardPage() {
 
   const getDynamicGreeting = () => {
     const hour = new Date().getHours()
-    if (hour < 12) return 'Good morning'
-    if (hour < 17) return 'Good afternoon'
-    return 'Good evening'
+    if (hour < 12) return t('goodMorning')
+    if (hour < 17) return t('goodAfternoon')
+    return t('goodEvening')
   }
 
   const totalOrdersCount = orders.length
@@ -59,7 +59,7 @@ export default function ShopOwnerDashboardPage() {
   const summaryCards = [
     { label: t('totalOrders'), value: String(totalOrdersCount), detail: t('acrossAllSuppliers'), icon: cardIcons['Total orders'], actionTo: '/dashboard/shop-owner/orders' },
     { label: t('pendingOrders'), value: String(pendingOrdersCount), detail: t('needYourAttention'), icon: cardIcons['Pending orders'], actionTo: '/dashboard/shop-owner/orders' },
-    { label: t('monthlySpending'), value: `₹${totalSpending.toLocaleString('en-IN')}`, detail: 'Total placed order value', icon: cardIcons['Monthly spending'], actionTo: '/dashboard/shop-owner/analytics' },
+    { label: t('monthlySpending'), value: `₹${totalSpending.toLocaleString('en-IN')}`, detail: t('totalPlacedOrderValue'), icon: cardIcons['Monthly spending'], actionTo: '/dashboard/shop-owner/analytics' },
   ]
 
   const recentOrders = orders.slice(0, 5).map((o) => ({
@@ -154,7 +154,7 @@ export default function ShopOwnerDashboardPage() {
               </div>
             </div>
           ) : (
-            <EmptyState title="No recent orders" message="When you place orders with suppliers, they will appear here." />
+            <EmptyState title={t('noRecentOrders')} message={t('noRecentOrdersMessage')} />
           )}
         </section>
 

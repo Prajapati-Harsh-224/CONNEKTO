@@ -128,14 +128,14 @@ function getAvatarBg(name = '') {
 // ---------------------------------------------------------------------------
 // VerifiedBadge sub-component
 // ---------------------------------------------------------------------------
-function VerifiedBadge() {
+function VerifiedBadge({ label = 'Verified Supplier' }) {
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold uppercase tracking-wider" aria-label="Verified Supplier">
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold uppercase tracking-wider" aria-label={label}>
       <svg viewBox="0 0 14 14" fill="none" aria-hidden="true" width="11" height="11">
         <circle cx="7" cy="7" r="6.5" fill="#1a7a3c" />
         <path d="M4.5 7l1.8 1.8L9.5 5.5" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
-      Verified
+      {label}
     </span>
   )
 }
@@ -183,6 +183,7 @@ function HeartButton({ isFavorite, name, onClick }) {
 // SupplierCard sub-component
 // ---------------------------------------------------------------------------
 function SupplierCard({ supplier, isFavorite, onToggleFavorite }) {
+  const { t } = useLocale()
   const initials = getInitials(supplier.name)
   const bg = getAvatarBg(supplier.name)
 
@@ -207,7 +208,7 @@ function SupplierCard({ supplier, isFavorite, onToggleFavorite }) {
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2 flex-wrap">
               <h3 className="text-base sm:text-lg font-bold text-slate-900 truncate">{supplier.name}</h3>
-              {supplier.isVerified && <VerifiedBadge />}
+              {supplier.isVerified && <VerifiedBadge label={t('verifiedSupplier')} />}
             </div>
             <span className="text-xs font-semibold text-brand-orange">{supplier.type}</span>
             {(supplier.serviceAreas?.length > 0 || supplier.location) && (
@@ -220,7 +221,7 @@ function SupplierCard({ supplier, isFavorite, onToggleFavorite }) {
         </div>
 
         <p className="text-xs sm:text-sm text-slate-500 line-clamp-2 leading-relaxed">
-          {supplier.description || 'Verified wholesale distributor delivering to local grocery stores.'}
+          {supplier.description || t('verifiedSupplierDescription')}
         </p>
 
         <div className="flex flex-wrap gap-1.5 pt-1">
@@ -236,9 +237,9 @@ function SupplierCard({ supplier, isFavorite, onToggleFavorite }) {
         <Link
           className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-orange-50 hover:bg-brand-orange hover:text-white text-brand-orange font-bold text-xs sm:text-sm transition-all border border-orange-200/60 shadow-xs"
           to={`/dashboard/shop-owner/suppliers/${supplier.id}/products`}
-          aria-label={`View ${supplier.name} products`}
+          aria-label={`${t('viewProducts')} ${supplier.name}`}
         >
-          View Products <span aria-hidden="true">→</span>
+          {t('viewProducts')} <span aria-hidden="true">→</span>
         </Link>
       </div>
     </article>
@@ -326,9 +327,9 @@ export default function SupplierListPage() {
 
         <div className="hidden lg:flex items-center gap-3 p-3.5 rounded-2xl bg-emerald-50 border border-emerald-100 text-emerald-900 text-xs font-semibold" aria-hidden="true">
           <div className="flex flex-col leading-tight">
-            <span>Source Local</span>
-            <span>Stock Local</span>
-            <span className="text-emerald-700 font-extrabold">Grow Local</span>
+            <span>{t('sourceLocal')}</span>
+            <span>{t('stockLocal')}</span>
+            <span className="text-emerald-700 font-extrabold">{t('growLocal')}</span>
           </div>
         </div>
       </div>
@@ -370,7 +371,7 @@ export default function SupplierListPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-black text-slate-900">
-            {activeCategoryLabel} <span className="text-xs font-semibold text-slate-400">({filteredSuppliers.length} suppliers)</span>
+            {activeCategoryLabel} <span className="text-xs font-semibold text-slate-400">({filteredSuppliers.length} {t('suppliers')})</span>
           </h2>
         </div>
 
@@ -396,7 +397,7 @@ export default function SupplierListPage() {
       )}
 
       {!error && !isLoading && suppliers.length === 0 && (
-        <p className="p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium">No suppliers are available right now.</p>
+        <p className="p-4 rounded-xl bg-blue-50 border border-blue-200 text-blue-700 text-sm font-medium">{t('noSuppliersAvailable')}</p>
       )}
 
       {/* ── Supplier grid ── */}

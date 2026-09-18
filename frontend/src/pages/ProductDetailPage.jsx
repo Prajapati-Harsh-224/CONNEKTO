@@ -57,7 +57,7 @@ export default function ProductDetailPage() {
     setSuccessMessage('')
     if (!Number.isInteger(numericBoxes) || numericBoxes < 1) {
       setBoxes(nextValue)
-      setQuantityError('Minimum order is 1 box')
+      setQuantityError(t('minimumOrderIsOneBox'))
       return
     }
     setBoxes(numericBoxes)
@@ -66,7 +66,7 @@ export default function ProductDetailPage() {
 
   function handleAddToCart() {
     if (!Number.isInteger(Number(boxes)) || Number(boxes) < 1) {
-      setQuantityError('Minimum order is 1 box')
+      setQuantityError(t('minimumOrderIsOneBox'))
       return
     }
     addToCart({
@@ -87,7 +87,7 @@ export default function ProductDetailPage() {
     })
     window.dispatchEvent(new Event('connecto-cart-updated'))
     setSuccessMessage(
-      `${product.name} added to cart (${boxes} ${boxes === 1 ? 'Box' : 'Boxes'} = ${totalQuantity} packets)`
+      t('addedToCart', { product: product.name }) + ` (${boxes} ${boxes === 1 ? t('boxSingular') : t('boxPlural')} = ${totalQuantity} ${t('packetPlural')})`
     )
   }
 
@@ -125,28 +125,28 @@ export default function ProductDetailPage() {
               </div>
               <div>
                 <span className="text-[11px] font-medium text-slate-400 block">{t('minimumQuantity')}</span>
-                <strong className="font-bold text-slate-900 mt-0.5 block truncate">1 Box</strong>
+                <strong className="font-bold text-slate-900 mt-0.5 block truncate">1 {t('boxSingular')}</strong>
               </div>
               <div>
-                <span className="text-[11px] font-medium text-slate-400 block">Packaging</span>
-                <strong className="font-bold text-slate-900 mt-0.5 block truncate">{unitsPerBox} pkts/box</strong>
+                <span className="text-[11px] font-medium text-slate-400 block">{t('packaging')}</span>
+                <strong className="font-bold text-slate-900 mt-0.5 block truncate">{unitsPerBox} {t('packetPlural')}/{t('boxSingular')}</strong>
               </div>
             </div>
 
             <div className="py-3 border-y border-slate-100 space-y-1">
               <div className="text-2xl sm:text-3xl font-black text-slate-900">
-                ₹{unitPrice.toLocaleString('en-IN')} <small className="text-xs font-normal text-slate-400">/ packet</small>
+                ₹{unitPrice.toLocaleString('en-IN')} <small className="text-xs font-normal text-slate-400">/ {t('packetSingular')}</small>
               </div>
               <div className="text-xs font-semibold text-emerald-700">
-                1 Box = {unitsPerBox} packets (₹{boxPrice.toLocaleString('en-IN')} / box)
+                1 {t('boxSingular')} = {unitsPerBox} {t('packetPlural')} (₹{boxPrice.toLocaleString('en-IN')} / {t('boxSingular')})
               </div>
             </div>
 
             <div className="space-y-3 pt-1">
-              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">Select Quantity</label>
+              <label className="block text-xs font-bold uppercase tracking-wider text-slate-500">{t('selectQuantity')}</label>
               <QuantitySelector error={quantityError} isBox={isBox} minimum={minBoxes} onChange={updateBoxes} value={boxes} />
               <div className="text-xs font-semibold text-slate-600">
-                Total: {totalQuantity} packets (₹{(boxPrice * boxes).toLocaleString('en-IN')})
+                {t('totalPackets', { count: totalQuantity, amount: `₹${(boxPrice * boxes).toLocaleString('en-IN')}` })}
               </div>
             </div>
 

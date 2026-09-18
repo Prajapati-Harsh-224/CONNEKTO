@@ -237,9 +237,9 @@ export default function ShopOwnerOrdersPage() {
               onChange={(event) => setTimeFilter(event.target.value)}
               value={timeFilter}
             >
-              <option>All Time</option>
-              <option>Last 30 days</option>
-              <option>Last 90 days</option>
+              <option>{t('allTime')}</option>
+              <option>{t('last30Days')}</option>
+              <option>{t('last90Days')}</option>
             </select>
 
             <select
@@ -247,8 +247,8 @@ export default function ShopOwnerOrdersPage() {
               onChange={(event) => setSortBy(event.target.value)}
               value={sortBy}
             >
-              <option value="newest">Sort: Newest</option>
-              <option value="oldest">Sort: Oldest</option>
+              <option value="newest">{t('sortNewest')}</option>
+              <option value="oldest">{t('sortOldest')}</option>
             </select>
           </div>
 

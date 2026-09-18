@@ -56,9 +56,9 @@ export default function SupplierDetailPage() {
     <section className="space-y-6 max-w-4xl mx-auto">
       {/* Breadcrumb */}
       <nav className="flex items-center gap-2 text-xs font-semibold text-slate-500">
-        <span>Shop Owner</span>
+        <span>{t('shopOwner')}</span>
         <span>→</span>
-        <Link to="/dashboard/shop-owner/suppliers" className="hover:text-brand-orange transition-colors">Suppliers</Link>
+        <Link to="/dashboard/shop-owner/suppliers" className="hover:text-brand-orange transition-colors">{t('suppliers')}</Link>
         <span>→</span>
         <span className="text-slate-800 font-bold truncate">{supplier.name}</span>
       </nav>
@@ -78,7 +78,7 @@ export default function SupplierDetailPage() {
               {supplier.isVerified && (
                 <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-semibold text-emerald-700 bg-emerald-50 border border-emerald-200">
                   <FiCheckCircle className="w-3.5 h-3.5" />
-                  Verified Supplier
+                  {t('verifiedSupplier')}
                 </span>
               )}
             </div>
@@ -102,7 +102,7 @@ export default function SupplierDetailPage() {
             className="inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl text-sm font-semibold bg-brand-orange text-white hover:bg-orange-700 active:scale-95 transition-all shadow-xs"
             to={`/dashboard/shop-owner/suppliers/${supplier.id}/products`}
           >
-            <span>View products</span>
+            <span>{t('viewProducts')}</span>
             <FiArrowRight className="w-4 h-4" />
           </Link>
           <Link
@@ -110,7 +110,7 @@ export default function SupplierDetailPage() {
             to="/dashboard/shop-owner/suppliers"
           >
             <FiArrowLeft className="w-4 h-4" />
-            <span>Back to suppliers</span>
+            <span>{t('backToSuppliers')}</span>
           </Link>
         </div>
       </div>
