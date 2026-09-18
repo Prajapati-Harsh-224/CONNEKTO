@@ -6,6 +6,16 @@ const REGISTER_ROUTES = {
   GRUH_UDYOG: '/auth/register/gruh-udyog',
 }
 
+export function checkIdentifier(emailOrPhone, role) {
+  return apiRequest('/auth/check-identifier', {
+    method: 'POST',
+    body: {
+      emailOrPhone,
+      role: role || undefined,
+    },
+  })
+}
+
 export function login(credentials) {
   return apiRequest('/auth/login', {
     method: 'POST',

@@ -73,6 +73,11 @@ class LoginRequest(BaseModel):
     password: str
     role: Optional[str] = None
 
+class CheckIdentifierRequest(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    emailOrPhone: str
+    role: Optional[str] = None
+
 class ProductRequest(BaseModel):
     model_config = ConfigDict(extra="ignore")
     name: str

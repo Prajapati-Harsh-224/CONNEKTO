@@ -1,8 +1,8 @@
 import { useState } from 'react'
-import { useNavigate } from 'react-router-dom'
+import { useNavigate, useSearchParams } from 'react-router-dom'
 import RoleCard from '../components/RoleCard.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
-import { saveSelectedRole } from '../utils/roleStorage.js'
+import { getSelectedRole, saveSelectedRole } from '../utils/roleStorage.js'
 import shopOwnerImage from '../assets/shop_owner_img.png'
 import supplierImage from '../assets/Supplier_img.png'
 import gruhUdyogImage from '../assets/gruh_udhyog_img.png'
@@ -14,14 +14,20 @@ const roles = [
 ]
 
 export default function RoleSelectionPage() {
-  const [selectedRole, setSelectedRole] = useState('')
+  const [searchParams] = useSearchParams()
+  const roleFromUrl = searchParams.get('role')
+  const validRoleValues = roles.map((r) => r.value)
+  const initialRole = validRoleValues.includes(roleFromUrl)
+    ? roleFromUrl
+    : (validRoleValues.includes(getSelectedRole()) ? getSelectedRole() : '')
+  const [selectedRole, setSelectedRole] = useState(initialRole)
   const navigate = useNavigate()
   const { t } = useLocale()
 
-  function continueToSignup() {
-    if (!selectedRole) return
-    saveSelectedRole(selectedRole)
-    navigate(`/signup?role=${selectedRole}`)
+  function continueToSignup(roleToUse = selectedRole) {
+    if (!roleToUse) return
+    saveSelectedRole(roleToUse)
+    navigate(`/signup?role=${roleToUse}`)
   }
 
   return (
@@ -97,7 +103,7 @@ export default function RoleSelectionPage() {
                 : 'bg-slate-200 text-slate-400 cursor-not-allowed'
             }`}
             disabled={!selectedRole}
-            onClick={continueToSignup}
+            onClick={() => continueToSignup()}
             type="button"
           >
             <span>{t('continue')}</span>
