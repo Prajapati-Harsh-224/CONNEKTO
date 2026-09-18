@@ -10,7 +10,7 @@ export default function AppShell() {
   const { pathname, search } = useLocation()
 
   const isWorkspace = pathname.startsWith('/dashboard/')
-  const isAuthPage = pathname === '/signup' || pathname === '/login' || pathname === '/role-selection' || pathname === '/forgot-password'
+  const isAuthPage = pathname === '/signup' || pathname === '/login' || pathname === '/register' || pathname === '/role-selection' || pathname === '/forgot-password'
   const isNoScrollPage = isAuthPage || pathname === '/'
 
   useEffect(() => {
@@ -27,12 +27,12 @@ export default function AppShell() {
       document.body.classList.remove('auth-no-scroll')
     }
   }, [pathname, search, isNoScrollPage])
-  const isShopOwnerSignup = pathname === '/signup' && new URLSearchParams(search).get('role') === 'SHOP_OWNER'
-  const isSupplierSignup = pathname === '/signup' && new URLSearchParams(search).get('role') === 'SUPPLIER'
-  const isGruhUdyogSignup = pathname === '/signup' && new URLSearchParams(search).get('role') === 'GRUH_UDYOG'
-  const isShopOwnerLogin = pathname === '/login' && getSelectedRole() === 'SHOP_OWNER'
-  const isSupplierLogin = pathname === '/login' && getSelectedRole() === 'SUPPLIER'
-  const isGruhUdyogLogin = pathname === '/login' && getSelectedRole() === 'GRUH_UDYOG'
+
+  const roleInUrl = new URLSearchParams(search).get('role') || getSelectedRole()
+  const isRoleAuthRoute = pathname === '/signup' || pathname === '/login' || pathname === '/register'
+  const isShopOwnerAuth = isRoleAuthRoute && roleInUrl === 'SHOP_OWNER'
+  const isSupplierAuth = isRoleAuthRoute && roleInUrl === 'SUPPLIER'
+  const isGruhUdyogAuth = isRoleAuthRoute && roleInUrl === 'GRUH_UDYOG'
   const isForgotPassword = pathname === '/forgot-password'
 
   return (
@@ -66,7 +66,7 @@ export default function AppShell() {
       <main className="flex-1 w-full">
         <Outlet />
       </main>
-      {!isWorkspace && !isShopOwnerSignup && !isSupplierSignup && !isGruhUdyogSignup && !isShopOwnerLogin && !isSupplierLogin && !isGruhUdyogLogin && !isForgotPassword && (
+      {!isWorkspace && !isShopOwnerAuth && !isSupplierAuth && !isGruhUdyogAuth && !isForgotPassword && (
         <footer className="bg-slate-900 text-white border-t border-slate-800 mt-auto">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
             <div className="flex flex-col md:flex-row items-center justify-between gap-6 pb-8 border-b border-slate-800">

@@ -16,7 +16,7 @@ from sqlalchemy.orm import Session, joinedload, object_session
 
 from .database import Base, SessionLocal, engine, get_db
 from .models import Checkout, OrderItem, Product, SessionToken, Shop, Supplier, SupplierOrder, SupplierServiceArea, User
-from .schemas import CheckoutRequest, LoginRequest, ProductRequest, ShopOwnerRegisterRequest, SupplierRegisterRequest, GruhUdyogRegisterRequest, StatusRequest, ProfileUpdateRequest
+from .schemas import CheckoutRequest, LoginRequest, CheckIdentifierRequest, ProductRequest, ShopOwnerRegisterRequest, SupplierRegisterRequest, GruhUdyogRegisterRequest, StatusRequest, ProfileUpdateRequest
 
 SESSION_COOKIE = "connecto_session"
 SESSION_DAYS = 7
@@ -456,6 +456,62 @@ def register_gruh_udyog(payload: GruhUdyogRegisterRequest, response: Response, d
         service_areas=payload.serviceAreas
     )
 
+@app.post("/api/auth/check-identifier")
+def check_identifier(payload: CheckIdentifierRequest, response: Response, db: Session = Depends(get_db)):
+    raw_input = payload.emailOrPhone.strip()
+    if not raw_input:
+        return error("Email or phone number is required.", "VALIDATION_ERROR", 400, {"emailOrPhone": "Email or phone number is required."})
+
+    clean_email = raw_input.lower()
+    norm_phone = normalize_identifier(raw_input)
+
+    query = select(User).where(
+        or_(
+            func.lower(User.email) == clean_email,
+            func.lower(User.login_identifier) == clean_email,
+            User.phone == norm_phone,
+            User.phone == raw_input,
+            User.login_identifier == norm_phone,
+            User.login_identifier == raw_input
+        )
+    )
+
+    user = db.scalar(query)
+    if not user:
+        return envelope({
+            "exists": False,
+            "status": "USER_NOT_FOUND",
+            "message": "We couldn't find your account. Let's get you registered!"
+        }, "Identifier check completed")
+
+    if payload.role:
+        expected_role = payload.role.strip().upper()
+        if user.role != expected_role:
+            role_display = {
+                "SHOP_OWNER": "Shop Owner",
+                "SUPPLIER": "Supplier",
+                "GRUH_UDYOG": "Gruh Udyog"
+            }
+            actual_label = role_display.get(user.role, user.role.replace("_", " ").title())
+            return error(
+                f"This account is registered as a {actual_label}. Please select the {actual_label} role to sign in.",
+                "ROLE_MISMATCH",
+                403,
+                {"actualRole": user.role, "expectedRole": expected_role}
+            )
+
+    set_session(response, db, user)
+    dashboard_path = "/dashboard/shop-owner" if user.role == "SHOP_OWNER" else f"/dashboard/{user.role.lower().replace('_', '-')}"
+
+    return envelope({
+        "exists": True,
+        "status": "USER_FOUND",
+        "role": user.role,
+        "name": user.name,
+        "user": safe_user(user, db=db),
+        "dashboardPath": dashboard_path
+    }, "User found and authenticated")
+
 @app.post("/api/auth/login")
 def login(payload: LoginRequest, response: Response, db: Session = Depends(get_db)):
     raw_input = payload.emailOrPhone.strip()
@@ -478,7 +534,10 @@ def login(payload: LoginRequest, response: Response, db: Session = Depends(get_d
     )
 
     user = db.scalar(query)
-    if not user or not verify_password(payload.password, user.password_hash):
+    if not user:
+        return error("We couldn't find your account. Let's get you registered!", "USER_NOT_FOUND", 404)
+
+    if not verify_password(payload.password, user.password_hash):
         return error("The sign-in details are not valid.", "INVALID_CREDENTIALS", 401)
 
     if payload.role:
@@ -493,11 +552,18 @@ def login(payload: LoginRequest, response: Response, db: Session = Depends(get_d
             return error(
                 f"This account is registered as a {actual_label}. Please select the {actual_label} role to sign in.",
                 "ROLE_MISMATCH",
-                403
+                403,
+                {"actualRole": user.role, "expectedRole": expected_role}
             )
 
     set_session(response, db, user)
-    return envelope({"user": safe_user(user, db=db)}, "Signed in")
+    dashboard_path = "/dashboard/shop-owner" if user.role == "SHOP_OWNER" else f"/dashboard/{user.role.lower().replace('_', '-')}"
+
+    return envelope({
+        "user": safe_user(user, db=db),
+        "role": user.role,
+        "dashboardPath": dashboard_path
+    }, "Signed in")
 
 @app.get("/api/auth/me")
 def me(user: User = Depends(require_user), db: Session = Depends(get_db)):

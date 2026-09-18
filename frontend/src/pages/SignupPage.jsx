@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
 import FormField from '../components/FormField.jsx'
 import PasswordField from '../components/PasswordField.jsx'
 import CategoryCombobox from '../components/CategoryCombobox.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { register } from '../services/authService.js'
 import { getSelectedRole, saveSelectedRole } from '../utils/roleStorage.js'
@@ -38,6 +39,11 @@ export default function SignupPage() {
   const [searchParams] = useSearchParams()
   const roleFromUrl = searchParams.get('role')
   const selectedRole = roles.includes(roleFromUrl) ? roleFromUrl : getSelectedRole()
+  const reason = searchParams.get('reason')
+  const isNotOurUser = reason === 'not_found' || searchParams.get('newUser') === 'true'
+  const identifierFromUrl = searchParams.get('identifier') || ''
+
+  const { updateUser } = useAuth()
   const { t } = useLocale()
   const [form, setForm] = useState(initialForm)
   const [hasConsent, setHasConsent] = useState(false)
@@ -45,6 +51,17 @@ export default function SignupPage() {
   const [requestError, setRequestError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+
+  useEffect(() => {
+    if (identifierFromUrl) {
+      const isEmail = /^\S+@\S+\.\S+$/.test(identifierFromUrl.trim())
+      setForm((prev) => ({
+        ...prev,
+        email: isEmail ? identifierFromUrl.trim() : prev.email,
+        phone: !isEmail ? identifierFromUrl.trim() : prev.phone,
+      }))
+    }
+  }, [identifierFromUrl])
 
   function updateField(event) {
     const { name, value } = event.target
@@ -72,9 +89,13 @@ export default function SignupPage() {
     try {
       const credentials = selectedRole === 'SHOP_OWNER'
         ? { name: form.name.trim(), shopName: form.shopName.trim(), shopAddress: form.shopAddress.trim(), area: form.area.trim(), phone: form.phone.trim(), email: form.email.trim(), password: form.password, confirmPassword: form.confirmPassword, role: selectedRole }
-        : { name: form.name.trim(), area: form.area.trim(), category: form.category.trim(), serviceAreas: form.area.split(',').map((value) => value.trim()).filter(Boolean), phone: form.phone.trim(), email: form.email.trim(), password: form.password, confirmPassword: form.confirmPassword, role: selectedRole }
-      await register(credentials)
-      navigate('/login')
+        : { name: form.name.trim(), area: form.area.trim(), category: form.category.trim() || 'FMCG', serviceAreas: form.area.split(',').map((value) => value.trim()).filter(Boolean), phone: form.phone.trim(), email: form.email.trim(), password: form.password, confirmPassword: form.confirmPassword, role: selectedRole }
+      const res = await register(credentials)
+      if (res?.data?.user) {
+        updateUser(res.data.user)
+      }
+      saveSelectedRole(selectedRole)
+      navigate(selectedRole === 'SHOP_OWNER' ? '/dashboard/shop-owner' : `/dashboard/${selectedRole.toLowerCase().replaceAll('_', '-')}`)
     } catch (error) {
       setRequestError(error.message)
     } finally {
@@ -113,7 +134,7 @@ export default function SignupPage() {
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
                 {t(selectedRole === 'SHOP_OWNER' ? 'shopOwnerSignupSubtitle' : selectedRole === 'SUPPLIER' ? 'supplierSignupSubtitle' : 'gruhUdyogSignupSubtitle')}
               </p>
-              <Link className="text-xs font-medium text-[#f06535] hover:underline mt-2 inline-block" to="/role-selection">
+              <Link className="text-xs font-medium text-[#f06535] hover:underline mt-2 inline-block" to={`/role-selection${selectedRole ? `?role=${selectedRole}` : ''}`}>
                 {t('changeRole')}
               </Link>
             </header>
@@ -124,8 +145,18 @@ export default function SignupPage() {
             <strong className="text-slate-800 font-semibold">
               {selectedRole ? t(selectedRole === 'SHOP_OWNER' ? 'shopOwner' : selectedRole === 'SUPPLIER' ? 'supplier' : 'gruhUdyog') : t('noRoleSelected')}
             </strong>
-            <Link className="text-[#f06535] hover:underline font-medium" to="/role-selection">{t('changeRole')}</Link>
+            <Link className="text-[#f06535] hover:underline font-medium" to={`/role-selection${selectedRole ? `?role=${selectedRole}` : ''}`}>{t('changeRole')}</Link>
           </div>
+
+          {isNotOurUser && (
+            <div className="p-4 rounded-xl text-xs sm:text-sm font-medium text-amber-900 bg-amber-50 border border-amber-200/90 flex items-center gap-3 shadow-xs" role="status">
+              <span className="text-xl shrink-0">👋</span>
+              <div>
+                <strong className="block font-semibold text-amber-950">Welcome to Connekto!</strong>
+                <span>You are not our user yet, please register.</span>
+              </div>
+            </div>
+          )}
 
           {errors.role && <p className="p-3 rounded-xl text-xs font-medium text-rose-700 bg-rose-50 border border-rose-200" role="alert">{errors.role}</p>}
 
@@ -180,7 +211,6 @@ export default function SignupPage() {
             <span>{isSubmitting ? t('creatingAccount') : t('createAccount')}</span>
             {(selectedRole === 'SHOP_OWNER' || selectedRole === 'SUPPLIER' || selectedRole === 'GRUH_UDYOG') && <span aria-hidden="true">→</span>}
           </button>
-          <p className="text-center text-xs text-slate-500 pt-2">{t('alreadyHaveAccount')} <Link className="text-[#f06535] hover:underline font-semibold" to="/login">{t('signIn')}</Link></p>
         </form>
       </div>
     </section>

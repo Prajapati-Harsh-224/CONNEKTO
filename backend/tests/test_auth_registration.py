@@ -198,6 +198,92 @@ def test_gruh_udyog_dashboard_and_orders_access():
     assert orders_res.json()["success"] is True
 
 
+def test_login_user_not_found_shows_register_message():
+    response = client.post("/api/auth/login", json={
+        "emailOrPhone": "nonexistent_user@example.com",
+        "password": "AnyPassword123!",
+    })
+    assert response.status_code == 404, response.json()
+    data = response.json()
+    assert data["success"] is False
+    assert data["error"]["code"] == "USER_NOT_FOUND"
+    assert data["error"]["message"] == "We couldn't find your account. Let's get you registered!"
+
+
+def test_check_identifier():
+    res_not_found = client.post("/api/auth/check-identifier", json={"emailOrPhone": "new_unregistered@example.com"})
+    assert res_not_found.status_code == 200, res_not_found.json()
+    data_not_found = res_not_found.json()
+    assert data_not_found["success"] is True
+    assert data_not_found["data"]["exists"] is False
+    assert data_not_found["data"]["status"] == "USER_NOT_FOUND"
+    assert data_not_found["data"]["message"] == "We couldn't find your account. Let's get you registered!"
+
+    res_found = client.post("/api/auth/check-identifier", json={"emailOrPhone": "owner@example.com"})
+    assert res_found.status_code == 200, res_found.json()
+    data_found = res_found.json()
+    assert data_found["success"] is True
+    assert data_found["data"]["exists"] is True
+    assert data_found["data"]["status"] == "USER_FOUND"
+    assert data_found["data"]["role"] == "SHOP_OWNER"
+    assert data_found["data"]["dashboardPath"] == "/dashboard/shop-owner"
+    assert "connecto_session" in res_found.cookies
+
+
+def test_role_enforcement_only_selected_role_can_login():
+    # 1. When SUPPLIER role is selected, SHOP_OWNER cannot log in or check identifier
+    res_mismatch_check = client.post("/api/auth/check-identifier", json={
+        "emailOrPhone": "owner@example.com",
+        "role": "SUPPLIER"
+    })
+    assert res_mismatch_check.status_code == 403
+    assert res_mismatch_check.json()["error"]["code"] == "ROLE_MISMATCH"
+    assert "registered as a Shop Owner" in res_mismatch_check.json()["error"]["message"]
+
+    res_mismatch_login = client.post("/api/auth/login", json={
+        "emailOrPhone": "owner@example.com",
+        "password": "Password123!",
+        "role": "SUPPLIER"
+    })
+    assert res_mismatch_login.status_code == 403
+    assert res_mismatch_login.json()["error"]["code"] == "ROLE_MISMATCH"
+
+    # 2. When SUPPLIER role is selected, SUPPLIER can log in and gets supplier dashboard
+    res_supplier_check = client.post("/api/auth/check-identifier", json={
+        "emailOrPhone": "supplier@example.com",
+        "role": "SUPPLIER"
+    })
+    assert res_supplier_check.status_code == 200
+    assert res_supplier_check.json()["data"]["role"] == "SUPPLIER"
+    assert res_supplier_check.json()["data"]["dashboardPath"] == "/dashboard/supplier"
+
+    res_supplier_login = client.post("/api/auth/login", json={
+        "emailOrPhone": "supplier@example.com",
+        "password": "Password123!",
+        "role": "SUPPLIER"
+    })
+    assert res_supplier_login.status_code == 200
+    assert res_supplier_login.json()["data"]["role"] == "SUPPLIER"
+    assert res_supplier_login.json()["data"]["dashboardPath"] == "/dashboard/supplier"
+
+    # 3. When SHOP_OWNER role is selected, SUPPLIER cannot log in
+    res_owner_mismatch = client.post("/api/auth/check-identifier", json={
+        "emailOrPhone": "supplier@example.com",
+        "role": "SHOP_OWNER"
+    })
+    assert res_owner_mismatch.status_code == 403
+    assert res_owner_mismatch.json()["error"]["code"] == "ROLE_MISMATCH"
+
+    # 4. When GRUH_UDYOG role is selected, GRUH_UDYOG can log in and gets gruh-udyog dashboard
+    res_gruh_check = client.post("/api/auth/check-identifier", json={
+        "emailOrPhone": "gruhudyog@example.com",
+        "role": "GRUH_UDYOG"
+    })
+    assert res_gruh_check.status_code == 200
+    assert res_gruh_check.json()["data"]["role"] == "GRUH_UDYOG"
+    assert res_gruh_check.json()["data"]["dashboardPath"] == "/dashboard/gruh-udyog"
+
+
 if __name__ == "__main__":
     print("Resetting test database...")
     reset_db()
@@ -207,4 +293,7 @@ if __name__ == "__main__":
     test_gruh_udyog_registration()
     test_login_with_phone_and_email()
     test_registration_validation_errors()
+    test_login_user_not_found_shows_register_message()
+    test_check_identifier()
+    test_role_enforcement_only_selected_role_can_login()
     print("ALL TESTS PASSED SUCCESSFULLY!")

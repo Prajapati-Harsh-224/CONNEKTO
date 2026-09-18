@@ -114,7 +114,7 @@ export default function WelcomePage() {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             {/* Shop Owner */}
             <Link
-              to="/role-selection"
+              to="/role-selection?role=SHOP_OWNER"
               aria-label={t('shopOwner')}
               className="group p-6 rounded-2xl bg-white border border-slate-200/90 hover:border-brand-orange hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-6 shadow-xs"
             >
@@ -135,7 +135,7 @@ export default function WelcomePage() {
 
             {/* Supplier */}
             <Link
-              to="/role-selection"
+              to="/role-selection?role=SUPPLIER"
               aria-label={t('supplier')}
               className="group p-6 rounded-2xl bg-white border border-slate-200/90 hover:border-emerald-500 hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-6 shadow-xs"
             >
@@ -156,7 +156,7 @@ export default function WelcomePage() {
 
             {/* Gruh Udyog */}
             <Link
-              to="/role-selection"
+              to="/role-selection?role=GRUH_UDYOG"
               aria-label={t('gruhUdyog')}
               className="group p-6 rounded-2xl bg-white border border-slate-200/90 hover:border-purple-500 hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-6 shadow-xs"
             >
