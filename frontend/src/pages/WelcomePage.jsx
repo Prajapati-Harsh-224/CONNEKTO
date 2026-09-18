@@ -1,5 +1,5 @@
-import { useCallback } from 'react'
-import { Link } from 'react-router-dom'
+import { useCallback, useEffect } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import { FiArrowRight, FiPlay, FiBriefcase, FiShield, FiTrendingUp, FiShoppingBag, FiTruck, FiUsers, FiMail, FiMapPin } from 'react-icons/fi'
 import { useLocale } from '../context/LocaleContext.jsx'
 import heroReference from '../assets/connekto_hero_visual_reference.png'
@@ -7,11 +7,37 @@ import contactIllustration from '../assets/contact_illustration.svg'
 
 export default function WelcomePage() {
   const { t } = useLocale()
+  const location = useLocation()
 
   const scrollTo = useCallback((id) => {
+    if (id === 'home') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+      return
+    }
     const el = document.getElementById(id)
     if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
   }, [])
+
+  useEffect(() => {
+    const sectionMap = {
+      '/about': 'about',
+      '/for-businesses': 'for-businesses',
+      '/how-it-works': 'how-it-works',
+      '/contact': 'contact',
+    }
+    const targetId = sectionMap[location.pathname] || (location.hash ? location.hash.replace('#', '') : null)
+    if (targetId) {
+      const timer = setTimeout(() => {
+        const el = document.getElementById(targetId)
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 60)
+      return () => clearTimeout(timer)
+    } else if (location.pathname === '/') {
+      window.scrollTo({ top: 0, behavior: 'smooth' })
+    }
+  }, [location.pathname, location.hash])
 
   return (
     <div className="w-full min-h-screen bg-brand-cream/30 text-slate-800 selection:bg-brand-orange/20 selection:text-brand-orange">
@@ -41,16 +67,16 @@ export default function WelcomePage() {
                 <span>{t('getStarted')}</span>
                 <FiArrowRight className="w-5 h-5" />
               </Link>
-              <button
+              <Link
                 className="inline-flex items-center gap-2 px-5 py-3.5 rounded-xl text-sm sm:text-base font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 active:scale-95 shadow-xs transition-all cursor-pointer"
+                to="/how-it-works"
                 onClick={() => scrollTo('how-it-works')}
-                type="button"
               >
                 <span className="w-6 h-6 rounded-full bg-orange-100 text-brand-orange flex items-center justify-center">
                   <FiPlay className="w-3 h-3 fill-current ml-0.5" />
                 </span>
                 <span>{t('watchVideo')}</span>
-              </button>
+              </Link>
             </div>
 
             {/* Value Points */}

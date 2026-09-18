@@ -13,7 +13,7 @@
   --color-brand-purple: #7554d6;
   --color-brand-purple-hover: #6140c2;
   --color-brand-purple-light: #eee8ff;
-  --color-brand-cream: #fbfaf8;
+  --color-brand-cream: #f4f6f9;
   --color-brand-border: #e6e9e8;
   --font-body: 'Space Grotesk', 'Inter', 'Helvetica Neue', Arial, sans-serif;
   --font-num: 'Inter', 'Space Grotesk', system-ui, sans-serif;
@@ -24,7 +24,7 @@
   --font-num: 'Inter', 'Space Grotesk', system-ui, sans-serif;
   font-family: var(--font-body);
   color: #20313a;
-  background: #f3f0e8;
+  background: #f4f6f9;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

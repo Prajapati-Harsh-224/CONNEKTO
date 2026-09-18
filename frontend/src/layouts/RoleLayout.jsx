@@ -21,7 +21,7 @@ export default function RoleLayout({ role: routeRole }) {
   const avatarInitial = displayName.trim().slice(0, 1).toUpperCase()
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#fbfaf8]">
+    <div className="min-h-screen flex flex-col bg-[#f4f6f9]">
       <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100 h-16 px-4 sm:px-6 flex items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <Link className="flex items-center gap-2.5 shrink-0" to="/" aria-label={t('connectoHome')}>

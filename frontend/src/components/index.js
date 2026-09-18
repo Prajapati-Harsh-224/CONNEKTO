@@ -1,3 +1,4 @@
 export { default as MobileNavigation } from './MobileNavigation.jsx'
 export { default as Navbar } from './Navbar.jsx'
 export { default as Sidebar } from './Sidebar.jsx'
+export { default as Footer } from './Footer.jsx'
