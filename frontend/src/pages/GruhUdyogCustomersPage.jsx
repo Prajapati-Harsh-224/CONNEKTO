@@ -19,6 +19,7 @@ import {
   FiX
 } from 'react-icons/fi'
 import LoadingState from '../components/LoadingState.jsx'
+import { useLocale } from '../context/LocaleContext.jsx'
 import { getGruhUdyogCustomers } from '../services/gruhUdyogService.js'
 
 const pageSize = 8
@@ -59,6 +60,7 @@ function getAvatarColor(str) {
 }
 
 export default function GruhUdyogCustomersPage() {
+  const { t } = useLocale()
   const [customers, setCustomers] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
@@ -205,7 +207,7 @@ export default function GruhUdyogCustomersPage() {
     setMessageSent(false)
   }
 
-  if (isLoading) return <LoadingState message="Loading customers..." />
+  if (isLoading) return <LoadingState message={t('loadingCustomers')} />
 
   return (
     <section className="space-y-5 sm:space-y-6 pb-12">
@@ -213,13 +215,13 @@ export default function GruhUdyogCustomersPage() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <nav className="flex items-center gap-1.5 text-xs text-slate-400 mb-1 font-medium">
-            <span>Gruh Udyog</span>
+            <span>{t('gruhUdyog')}</span>
             <span className="text-slate-300">›</span>
-            <span className="text-slate-600">Customers</span>
+            <span className="text-slate-600">{t('customers')}</span>
           </nav>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Customers</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{t('customers')}</h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Your valued partners who support your handmade products.
+            {t('customersDescription')}
           </p>
         </div>
 
@@ -281,7 +283,7 @@ export default function GruhUdyogCustomersPage() {
             <FiSearch className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               type="text"
-              placeholder="Search customers by name, shop name, city..."
+              placeholder={t('searchCustomers')}
               value={search}
               onChange={(e) => {
                 setSearch(e.target.value)
@@ -322,9 +324,9 @@ export default function GruhUdyogCustomersPage() {
                 }}
                 className="appearance-none pl-3 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1b6442]/20 focus:border-[#1b6442] shadow-2xs cursor-pointer"
               >
-                <option value="All status">All status</option>
-                <option value="Active">Active</option>
-                <option value="Inactive">Inactive</option>
+                <option value="All status">{t('allStatus')}</option>
+                <option value="Active">{t('active')}</option>
+                <option value="Inactive">{t('inactive')}</option>
               </select>
               <FiChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             </div>
@@ -335,7 +337,7 @@ export default function GruhUdyogCustomersPage() {
               onClick={handleClearFilters}
               className="px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-600 hover:text-slate-900 hover:bg-slate-100 border border-slate-200 transition-colors cursor-pointer"
             >
-              Clear
+              {t('clear')}
             </button>
           </div>
         </div>
@@ -348,11 +350,11 @@ export default function GruhUdyogCustomersPage() {
           {/* Section Header */}
           <div className="flex items-center justify-between px-1">
             <div>
-              <h2 className="text-sm sm:text-base font-bold text-slate-900">All Customers</h2>
-              <p className="text-[11px] text-slate-400">Manage your customers and build long-term relationships.</p>
+              <h2 className="text-sm sm:text-base font-bold text-slate-900">{t('customers')}</h2>
+              <p className="text-[11px] text-slate-400">{t('customersDescription')}</p>
             </div>
             <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-2.5 py-1 rounded-lg">
-              {filteredCustomers.length} {filteredCustomers.length === 1 ? 'customer' : 'customers'}
+              {filteredCustomers.length} {filteredCustomers.length === 1 ? t('customer') : t('customers')}
             </span>
           </div>
 
@@ -407,7 +409,7 @@ export default function GruhUdyogCustomersPage() {
                       <FiShoppingCart className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <div className="leading-tight">
                         <span className="font-semibold text-slate-800 block text-[11px]">
-                          {customer.totalOrders} {customer.totalOrders === 1 ? 'order' : 'orders'}
+                          {customer.totalOrders} {customer.totalOrders === 1 ? t('order') : t('orders')}
                         </span>
                         <span className="text-slate-500 text-[10px]">{formatCurrency(customer.totalSpent)}</span>
                       </div>
@@ -417,7 +419,7 @@ export default function GruhUdyogCustomersPage() {
                     <div className="hidden lg:flex items-center gap-1.5 text-xs text-slate-600 min-w-[105px]">
                       <FiCalendar className="w-3.5 h-3.5 text-slate-400 shrink-0" />
                       <div className="leading-tight">
-                        <span className="text-[10px] text-slate-400 block">Last order</span>
+                        <span className="text-[10px] text-slate-400 block">{t('lastOrder') || 'Last order'}</span>
                         <span className="font-medium text-slate-700 text-[11px]">{formatDate(customer.lastOrder)}</span>
                       </div>
                     </div>
@@ -445,11 +447,11 @@ export default function GruhUdyogCustomersPage() {
               <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-[#1b6442] flex items-center justify-center mx-auto text-xl mb-3">
                 <FiUser className="w-6 h-6" />
               </div>
-              <h3 className="text-sm font-bold text-slate-800">No customers found</h3>
+              <h3 className="text-sm font-bold text-slate-800">{t('noCustomersFound') || 'No customers found'}</h3>
               <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
                 {search || selectedCity !== 'All cities' || selectedStatus !== 'All status'
-                  ? 'Try adjusting your search query or filters to see more results.'
-                  : 'Retailers who place orders with your Gruh Udyog will automatically show up here.'}
+                  ? t('tryDifferentSearchOrStatus') || 'Try adjusting your search query or filters to see more results.'
+                  : t('customersWillAppearHere') || 'Retailers who place orders with your Gruh Udyog will automatically show up here.'}
               </p>
               {(search || selectedCity !== 'All cities' || selectedStatus !== 'All status') && (
                 <button
@@ -457,7 +459,7 @@ export default function GruhUdyogCustomersPage() {
                   onClick={handleClearFilters}
                   className="mt-3 px-3.5 py-1.5 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition-colors"
                 >
-                  Reset Filters
+                  {t('resetFilters') || 'Reset Filters'}
                 </button>
               )}
             </div>
@@ -467,8 +469,7 @@ export default function GruhUdyogCustomersPage() {
           {filteredCustomers.length > 0 && (
             <div className="flex items-center justify-between pt-3 px-1 text-xs text-slate-500">
               <span>
-                Showing {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, filteredCustomers.length)} of{' '}
-                {filteredCustomers.length} customers
+                {t('showingCustomers', { start: (currentPage - 1) * pageSize + 1, end: Math.min(currentPage * pageSize, filteredCustomers.length), total: filteredCustomers.length })}
               </span>
 
               <div className="flex items-center gap-1.5">
@@ -558,7 +559,7 @@ export default function GruhUdyogCustomersPage() {
                       : 'text-slate-400 hover:text-slate-700'
                   }`}
                 >
-                  Overview
+                  {t('overview') || 'Overview'}
                 </button>
                 <button
                   type="button"
@@ -569,7 +570,7 @@ export default function GruhUdyogCustomersPage() {
                       : 'text-slate-400 hover:text-slate-700'
                   }`}
                 >
-                  Order History ({selectedCustomer.orders?.length || selectedCustomer.totalOrders || 0})
+                  {t('orderHistory') || 'Order History'} ({selectedCustomer.orders?.length || selectedCustomer.totalOrders || 0})
                 </button>
                 <button
                   type="button"
@@ -580,7 +581,7 @@ export default function GruhUdyogCustomersPage() {
                       : 'text-slate-400 hover:text-slate-700'
                   }`}
                 >
-                  Notes {(customerNotes[selectedCustomer.id]?.length || 0) > 0 && `(${customerNotes[selectedCustomer.id].length})`}
+                  {t('notes') || 'Notes'} {(customerNotes[selectedCustomer.id]?.length || 0) > 0 && `(${customerNotes[selectedCustomer.id].length})`}
                 </button>
               </div>
 
@@ -596,7 +597,7 @@ export default function GruhUdyogCustomersPage() {
                       className="py-2 px-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
                     >
                       <FiPhone className="w-3.5 h-3.5 text-slate-500" />
-                      <span>Call</span>
+                      <span>{t('call') || 'Call'}</span>
                     </button>
                     <button
                       type="button"
@@ -604,7 +605,7 @@ export default function GruhUdyogCustomersPage() {
                       className="py-2 px-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                     >
                       <FiMessageSquare className="w-3.5 h-3.5 text-slate-500" />
-                      <span>Message</span>
+                      <span>{t('message') || 'Message'}</span>
                     </button>
                     <button
                       type="button"
@@ -612,7 +613,7 @@ export default function GruhUdyogCustomersPage() {
                       className="py-2 px-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 flex items-center justify-center gap-1.5 transition-colors cursor-pointer"
                     >
                       <FiSend className="w-3.5 h-3.5 text-slate-500" />
-                      <span>Directions</span>
+                      <span>{t('directions') || 'Directions'}</span>
                     </button>
                   </div>
 
@@ -621,7 +622,7 @@ export default function GruhUdyogCustomersPage() {
                     <div className="flex items-start gap-2.5">
                       <FiUser className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
                       <div>
-                        <span className="text-[11px] text-slate-400 block leading-none">Shop Owner</span>
+                        <span className="text-[11px] text-slate-400 block leading-none">{t('shopOwner')}</span>
                         <strong className="text-slate-800 font-semibold mt-0.5 block">{selectedCustomer.shopOwner}</strong>
                       </div>
                     </div>
@@ -629,7 +630,7 @@ export default function GruhUdyogCustomersPage() {
                     <div className="flex items-start gap-2.5">
                       <FiPhone className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
                       <div>
-                        <span className="text-[11px] text-slate-400 block leading-none">Phone</span>
+                        <span className="text-[11px] text-slate-400 block leading-none">{t('phoneNumber')}</span>
                         <strong className="text-slate-800 font-semibold mt-0.5 block">
                           {selectedCustomer.phone || 'No phone provided'}
                         </strong>
@@ -639,7 +640,7 @@ export default function GruhUdyogCustomersPage() {
                     <div className="flex items-start gap-2.5">
                       <FiMapPin className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
                       <div>
-                        <span className="text-[11px] text-slate-400 block leading-none">Address</span>
+                        <span className="text-[11px] text-slate-400 block leading-none">{t('shopAddress')}</span>
                         <strong className="text-slate-800 font-semibold mt-0.5 block">
                           {selectedCustomer.address || `${selectedCustomer.area}, Ahmedabad`}
                         </strong>
@@ -649,7 +650,7 @@ export default function GruhUdyogCustomersPage() {
                     <div className="flex items-start gap-2.5">
                       <FiGlobe className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
                       <div>
-                        <span className="text-[11px] text-slate-400 block leading-none">City</span>
+                        <span className="text-[11px] text-slate-400 block leading-none">{t('city') || 'City'}</span>
                         <strong className="text-slate-800 font-semibold mt-0.5 block">
                           {selectedCustomer.city || 'Ahmedabad'}
                         </strong>
@@ -659,7 +660,7 @@ export default function GruhUdyogCustomersPage() {
                     <div className="flex items-start gap-2.5">
                       <FiCalendar className="w-4 h-4 text-slate-400 mt-0.5 shrink-0" />
                       <div>
-                        <span className="text-[11px] text-slate-400 block leading-none">Customer Since</span>
+                        <span className="text-[11px] text-slate-400 block leading-none">{t('customerSince') || 'Customer Since'}</span>
                         <strong className="text-slate-800 font-semibold mt-0.5 block">
                           {formatDate(selectedCustomer.customerSince)}
                         </strong>
@@ -673,8 +674,8 @@ export default function GruhUdyogCustomersPage() {
                       <FiAward className="w-4 h-4" />
                     </div>
                     <div>
-                      <p className="font-bold text-xs text-emerald-950 leading-tight">A valued customer</p>
-                      <p className="text-[11px] text-emerald-700 mt-0.5">Thank you for being a part of our journey!</p>
+                      <p className="font-bold text-xs text-emerald-950 leading-tight">{t('valuedCustomer') || 'A valued customer'}</p>
+                      <p className="text-[11px] text-emerald-700 mt-0.5">{t('customerJourneyThanks') || 'Thank you for being a part of our journey!'}</p>
                     </div>
                   </div>
 
@@ -686,7 +687,7 @@ export default function GruhUdyogCustomersPage() {
                         <FiShoppingCart className="w-3.5 h-3.5" />
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 block leading-tight">Total Orders</span>
+                        <span className="text-[10px] text-slate-400 block leading-tight">{t('totalOrders')}</span>
                         <strong className="text-sm font-black text-slate-900 mt-0.5 block">
                           {selectedCustomer.totalOrders}
                         </strong>
@@ -699,7 +700,7 @@ export default function GruhUdyogCustomersPage() {
                         <span className="text-xs font-bold">₹</span>
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 block leading-tight">Total Spent</span>
+                        <span className="text-[10px] text-slate-400 block leading-tight">{t('totalSpent')}</span>
                         <strong className="text-sm font-black text-slate-900 mt-0.5 block truncate">
                           {formatCurrency(selectedCustomer.totalSpent)}
                         </strong>
@@ -712,7 +713,7 @@ export default function GruhUdyogCustomersPage() {
                         <FiCalendar className="w-3.5 h-3.5" />
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 block leading-tight">Last Order</span>
+                        <span className="text-[10px] text-slate-400 block leading-tight">{t('lastOrder') || 'Last Order'}</span>
                         <strong className="text-xs font-bold text-slate-800 mt-0.5 block">
                           {formatDate(selectedCustomer.lastOrder)}
                         </strong>
@@ -725,7 +726,7 @@ export default function GruhUdyogCustomersPage() {
                         <FiStar className="w-3.5 h-3.5" />
                       </div>
                       <div>
-                        <span className="text-[10px] text-slate-400 block leading-tight">Customer Since</span>
+                        <span className="text-[10px] text-slate-400 block leading-tight">{t('customerSince') || 'Customer Since'}</span>
                         <strong className="text-xs font-bold text-slate-800 mt-0.5 block">
                           {formatDate(selectedCustomer.customerSince)}
                         </strong>

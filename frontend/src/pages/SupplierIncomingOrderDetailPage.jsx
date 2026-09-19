@@ -15,9 +15,9 @@ const statusTransitions = {
 }
 
 const paymentLabels = {
-  CASH_ON_DELIVERY: 'Cash on Delivery',
-  PAY_LATER: 'Pay Later',
-  REQUEST_ORDER: 'Request Order',
+  CASH_ON_DELIVERY: 'cashOnDelivery',
+  PAY_LATER: 'payLater',
+  REQUEST_ORDER: 'requestOrder',
 }
 
 function normalizeOrder(order) {
@@ -111,20 +111,22 @@ export default function SupplierIncomingOrderDetailPage() {
   if (!order) return <EmptyState title={t('orderNotFound')} message={t('orderUnavailable')} />
 
   const customerName = order.customer || order.shopOwner || 'Shop owner'
+  const orderItemLabel = items.length === 1 ? t('itemCount') : t('itemsCount')
+  const paymentLabelKey = paymentLabels[order.paymentMethod] || 'cashOnDelivery'
 
   return (
     <section className="space-y-6">
       <div className="flex items-center gap-1.5 text-xs text-slate-500">
-        <Link className="hover:text-slate-800" to="/dashboard/supplier/orders">{t('orders') || 'Orders'}</Link>
+        <Link className="hover:text-slate-800" to="/dashboard/supplier/orders">{t('orders')}</Link>
         <span aria-hidden="true">›</span>
-        <span className="font-semibold text-slate-800">Order #{order.id || order.orderId}</span>
+        <span className="font-semibold text-slate-800">{t('orderNumber', { id: order.id || order.orderId })}</span>
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
-          <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">Supplier order</span>
-          <h1 className="text-2xl sm:text-3xl font-bold font-serif text-[#102d45]">Order #{order.id || order.orderId}</h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">Customer: <strong className="text-slate-700 font-semibold">{customerName}</strong></p>
+          <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">{t('supplierOrder')}</span>
+          <h1 className="text-2xl sm:text-3xl font-bold font-serif text-[#102d45]">{t('orderNumber', { id: order.id || order.orderId })}</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('customerColon')} <strong className="text-slate-700 font-semibold">{customerName}</strong></p>
         </div>
         <div>
           <StatusBadge status={order.status} />
@@ -133,20 +135,20 @@ export default function SupplierIncomingOrderDetailPage() {
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs">
         <div>
-          <span className="text-[11px] text-slate-400 font-medium block">Order date</span>
+          <span className="text-[11px] text-slate-400 font-medium block">{t('orderDate')}</span>
           <strong className="text-sm sm:text-base font-semibold text-slate-900 mt-0.5 block">{formatDate(order.date)}</strong>
         </div>
         <div>
-          <span className="text-[11px] text-slate-400 font-medium block">Total amount</span>
+          <span className="text-[11px] text-slate-400 font-medium block">{t('totalAmount')}</span>
           <strong className="text-sm sm:text-base font-bold text-slate-900 mt-0.5 block tabular-nums">{formatCurrency(total)}</strong>
         </div>
         <div>
-          <span className="text-[11px] text-slate-400 font-medium block">Delivery area</span>
+          <span className="text-[11px] text-slate-400 font-medium block">{t('deliveryArea')}</span>
           <strong className="text-sm sm:text-base font-semibold text-slate-900 mt-0.5 block">{order.area || order.serviceArea || '—'}</strong>
         </div>
         <div>
-          <span className="text-[11px] text-slate-400 font-medium block">Payment method</span>
-          <strong className="text-sm sm:text-base font-semibold text-slate-900 mt-0.5 block">{paymentLabels[order.paymentMethod] || order.paymentMethod || 'Cash on Delivery'}</strong>
+          <span className="text-[11px] text-slate-400 font-medium block">{t('paymentMethod')}</span>
+          <strong className="text-sm sm:text-base font-semibold text-slate-900 mt-0.5 block">{t(paymentLabelKey)}</strong>
         </div>
       </div>
 
@@ -155,17 +157,17 @@ export default function SupplierIncomingOrderDetailPage() {
           <section className="bg-white rounded-2xl border border-slate-100 shadow-xs p-5 sm:p-6 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">Products</span>
-                <h2 className="text-lg font-bold text-slate-900 font-serif">Order Items</h2>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">{t('productsLabel')}</span>
+                <h2 className="text-lg font-bold text-slate-900 font-serif">{t('orderItems')}</h2>
               </div>
               <span className="px-2.5 py-1 rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
-                {items.length} {items.length === 1 ? 'item' : 'items'}
+                {items.length} {orderItemLabel}
               </span>
             </div>
 
             <div className="hidden sm:grid grid-cols-[1fr_auto] text-xs font-bold text-slate-400 uppercase tracking-wider pb-1">
-              <span>Product</span>
-              <span>Amount</span>
+              <span>{t('product')}</span>
+              <span>{t('amount')}</span>
             </div>
 
             <div className="divide-y divide-slate-100">
@@ -177,11 +179,11 @@ export default function SupplierIncomingOrderDetailPage() {
                 return (
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-3 text-xs" key={`${item.sku || item.product}-${index}`}>
                     <div>
-                      <strong className="font-semibold text-slate-800 text-sm block">{item.product || item.name || 'Product'}</strong>
+                      <strong className="font-semibold text-slate-800 text-sm block">{item.product || item.name || t('product')}</strong>
                       <span className="text-slate-400 text-xs mt-0.5 block">
                         {isBox
-                          ? `${boxes} ${boxes === 1 ? 'Box' : 'Boxes'} (${item.quantity} packets) × ${formatCurrency(unitPrice)}/packet`
-                          : `${item.quantity} units × ${formatCurrency(unitPrice)}`}
+                          ? `${boxes} ${boxes === 1 ? t('boxSingular') : t('boxPlural')} (${item.quantity} ${item.quantity === 1 ? t('packetSingular') : t('packetPlural')}) × ${formatCurrency(unitPrice)}/${t('packetSingular')}`
+                          : `${item.quantity} ${item.quantity === 1 ? t('unitSingular') : t('unitsPlural')} × ${formatCurrency(unitPrice)}`}
                       </span>
                     </div>
                     <strong className="font-bold text-slate-900 text-sm tabular-nums self-end sm:self-center">{formatCurrency(item.total || unitPrice * (item.quantity || 1))}</strong>
@@ -192,12 +194,12 @@ export default function SupplierIncomingOrderDetailPage() {
 
             <div className="pt-3 border-t border-slate-200 space-y-1 text-sm">
               <div className="flex justify-between items-center text-slate-600 text-xs">
-                <span>Supplier subtotal</span>
+                <span>{t('supplierSubtotal')}</span>
                 <strong className="font-semibold text-slate-900 tabular-nums">{formatCurrency(subtotal)}</strong>
               </div>
               {total !== subtotal && (
                 <div className="flex justify-between items-center text-slate-600 text-xs">
-                  <span>Supplier total</span>
+                  <span>{t('totalAmount')}</span>
                   <strong className="font-bold text-slate-900 text-base tabular-nums">{formatCurrency(total)}</strong>
                 </div>
               )}
@@ -206,26 +208,26 @@ export default function SupplierIncomingOrderDetailPage() {
 
           <section className="bg-white rounded-2xl border border-slate-100 shadow-xs p-5 sm:p-6 space-y-4">
             <div className="pb-3 border-b border-slate-100">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">Customer Information</span>
-              <h2 className="text-lg font-bold text-slate-900 font-serif">Customer &amp; Delivery Details</h2>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">{t('customerInformation')}</span>
+              <h2 className="text-lg font-bold text-slate-900 font-serif">{t('customerDeliveryDetails')}</h2>
             </div>
 
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs">
               <div className="bg-slate-50 p-3.5 rounded-xl">
-                <label className="text-slate-400 font-medium block">Shop / Customer</label>
+                <label className="text-slate-400 font-medium block">{t('shopCustomer')}</label>
                 <strong className="font-bold text-slate-800 text-sm block mt-0.5">{customerName}</strong>
                 <small className="text-slate-400">{order.area || order.serviceArea || '—'}</small>
               </div>
               <div className="bg-slate-50 p-3.5 rounded-xl">
-                <label className="text-slate-400 font-medium block">Shop Owner</label>
+                <label className="text-slate-400 font-medium block">{t('shopOwner')}</label>
                 <strong className="font-bold text-slate-800 text-sm block mt-0.5">{order.shopOwner || customerName}</strong>
               </div>
               <div className="bg-slate-50 p-3.5 rounded-xl">
-                <label className="text-slate-400 font-medium block">Phone Number</label>
+                <label className="text-slate-400 font-medium block">{t('phoneNumber')}</label>
                 <strong className="font-bold text-slate-800 text-sm block mt-0.5">{order.phone || '—'}</strong>
               </div>
               <div className="bg-slate-50 p-3.5 rounded-xl">
-                <label className="text-slate-400 font-medium block">Delivery Address</label>
+                <label className="text-slate-400 font-medium block">{t('deliveryAddress')}</label>
                 <strong className="font-bold text-slate-800 text-sm block mt-0.5">{order.address || order.area || '—'}</strong>
               </div>
             </div>
@@ -236,14 +238,14 @@ export default function SupplierIncomingOrderDetailPage() {
                   className="px-4 py-2.5 rounded-xl text-xs font-semibold text-white bg-emerald-600 hover:bg-emerald-700 transition-colors shadow-xs"
                   href={`tel:${order.phone}`}
                 >
-                  Call Customer
+                  {t('callCustomer')}
                 </a>
               )}
               <Link
                 className="px-4 py-2.5 rounded-xl text-xs font-semibold text-slate-700 bg-slate-100 hover:bg-slate-200 transition-colors"
                 to="/dashboard/supplier/customers"
               >
-                View Customers
+                {t('viewCustomers')}
               </Link>
             </div>
           </section>
@@ -253,8 +255,8 @@ export default function SupplierIncomingOrderDetailPage() {
           <section className="bg-white rounded-2xl border border-slate-100 shadow-xs p-5 space-y-4">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div>
-                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">Status timeline</span>
-                <h2 className="text-base font-bold text-slate-900 font-serif">Order progress</h2>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">{t('statusTimeline')}</span>
+                <h2 className="text-base font-bold text-slate-900 font-serif">{t('orderProgress')}</h2>
               </div>
               <StatusBadge status={order.status} />
             </div>
@@ -263,8 +265,8 @@ export default function SupplierIncomingOrderDetailPage() {
 
           <section className="bg-white rounded-2xl border border-slate-100 shadow-xs p-5 space-y-4">
             <div className="pb-2 border-b border-slate-100">
-              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">Action Required</span>
-              <h2 className="text-base font-bold text-slate-900 font-serif">Supplier Actions</h2>
+              <span className="text-[10px] font-bold uppercase tracking-wider text-emerald-700 block">{t('actionRequired')}</span>
+              <h2 className="text-base font-bold text-slate-900 font-serif">{t('supplierActions')}</h2>
             </div>
 
             {(statusTransitions[order.status] || []).length > 0 ? (
@@ -272,14 +274,14 @@ export default function SupplierIncomingOrderDetailPage() {
                 {(statusTransitions[order.status] || []).map((nextStatus) => {
                   const isDestructive = nextStatus === 'Cancelled'
                   const label = nextStatus === 'Accepted'
-                    ? 'Accept Order'
+                    ? t('acceptOrder')
                     : nextStatus === 'Preparing'
-                      ? 'Mark as Preparing'
+                      ? t('markAsPreparing')
                       : nextStatus === 'Out for Delivery'
-                        ? 'Mark as Out for Delivery'
+                        ? t('markAsOutForDelivery')
                         : nextStatus === 'Delivered'
-                          ? 'Mark as Delivered'
-                          : 'Cancel Order'
+                          ? t('markAsDelivered')
+                          : t('cancelOrder')
 
                   return (
                     <button
@@ -300,8 +302,8 @@ export default function SupplierIncomingOrderDetailPage() {
               </div>
             ) : (
               <div className="bg-slate-50 p-3.5 rounded-xl text-xs text-slate-500">
-                <strong className="font-bold text-slate-700 block">No Actions Needed</strong>
-                <p className="mt-0.5">Order is currently {order.status?.toLowerCase()}. No further status transitions available.</p>
+                <strong className="font-bold text-slate-700 block">{t('noActionsNeededText')}</strong>
+                <p className="mt-0.5">{t('orderCurrentlyStatusMessage', { status: order.status?.toLowerCase() })}</p>
               </div>
             )}
 
@@ -316,7 +318,7 @@ export default function SupplierIncomingOrderDetailPage() {
 
       <div className="pt-2">
         <Link className="text-xs font-semibold text-slate-600 hover:text-slate-900 inline-flex items-center gap-1" to="/dashboard/supplier/orders">
-          ← Back to Incoming Orders
+          ← {t('backToIncomingOrders')}
         </Link>
       </div>
     </section>

@@ -130,7 +130,7 @@ export default function SupplierCustomersPage() {
 
   const locationOptions = ['All cities', ...new Set(customers.map((customer) => customer.location).filter(Boolean))]
 
-  if (loading) return <LoadingState message="Loading customers..." />
+  if (loading) return <LoadingState message={t('loadingCustomers')} />
 
   return (
     <section className="space-y-6">
@@ -141,7 +141,7 @@ export default function SupplierCustomersPage() {
       </div>
 
       <div>
-        <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 mb-1">Supplier workspace</p>
+        <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 mb-1">{t('supplierWorkspace')}</p>
         <h1 className="text-2xl sm:text-3xl font-bold font-serif text-[#102d45]">{t('customers')}</h1>
         <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('customersDescription')}</p>
       </div>
@@ -150,33 +150,33 @@ export default function SupplierCustomersPage() {
         <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex items-center gap-3.5">
           <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-base shrink-0">◎</div>
           <div className="flex flex-col">
-            <span className="text-xs text-slate-500 font-medium">Total customers</span>
+            <span className="text-xs text-slate-500 font-medium">{t('totalCustomers')}</span>
             <strong className="text-xl font-bold text-slate-900 tabular-nums">{stats.totalCustomers}</strong>
-            <small className="text-[11px] text-slate-400 mt-0.5">{stats.activeCustomers} active this month</small>
+            <small className="text-[11px] text-slate-400 mt-0.5">{t('activeThisMonth', { count: stats.activeCustomers })}</small>
           </div>
         </div>
         <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex items-center gap-3.5">
           <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-base shrink-0">↗</div>
           <div className="flex flex-col">
-            <span className="text-xs text-slate-500 font-medium">Order volume</span>
+            <span className="text-xs text-slate-500 font-medium">{t('orderVolume')}</span>
             <strong className="text-xl font-bold text-slate-900 tabular-nums">{stats.totalOrders}</strong>
-            <small className="text-[11px] text-slate-400 mt-0.5">Across all active stores</small>
+            <small className="text-[11px] text-slate-400 mt-0.5">{t('acrossAllActiveStores')}</small>
           </div>
         </div>
         <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex items-center gap-3.5">
           <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold text-base shrink-0">₹</div>
           <div className="flex flex-col">
-            <span className="text-xs text-slate-500 font-medium">Average spend</span>
+            <span className="text-xs text-slate-500 font-medium">{t('averageSpend')}</span>
             <strong className="text-xl font-bold text-slate-900 tabular-nums">{formatCurrency(stats.avgOrderValue)}</strong>
-            <small className="text-[11px] text-slate-400 mt-0.5">Per customer</small>
+            <small className="text-[11px] text-slate-400 mt-0.5">{t('perCustomer')}</small>
           </div>
         </div>
         <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex items-center gap-3.5">
           <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center font-bold text-base shrink-0">✓</div>
           <div className="flex flex-col">
-            <span className="text-xs text-slate-500 font-medium">Active customers</span>
+            <span className="text-xs text-slate-500 font-medium">{t('activeCustomers')}</span>
             <strong className="text-xl font-bold text-slate-900 tabular-nums">{stats.activeCustomers}</strong>
-            <small className="text-[11px] text-slate-400 mt-0.5">Currently active</small>
+            <small className="text-[11px] text-slate-400 mt-0.5">{t('currentlyActive')}</small>
           </div>
         </div>
       </div>
@@ -201,9 +201,9 @@ export default function SupplierCustomersPage() {
               value={statusFilter}
               className="flex-1 sm:flex-initial px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 bg-white outline-none cursor-pointer"
             >
-              <option value="All status">All status</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
+              <option value="All status">{t('allStatus')}</option>
+              <option value="Active">{t('active')}</option>
+              <option value="Inactive">{t('inactive')}</option>
             </select>
 
             <select
@@ -212,7 +212,7 @@ export default function SupplierCustomersPage() {
               className="flex-1 sm:flex-initial px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 bg-white outline-none cursor-pointer"
             >
               {locationOptions.map((location) => (
-                <option key={location} value={location}>{location}</option>
+                <option key={location} value={location}>{location === 'All cities' ? t('allCities') : location}</option>
               ))}
             </select>
 
@@ -221,7 +221,7 @@ export default function SupplierCustomersPage() {
               type="button"
               className="px-3.5 py-2 rounded-xl text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
             >
-              Clear
+              {t('clear')}
             </button>
           </div>
         </div>
@@ -230,11 +230,11 @@ export default function SupplierCustomersPage() {
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-start">
         <div className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
           <div className="hidden md:grid grid-cols-[1.4fr_1.4fr_1.1fr_0.7fr_0.9fr] items-center gap-3 px-5 py-3 border-b border-slate-100 bg-slate-50/70 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-            <span>Customer</span>
-            <span>Contact</span>
-            <span>Location</span>
-            <span>Orders</span>
-            <span>Total spent</span>
+            <span>{t('customerShop')}</span>
+            <span>{t('contact')}</span>
+            <span>{t('area')}</span>
+            <span>{t('orders')}</span>
+            <span>{t('totalSpent')}</span>
           </div>
 
           {visibleCustomers.length ? (
@@ -265,7 +265,7 @@ export default function SupplierCustomersPage() {
 
                     <div>
                       <strong className="font-medium text-slate-700 block">{customer.shopOwner}</strong>
-                      <small className="text-slate-400 text-[11px]">{customer.phone || 'No phone available'}</small>
+                      <small className="text-slate-400 text-[11px]">{customer.phone || t('noPhoneAvailable')}</small>
                     </div>
 
                     <div className="text-slate-600">{customer.location}</div>
@@ -277,7 +277,11 @@ export default function SupplierCustomersPage() {
 
               <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3.5 bg-slate-50/50 border-t border-slate-100 text-xs text-slate-500">
                 <span>
-                  Showing {filteredCustomers.length ? (currentPage - 1) * pageSize + 1 : 0}–{Math.min(currentPage * pageSize, filteredCustomers.length)} of {filteredCustomers.length} customers
+                  {t('showingCustomers', {
+                    start: filteredCustomers.length ? (currentPage - 1) * pageSize + 1 : 0,
+                    end: Math.min(currentPage * pageSize, filteredCustomers.length),
+                    total: filteredCustomers.length,
+                  })}
                 </span>
                 <div className="flex items-center gap-1">
                   <button
@@ -332,34 +336,34 @@ export default function SupplierCustomersPage() {
 
             <div className="grid grid-cols-2 gap-2 bg-slate-50 rounded-xl p-3 text-center">
               <div>
-                <span className="text-[11px] text-slate-400 font-medium block">Orders</span>
+                <span className="text-[11px] text-slate-400 font-medium block">{t('orders')}</span>
                 <strong className="text-base font-bold text-slate-900 tabular-nums">{selectedCustomer.totalOrders}</strong>
               </div>
               <div>
-                <span className="text-[11px] text-slate-400 font-medium block">Spend</span>
+                <span className="text-[11px] text-slate-400 font-medium block">{t('totalSpent')}</span>
                 <strong className="text-base font-bold text-slate-900 tabular-nums">{formatCurrency(selectedCustomer.totalSpent)}</strong>
               </div>
             </div>
 
             <div className="space-y-2.5 text-xs divide-y divide-slate-50">
               <div className="pt-2 flex justify-between items-center">
-                <span className="text-slate-400">Owner</span>
+                <span className="text-slate-400">{t('shopOwner')}</span>
                 <strong className="font-semibold text-slate-800">{selectedCustomer.shopOwner}</strong>
               </div>
               <div className="pt-2 flex justify-between items-center">
-                <span className="text-slate-400">Phone</span>
+                <span className="text-slate-400">{t('phoneNumber')}</span>
                 <strong className="font-semibold text-slate-800">{selectedCustomer.phone || '—'}</strong>
               </div>
               <div className="pt-2 flex justify-between items-center">
-                <span className="text-slate-400">Location</span>
+                <span className="text-slate-400">{t('area')}</span>
                 <strong className="font-semibold text-slate-800">{selectedCustomer.location}</strong>
               </div>
               <div className="pt-2 flex justify-between items-center">
-                <span className="text-slate-400">Last order</span>
+                <span className="text-slate-400">{t('orderDate')}</span>
                 <strong className="font-semibold text-slate-800">{formatDate(selectedCustomer.lastOrder)}</strong>
               </div>
               <div className="pt-2 flex justify-between items-center">
-                <span className="text-slate-400">Status</span>
+                <span className="text-slate-400">{t('status')}</span>
                 <StatusBadge status={selectedCustomer.status} />
               </div>
             </div>
@@ -371,7 +375,7 @@ export default function SupplierCustomersPage() {
                 onClick={() => callCustomer(selectedCustomer.phone)}
                 type="button"
               >
-                Call customer
+                {t('callCustomer')}
               </button>
             </div>
           </aside>

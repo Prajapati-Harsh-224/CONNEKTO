@@ -76,7 +76,7 @@ export default function SupplierDashboardPage() {
 
   const getDynamicGreeting = () => {
     const hour = new Date().getHours()
-    const label = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
+    const label = hour < 12 ? t('goodMorning') : hour < 17 ? t('goodAfternoon') : t('goodEvening')
     return `${label}, ${firstName}`
   }
 
@@ -91,7 +91,7 @@ export default function SupplierDashboardPage() {
   if (!dashboard) return (
     <section className="p-4 sm:p-6 max-w-7xl mx-auto">
       <div className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium" role="alert">
-        Supplier dashboard unavailable.
+        {t('supplierDashboardMessage')}
       </div>
     </section>
   )
@@ -102,7 +102,7 @@ export default function SupplierDashboardPage() {
         <div>
           <p className="text-xs sm:text-sm font-bold text-brand-orange uppercase tracking-wider">{getDynamicGreeting()}</p>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight mt-0.5">{dashboard.businessName}</h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">Manage your orders, products and customers from one place.</p>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('manageOrdersProductsCustomers')}</p>
         </div>
       </header>
 
@@ -123,27 +123,27 @@ export default function SupplierDashboardPage() {
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6">
         <div className="flex items-center justify-between gap-4 pb-5 border-b border-slate-100">
           <div>
-            <h2 className="text-base sm:text-lg font-bold text-slate-900">Recent Orders</h2>
-            <p className="text-xs text-slate-400 mt-0.5">Latest incoming orders requiring attention</p>
+            <h2 className="text-base sm:text-lg font-bold text-slate-900">{t('recentOrders')}</h2>
+            <p className="text-xs text-slate-400 mt-0.5">{t('latestIncomingOrdersAttention')}</p>
           </div>
           <button 
             className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-brand-orange hover:text-brand-orange-dark transition-colors cursor-pointer" 
             onClick={() => navigate('/dashboard/supplier/orders')} 
             type="button"
           >
-            View All Orders <span aria-hidden="true">→</span>
+            {t('viewAllOrders')} <span aria-hidden="true">→</span>
           </button>
         </div>
 
-        <div className="overflow-x-auto -mx-5 sm:-mx-6 px-5 sm:px-6" role="table" aria-label="Recent supplier orders">
+        <div className="overflow-x-auto -mx-5 sm:-mx-6 px-5 sm:px-6" role="table" aria-label={t('recentOrders')}>
           <div className="min-w-[760px]">
             <div className="grid grid-cols-[1.2fr_2fr_1fr_1.2fr_1.2fr_1.6fr_auto] gap-4 py-3 px-4 bg-slate-50/80 rounded-xl text-xs font-bold text-slate-500 uppercase tracking-wider mt-4" role="row">
-              <span role="columnheader">Order ID</span>
-              <span role="columnheader">Customer (Shop)</span>
-              <span role="columnheader">Items</span>
-              <span role="columnheader">Amount</span>
-              <span role="columnheader">Status</span>
-              <span role="columnheader">Date &amp; Time</span>
+              <span role="columnheader">{t('orderId')}</span>
+              <span role="columnheader">{t('customerShop')}</span>
+              <span role="columnheader">{t('itemsCount')}</span>
+              <span role="columnheader">{t('amount')}</span>
+              <span role="columnheader">{t('status')}</span>
+              <span role="columnheader">{t('dateTime')}</span>
               <span aria-hidden="true" />
             </div>
 
@@ -159,7 +159,7 @@ export default function SupplierDashboardPage() {
                     <span className="text-sm font-semibold text-slate-900 truncate">{order.shopOwner}</span>
                     <small className="text-xs text-slate-400 truncate">{order.location}</small>
                   </span>
-                  <span className="text-xs text-slate-600 font-medium" role="cell">{order.items} items</span>
+                  <span className="text-xs text-slate-600 font-medium" role="cell">{order.items} {order.items === 1 ? t('itemCount') : t('itemsCount')}</span>
                   <span className="text-xs font-bold text-slate-900" role="cell">{order.amountLabel}</span>
                   <span role="cell"><StatusBadge status={order.status} /></span>
                   <span className="text-xs text-slate-500 whitespace-nowrap" role="cell">{order.dateLabel}</span>
@@ -168,7 +168,7 @@ export default function SupplierDashboardPage() {
                     onClick={() => navigate(`/dashboard/supplier/orders/${encodeURIComponent(order.id)}`)} 
                     type="button"
                   >
-                    View
+                    {t('view')}
                   </button>
                 </div>
               ))}

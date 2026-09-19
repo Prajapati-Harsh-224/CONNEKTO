@@ -25,32 +25,34 @@ function formatDashboardOrderId(orderId = '') {
   return sanitized ? `ORD-${sanitized}` : value
 }
 
-function StatusPill({ status }) {
+function StatusPill({ status, locale }) {
   const normalized = String(status || '').toLowerCase()
+  const text = (key, fallback) => locale ? locale(key, null, fallback) || fallback : fallback
+
   if (normalized === 'pending') {
     return (
       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#fef4ea] text-[#d95d2c] border border-[#fbd8c0]">
-        Pending
+        {text('pending', 'Pending')}
       </span>
     )
   }
   if (normalized === 'preparing') {
     return (
       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#edf5fd] text-[#2563eb] border border-[#d2e5fa]">
-        Preparing
+        {text('preparing', 'Preparing')}
       </span>
     )
   }
   if (normalized === 'confirmed' || normalized === 'accepted') {
     return (
       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#eaf5ef] text-[#1b6442] border border-[#c4e4d0]">
-        Confirmed
+        {text('accepted', 'Confirmed')}
       </span>
     )
   }
   return (
     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#eaf5ef] text-[#1b6442] border border-[#c4e4d0]">
-      Delivered
+      {text('delivered', 'Delivered')}
     </span>
   )
 }
@@ -128,9 +130,9 @@ export default function GruhUdyogDashboardPage() {
 
   const dynamicGreeting = useMemo(() => {
     const hour = new Date().getHours()
-    const prefix = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening'
-    return `${prefix}, ${firstName}`
-  }, [firstName])
+    const prefix = hour < 12 ? t('goodMorning') : hour < 17 ? t('goodAfternoon') : t('goodEvening')
+    return `${prefix} ${firstName}`
+  }, [firstName, t])
 
   if (isLoading) return <LoadingState message={t('loadingWorkspace')} />
   if (error) {
@@ -150,10 +152,9 @@ export default function GruhUdyogDashboardPage() {
         <div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight flex items-center gap-2">
             <span>{dynamicGreeting}</span>
-            {/* <span aria-hidden="true">👋</span> */}
           </h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">
-            Manage your products, orders and customers from one place.
+            {t('manageProductsOrdersCustomers') || 'Manage your products, orders and customers from one place.'}
           </p>
         </div>
 
@@ -164,10 +165,10 @@ export default function GruhUdyogDashboardPage() {
           </div>
           <div className="z-10">
             <h2 className="text-xs sm:text-sm font-bold text-[#1b6442] tracking-tight leading-tight">
-              Empowering Local Makers
+              {t('empoweringLocalMakers') || 'Empowering Local Makers'}
             </h2>
             <p className="text-[11px] text-slate-500 mt-0.5 leading-tight">
-              Turn your skills into opportunities with Connekto.
+              {t('turnSkillsIntoOpportunities') || 'Turn your skills into opportunities with Connekto.'}
             </p>
           </div>
           {/* Subtle Decorative Leaf Watermark */}
@@ -188,11 +189,11 @@ export default function GruhUdyogDashboardPage() {
             <FiPackage className="w-6 h-6" />
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-medium text-slate-500 truncate">Total Orders</p>
+            <p className="text-xs font-medium text-slate-500 truncate">{t('totalOrdersLabel') || t('totalOrders')}</p>
             <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-0.5">
               {metrics.totalOrders}
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5 truncate">All orders received</p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">{t('allOrdersReceived') || 'All orders received'}</p>
           </div>
         </div>
 
@@ -202,11 +203,11 @@ export default function GruhUdyogDashboardPage() {
             <FiClock className="w-6 h-6" />
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-medium text-slate-500 truncate">Pending Orders</p>
+            <p className="text-xs font-medium text-slate-500 truncate">{t('pendingOrdersLabel') || t('pendingOrders')}</p>
             <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-0.5">
               {metrics.pendingOrders}
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5 truncate">Need your action</p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">{t('needYourAction') || 'Need your action'}</p>
           </div>
         </div>
 
@@ -216,11 +217,11 @@ export default function GruhUdyogDashboardPage() {
             <FiCheck className="w-6 h-6 stroke-[2.5]" />
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-medium text-slate-500 truncate">Completed Orders</p>
+            <p className="text-xs font-medium text-slate-500 truncate">{t('completedOrdersLabel') || t('completedOrders')}</p>
             <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-0.5">
               {metrics.completedOrders}
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5 truncate">Successfully delivered</p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">{t('successfullyDelivered') || 'Successfully delivered'}</p>
           </div>
         </div>
 
@@ -230,11 +231,11 @@ export default function GruhUdyogDashboardPage() {
             ₹
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-medium text-slate-500 truncate">Total Sales</p>
+            <p className="text-xs font-medium text-slate-500 truncate">{t('totalSalesLabel') || t('totalSales')}</p>
             <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-0.5">
               {metrics.totalSales}
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5 truncate">From all orders</p>
+            <p className="text-[11px] text-slate-400 mt-0.5 truncate">{t('fromAllOrders') || 'From all orders'}</p>
           </div>
         </div>
       </div>
@@ -249,15 +250,15 @@ export default function GruhUdyogDashboardPage() {
                 <FiFileText className="w-5 h-5" />
               </div>
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-slate-900">Recent Orders</h2>
-                <p className="text-xs text-slate-400 mt-0.5">Latest orders from your customers</p>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">{t('recentOrders')}</h2>
+                <p className="text-xs text-slate-400 mt-0.5">{t('latestOrdersFromCustomers') || 'Latest orders from your customers'}</p>
               </div>
             </div>
             <Link
               to="/dashboard/gruh-udyog/orders"
               className="inline-flex items-center gap-1 text-xs sm:text-sm font-semibold text-[#1b6442] hover:text-[#144d32] transition-colors"
             >
-              <span>View all</span>
+              <span>{t('viewAll')}</span>
               <FiArrowRight className="w-4 h-4" />
             </Link>
           </div>
@@ -267,13 +268,13 @@ export default function GruhUdyogDashboardPage() {
             <table className="w-full min-w-[620px] text-left border-collapse mt-2">
               <thead>
                 <tr className="text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100">
-                  <th className="py-3 px-3">Order ID</th>
-                  <th className="py-3 px-3">Customer</th>
-                  <th className="py-3 px-3">Items</th>
-                  <th className="py-3 px-3">Amount</th>
-                  <th className="py-3 px-3">Status</th>
-                  <th className="py-3 px-3">Date</th>
-                  <th className="py-3 px-3 text-right">Action</th>
+                  <th className="py-3 px-3">{t('orderId') || 'Order ID'}</th>
+                  <th className="py-3 px-3">{t('customer') || 'Customer'}</th>
+                  <th className="py-3 px-3">{t('itemsCount') || 'Items'}</th>
+                  <th className="py-3 px-3">{t('amount')}</th>
+                  <th className="py-3 px-3">{t('status')}</th>
+                  <th className="py-3 px-3">{t('date')}</th>
+                  <th className="py-3 px-3 text-right">{t('action') || 'Action'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -287,7 +288,7 @@ export default function GruhUdyogDashboardPage() {
                         {order.customer}
                       </td>
                       <td className="py-3.5 px-3 text-xs text-slate-500">
-                        {order.items} {order.items === 1 ? 'item' : 'items'}
+                        {order.items} {order.items === 1 ? t('itemCount') : t('itemsCount')}
                       </td>
                       <td className="py-3.5 px-3 text-xs font-bold text-slate-900">
                         ₹{order.amount.toLocaleString('en-IN')}
@@ -304,7 +305,7 @@ export default function GruhUdyogDashboardPage() {
                           onClick={() => navigate('/dashboard/gruh-udyog/orders')}
                           className="px-3 py-1 text-xs font-medium text-slate-700 bg-white border border-slate-200 rounded-lg hover:border-[#1b6442] hover:text-[#1b6442] hover:bg-emerald-50/30 transition-colors cursor-pointer"
                         >
-                          View
+                          {t('view') || 'View'}
                         </button>
                       </td>
                     </tr>
@@ -312,7 +313,7 @@ export default function GruhUdyogDashboardPage() {
                 ) : (
                   <tr>
                     <td colSpan={7} className="py-10 text-center text-xs text-slate-400 font-medium">
-                      No orders received yet.
+                      {t('noOrdersReceivedYet') || 'No orders received yet.'}
                     </td>
                   </tr>
                 )}
@@ -330,8 +331,8 @@ export default function GruhUdyogDashboardPage() {
                 <FiBell className="w-4 h-4" />
               </div>
               <div>
-                <h2 className="text-base font-bold text-slate-900">Needs Attention</h2>
-                <p className="text-xs text-slate-400 mt-0.5">Orders that require your action</p>
+                <h2 className="text-base font-bold text-slate-900">{t('needsAttention') || 'Needs Attention'}</h2>
+                <p className="text-xs text-slate-400 mt-0.5">{t('ordersRequireAction') || 'Orders that require your action'}</p>
               </div>
             </div>
 
@@ -345,7 +346,7 @@ export default function GruhUdyogDashboardPage() {
                   {metrics.pendingOrders}
                 </span>
                 <p className="text-xs sm:text-[13px] font-medium text-slate-800 leading-snug">
-                  {metrics.pendingOrders === 1 ? 'order is waiting' : 'orders are waiting'}<br />for your action.
+                  {metrics.pendingOrders === 1 ? t('orderWaiting') : t('ordersWaiting')}<br />{t('forYourAction')}
                 </p>
               </div>
               <FiChevronRight className="w-5 h-5 text-[#d95d2c] group-hover:translate-x-0.5 transition-transform shrink-0" />
@@ -368,7 +369,7 @@ export default function GruhUdyogDashboardPage() {
                 ))
               ) : (
                 <div className="py-6 text-center text-xs text-slate-400 font-medium">
-                  No orders currently require attention.
+                  {t('noOrdersCurrentlyRequireAttention') || 'No orders currently require attention.'}
                 </div>
               )}
             </div>
@@ -380,7 +381,7 @@ export default function GruhUdyogDashboardPage() {
             onClick={() => navigate('/dashboard/gruh-udyog/orders')}
             className="w-full py-3 px-4 rounded-xl font-bold text-sm text-white bg-[#1b6442] hover:bg-[#144d32] active:scale-[0.99] shadow-sm shadow-emerald-900/10 transition-all flex items-center justify-center gap-2 cursor-pointer mt-2"
           >
-            <span>View All Orders</span>
+            <span>{t('viewAllOrders') || 'View All Orders'}</span>
             <FiArrowRight className="w-4 h-4" />
           </button>
         </section>

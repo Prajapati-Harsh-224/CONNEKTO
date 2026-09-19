@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { FiCalendar, FiChevronDown, FiDollarSign, FiShoppingBag, FiUsers, FiBox, FiBarChart2, FiArrowRight } from 'react-icons/fi'
 import { HiSparkles } from 'react-icons/hi2'
 import { getSupplierAnalytics } from '../services/supplierAnalyticsService.js'
+import { useLocale } from '../context/LocaleContext.jsx'
 
 const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`
 
@@ -96,6 +97,7 @@ function SalesTrendChart({ labels, values }) {
 }
 
 export default function SupplierAnalyticsPage() {
+  const { t } = useLocale()
   const [analytics, setAnalytics] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
@@ -156,16 +158,16 @@ export default function SupplierAnalyticsPage() {
   if (isLoading) {
     return (
       <section className="supplier-analytics-page loading-page-shell">
-        <div className="loading-state"><span className="loading-spinner" aria-hidden="true" /><strong>Loading supplier analytics...</strong></div>
+        <div className="loading-state"><span className="loading-spinner" aria-hidden="true" /><strong>{t('loadingSupplierAnalytics')}</strong></div>
       </section>
     )
   }
 
   const metrics = [
-    { title: 'Total Sales', value: formatCurrency(pageData.orderValue ?? pageData.metrics?.sales ?? 0), delta: 'Current month total', icon: 'rupee', accent: 'green' },
-    { title: 'Total Orders', value: pageData.ordersReceived ?? pageData.metrics?.orders ?? 0, delta: 'Total received', icon: 'order', accent: 'blue' },
-    { title: 'Pending Orders', value: pageData.orderStatus?.pending ?? 0, delta: 'Awaiting fulfillment', icon: 'customers', accent: 'amber' },
-    { title: 'Completed Orders', value: pageData.orderStatus?.completed ?? 0, delta: 'Successfully delivered', icon: 'product', accent: 'purple' },
+    { title: t('totalSales'), value: formatCurrency(pageData.orderValue ?? pageData.metrics?.sales ?? 0), delta: t('currentMonthTotal'), icon: 'rupee', accent: 'green' },
+    { title: t('totalOrders'), value: pageData.ordersReceived ?? pageData.metrics?.orders ?? 0, delta: t('totalReceived'), icon: 'order', accent: 'blue' },
+    { title: t('pendingOrders'), value: pageData.orderStatus?.pending ?? 0, delta: t('awaitingFulfillment'), icon: 'customers', accent: 'amber' },
+    { title: t('completedOrders'), value: pageData.orderStatus?.completed ?? 0, delta: t('successfullyDelivered'), icon: 'product', accent: 'purple' },
   ]
 
 
@@ -179,21 +181,21 @@ export default function SupplierAnalyticsPage() {
   return (
     <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
       <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-        <span>Supplier</span>
+        <span>{t('supplier')}</span>
         <span aria-hidden="true">›</span>
-        <span className="text-slate-700">Analytics</span>
+        <span className="text-slate-700">{t('analytics')}</span>
       </div>
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">Analytics</h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">A simple view of your business performance.</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">{t('analytics')}</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('businessPerformance')}</p>
         </div>
 
         <label className="relative inline-flex items-center bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-xs cursor-pointer focus-within:ring-2 focus-within:ring-brand-orange/20 focus-within:border-brand-orange">
           <span className="text-slate-400 mr-2 text-sm" aria-hidden="true"><HeaderIcon type="calendar" /></span>
           <select 
-            aria-label="Select analytics period" 
+            aria-label={t('selectAnalyticsPeriod')} 
             className="bg-transparent text-xs sm:text-sm font-semibold text-slate-700 focus:outline-hidden pr-6 cursor-pointer" 
             onChange={(event) => setDateFilter(event.target.value)} 
             value={dateFilter}
@@ -238,14 +240,14 @@ export default function SupplierAnalyticsPage() {
                 <HeaderIcon type="chart" />
               </span>
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-slate-900">Sales Trend</h2>
-                <p className="text-xs text-slate-400">Your monthly sales over the last 6 months.</p>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">{t('salesTrend')}</h2>
+                <p className="text-xs text-slate-400">{t('salesTrendDescription')}</p>
               </div>
             </div>
 
             <label className="relative inline-flex items-center bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 cursor-pointer">
               <select 
-                aria-label="Select sales period" 
+                aria-label={t('selectSalesPeriod')} 
                 className="bg-transparent text-xs font-semibold text-slate-700 focus:outline-hidden pr-4 cursor-pointer"
                 onChange={(event) => setSalesPeriod(event.target.value)} 
                 value={salesPeriod}
@@ -270,14 +272,14 @@ export default function SupplierAnalyticsPage() {
                 <HeaderIcon type="spark" />
               </span>
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-slate-900">Revenue Breakdown</h2>
-                <p className="text-xs text-slate-400">Sales distribution by product category.</p>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">{t('revenueBreakdown')}</h2>
+                <p className="text-xs text-slate-400">{t('revenueBreakdownDescription')}</p>
               </div>
             </div>
 
             <label className="relative inline-flex items-center bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 cursor-pointer">
               <select 
-                aria-label="Select revenue period" 
+                aria-label={t('selectRevenuePeriod')} 
                 className="bg-transparent text-xs font-semibold text-slate-700 focus:outline-hidden pr-4 cursor-pointer"
                 onChange={(event) => setRevenuePeriod(event.target.value)} 
                 value={revenuePeriod}
@@ -294,7 +296,7 @@ export default function SupplierAnalyticsPage() {
             <div className="relative w-44 h-44 rounded-full flex items-center justify-center shadow-xs shrink-0" style={donutStyle}>
               <div className="w-28 h-28 rounded-full bg-white flex flex-col items-center justify-center shadow-inner">
                 <strong className="text-lg font-black text-slate-900 leading-tight">₹1.24L</strong>
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">Total Sales</span>
+                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{t('totalSales')}</span>
               </div>
             </div>
 
@@ -321,12 +323,12 @@ export default function SupplierAnalyticsPage() {
                 <HeaderIcon type="product" />
               </span>
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-slate-900">Top Selling Products</h2>
-                <p className="text-xs text-slate-400">Products with highest sales this month.</p>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">{t('topSellingProducts')}</h2>
+                <p className="text-xs text-slate-400">{t('highestSalesThisMonth')}</p>
               </div>
             </div>
             <Link className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-orange hover:text-brand-orange-dark transition-colors" to="/dashboard/supplier/products">
-              View all <HeaderIcon type="arrow" />
+              {t('viewAll')} <HeaderIcon type="arrow" />
             </Link>
           </div>
 
@@ -335,9 +337,9 @@ export default function SupplierAnalyticsPage() {
               <thead>
                 <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   <th className="pb-3 pr-2">#</th>
-                  <th className="pb-3 px-2">Product</th>
-                  <th className="pb-3 px-2">Units Sold</th>
-                  <th className="pb-3 pl-2 text-right">Revenue</th>
+                  <th className="pb-3 px-2">{t('product')}</th>
+                  <th className="pb-3 px-2">{t('unitsSold')}</th>
+                  <th className="pb-3 pl-2 text-right">{t('revenue')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">
@@ -368,12 +370,12 @@ export default function SupplierAnalyticsPage() {
                 <HeaderIcon type="customers" />
               </span>
               <div>
-                <h2 className="text-base sm:text-lg font-bold text-slate-900">Top Customers</h2>
-                <p className="text-xs text-slate-400">Customers who ordered the most this month.</p>
+                <h2 className="text-base sm:text-lg font-bold text-slate-900">{t('topCustomers')}</h2>
+                <p className="text-xs text-slate-400">{t('customersWithMostOrders')}</p>
               </div>
             </div>
             <Link className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-orange hover:text-brand-orange-dark transition-colors" to="/dashboard/supplier/customers">
-              View all <HeaderIcon type="arrow" />
+              {t('viewAll')} <HeaderIcon type="arrow" />
             </Link>
           </div>
 
@@ -382,9 +384,9 @@ export default function SupplierAnalyticsPage() {
               <thead>
                 <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   <th className="pb-3 pr-2">#</th>
-                  <th className="pb-3 px-2">Customer (Shop)</th>
-                  <th className="pb-3 px-2">Orders</th>
-                  <th className="pb-3 pl-2 text-right">Total Spent</th>
+                  <th className="pb-3 px-2">{t('customerOrders')}</th>
+                  <th className="pb-3 px-2">{t('orders')}</th>
+                  <th className="pb-3 pl-2 text-right">{t('totalSpent')}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-50">

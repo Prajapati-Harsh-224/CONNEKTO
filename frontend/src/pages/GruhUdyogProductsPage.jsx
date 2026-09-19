@@ -296,13 +296,13 @@ export default function GruhUdyogProductsPage() {
       <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
         <div>
           <nav className="flex items-center gap-1.5 text-xs text-slate-400 mb-1 font-medium">
-            <span>Gruh Udyog</span>
+            <span>{t('gruhUdyog')}</span>
             <span className="text-slate-300">›</span>
-            <span className="text-slate-600">Products</span>
+            <span className="text-slate-600">{t('products')}</span>
           </nav>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Products</h1>
+          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{t('products')}</h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            Showcase your handmade products to more shops and grow your business.
+            {t('gruhUdyogProductPageDescription') || 'Showcase your handmade products to more shops and grow your business.'}
           </p>
         </div>
 
@@ -312,10 +312,10 @@ export default function GruhUdyogProductsPage() {
           <div className="hidden sm:flex items-center gap-3 bg-gradient-to-r from-emerald-50/90 to-teal-50/70 border border-emerald-100/90 rounded-2xl px-4 py-2.5 shadow-2xs">
             <div>
               <p className="font-serif italic font-bold text-[#1b6442] text-xs leading-tight">
-                Local hands
+                {t('localHands') || 'Local hands'}
               </p>
               <p className="font-serif italic font-bold text-emerald-950 text-xs leading-tight flex items-center gap-1">
-                <span>Global opportunities</span>
+                <span>{t('globalOpportunities') || 'Global opportunities'}</span>
                 <span className="not-italic text-emerald-600 text-[10px]">→</span>
               </p>
             </div>
@@ -333,7 +333,7 @@ export default function GruhUdyogProductsPage() {
             className="px-5 py-2.5 rounded-xl bg-[#1b6442] hover:bg-[#144d32] text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-sm shadow-emerald-900/10 transition-all cursor-pointer shrink-0"
           >
             <FiPlus className="w-4 h-4 stroke-[3]" />
-            <span>Add Product</span>
+            <span>{t('addProduct')}</span>
           </button>
         </div>
       </div>
@@ -409,9 +409,9 @@ export default function GruhUdyogProductsPage() {
               }}
               className="appearance-none pl-3 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1b6442]/20 focus:border-[#1b6442] shadow-2xs cursor-pointer"
             >
-              <option value="All status">All status</option>
-              <option value="Active">Active</option>
-              <option value="Inactive">Inactive</option>
+              <option value="All status">{t('allStatus')}</option>
+              <option value="Active">{t('active')}</option>
+              <option value="Inactive">{t('inactive')}</option>
             </select>
             <FiChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
@@ -423,10 +423,10 @@ export default function GruhUdyogProductsPage() {
               onChange={(e) => setSortBy(e.target.value)}
               className="appearance-none pl-3 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1b6442]/20 focus:border-[#1b6442] shadow-2xs cursor-pointer"
             >
-              <option value="newest">Sort by: Newest</option>
-              <option value="price-low">Price: Low to High</option>
-              <option value="price-high">Price: High to Low</option>
-              <option value="name">Name: A-Z</option>
+              <option value="newest">{t('sortByNewest') || 'Sort by: Newest'}</option>
+              <option value="price-low">{t('sortPriceLow') || 'Price: Low to High'}</option>
+              <option value="price-high">{t('sortPriceHigh') || 'Price: High to Low'}</option>
+              <option value="name">{t('sortName') || 'Name: A-Z'}</option>
             </select>
             <FiChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-2.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           </div>
@@ -439,7 +439,7 @@ export default function GruhUdyogProductsPage() {
               className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                 viewMode === 'grid' ? 'bg-[#1b6442] text-white' : 'text-slate-400 hover:text-slate-700'
               }`}
-              title="Grid view"
+              title={t('gridView') || 'Grid view'}
             >
               <FiGrid className="w-4 h-4" />
             </button>
@@ -449,7 +449,7 @@ export default function GruhUdyogProductsPage() {
               className={`p-1.5 rounded-lg transition-colors cursor-pointer ${
                 viewMode === 'list' ? 'bg-[#1b6442] text-white' : 'text-slate-400 hover:text-slate-700'
               }`}
-              title="List view"
+              title={t('listView') || 'List view'}
             >
               <FiList className="w-4 h-4" />
             </button>
@@ -482,7 +482,7 @@ export default function GruhUdyogProductsPage() {
                           : 'bg-[#fef4ea] text-[#d95d2c] border border-[#fbd8c0]'
                       }`}
                     >
-                      {isActive ? 'Active' : 'Inactive'}
+                      {isActive ? t('active') : t('inactive')}
                     </span>
 
                     {/* Wishlist Heart Button */}
@@ -490,7 +490,7 @@ export default function GruhUdyogProductsPage() {
                       type="button"
                       onClick={(e) => toggleFavorite(product.id, e)}
                       className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black/25 hover:bg-black/40 backdrop-blur-xs flex items-center justify-center text-white transition-colors z-10 cursor-pointer"
-                      aria-label="Save item"
+                      aria-label={t('saveItem') || 'Save item'}
                     >
                       <FiHeart
                         className={`w-4 h-4 transition-colors ${
@@ -539,7 +539,7 @@ export default function GruhUdyogProductsPage() {
                             ₹{Number(product.price).toLocaleString('en-IN')}
                           </p>
                           <p className="text-[11px] text-slate-400 mt-0.5">
-                            Stock: {product.availableStock ?? 0}
+                            {t('stock') || 'Stock'}: {product.availableStock ?? 0}
                           </p>
                         </div>
 
@@ -561,14 +561,14 @@ export default function GruhUdyogProductsPage() {
                                 onClick={() => handleToggleStatus(product)}
                                 className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors"
                               >
-                                Mark {isActive ? 'Inactive' : 'Active'}
+                                {t('markStatus', { status: isActive ? t('inactive') : t('active') }) || `Mark ${isActive ? 'Inactive' : 'Active'}`}
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleDeactivate(product)}
                                 className="w-full px-3 py-2 text-left text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors"
                               >
-                                Deactivate
+                                {t('deactivate')}
                               </button>
                             </div>
                           )}
@@ -605,13 +605,13 @@ export default function GruhUdyogProductsPage() {
               <table className="w-full text-left border-collapse min-w-[600px]">
                 <thead>
                   <tr className="text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 bg-white">
-                    <th className="py-3 px-4">Product</th>
-                    <th className="py-3 px-4">Category</th>
-                    <th className="py-3 px-4">Pack Size</th>
-                    <th className="py-3 px-4">Price</th>
-                    <th className="py-3 px-4">Stock</th>
-                    <th className="py-3 px-4">Status</th>
-                    <th className="py-3 px-4 text-right">Actions</th>
+                    <th className="py-3 px-4">{t('product') || 'Product'}</th>
+                    <th className="py-3 px-4">{t('category') || 'Category'}</th>
+                    <th className="py-3 px-4">{t('packSize') || 'Pack Size'}</th>
+                    <th className="py-3 px-4">{t('price') || 'Price'}</th>
+                    <th className="py-3 px-4">{t('stock') || 'Stock'}</th>
+                    <th className="py-3 px-4">{t('status')}</th>
+                    <th className="py-3 px-4 text-right">{t('actions') || 'Actions'}</th>
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-slate-100">
@@ -646,7 +646,7 @@ export default function GruhUdyogProductsPage() {
                                 : 'bg-[#fef4ea] text-[#d95d2c] border border-[#fbd8c0]'
                             }`}
                           >
-                            {isActive ? 'Active' : 'Inactive'}
+                            {isActive ? t('active') : t('inactive')}
                           </span>
                         </td>
                         <td className="py-3 px-4 text-right">
@@ -656,14 +656,14 @@ export default function GruhUdyogProductsPage() {
                               onClick={() => openEditModal(product)}
                               className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700"
                             >
-                              Edit
+                              {t('edit')}
                             </button>
                             <button
                               type="button"
                               onClick={() => openViewModal(product)}
                               className="px-2.5 py-1 rounded-lg bg-[#eaf5ef] hover:bg-[#d8ecdf] text-xs font-semibold text-[#1b6442]"
                             >
-                              View
+                              {t('view') || 'View'}
                             </button>
                           </div>
                         </td>
@@ -681,11 +681,11 @@ export default function GruhUdyogProductsPage() {
           <div className="w-14 h-14 rounded-2xl bg-emerald-50 text-[#1b6442] flex items-center justify-center mx-auto text-2xl mb-3.5">
             🍯
           </div>
-          <h3 className="text-base font-bold text-slate-900">No products listed yet</h3>
+          <h3 className="text-base font-bold text-slate-900">{t('noProductsListed') || 'No products listed yet'}</h3>
           <p className="text-xs text-slate-500 mt-1 max-w-sm mx-auto">
             {search || selectedCategory !== 'All'
-              ? 'Try adjusting your search query or category filter.'
-              : 'Start showcasing your handmade pickles, snacks, handicrafts, and more to local retailers.'}
+              ? t('tryAdjustingFilters') || 'Try adjusting your search query or category filter.'
+              : t('showcaseHandmadeProducts') || 'Start showcasing your handmade pickles, snacks, handicrafts, and more to local retailers.'}
           </p>
           <button
             type="button"
@@ -693,7 +693,7 @@ export default function GruhUdyogProductsPage() {
             className="mt-4 px-4 py-2 rounded-xl bg-[#1b6442] hover:bg-[#144d32] text-white text-xs font-bold inline-flex items-center gap-1.5 shadow-sm transition-all cursor-pointer"
           >
             <FiPlus className="w-3.5 h-3.5 stroke-[3]" />
-            <span>Add Your First Product</span>
+            <span>{t('addYourFirstProduct') || 'Add Your First Product'}</span>
           </button>
         </div>
       )}
@@ -755,9 +755,9 @@ export default function GruhUdyogProductsPage() {
                 </div>
                 <div>
                   <h2 className="text-base font-bold text-slate-900">
-                    {modalMode === 'add' ? 'Add New Product' : 'Edit Product'}
+                    {modalMode === 'add' ? t('addNewProduct') || 'Add New Product' : t('editProduct') || 'Edit Product'}
                   </h2>
-                  <p className="text-[11px] text-slate-400">Enter details to showcase your handmade product.</p>
+                  <p className="text-[11px] text-slate-400">{t('enterProductDetails') || 'Enter details to showcase your handmade product.'}</p>
                 </div>
               </div>
               <button

@@ -60,39 +60,41 @@ function formatCurrency(amount) {
   })
 }
 
-function StatusPill({ status }) {
+function StatusPill({ status, locale }) {
   const normalized = String(status || '').toLowerCase()
+  const text = (key, fallback) => locale ? locale(key, null, fallback) || fallback : fallback
+
   if (normalized === 'pending') {
     return (
       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#fef4ea] text-[#d95d2c] border border-[#fbd8c0]">
-        Pending
+        {text('pending', 'Pending')}
       </span>
     )
   }
   if (normalized === 'preparing') {
     return (
       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#edf5fd] text-[#2563eb] border border-[#d2e5fa]">
-        Preparing
+        {text('preparing', 'Preparing')}
       </span>
     )
   }
   if (normalized === 'confirmed' || normalized === 'accepted') {
     return (
       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#eaf5ef] text-[#1b6442] border border-[#c4e4d0]">
-        Confirmed
+        {text('accepted', 'Confirmed')}
       </span>
     )
   }
   if (normalized === 'cancelled') {
     return (
       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#fdf2f2] text-[#e02424] border border-[#fbd5d5]">
-        Cancelled
+        {text('cancelled', 'Cancelled')}
       </span>
     )
   }
   return (
     <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#eaf5ef] text-[#1b6442] border border-[#c4e4d0]">
-      Delivered
+      {text('delivered', 'Delivered')}
     </span>
   )
 }
@@ -280,7 +282,7 @@ export default function GruhUdyogOrdersPage() {
           <FiSearch className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search orders (Order ID, customer name)..."
+            placeholder={t('searchByOrderCustomer') || 'Search orders (Order ID, customer name)...'}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value)
@@ -300,12 +302,12 @@ export default function GruhUdyogOrdersPage() {
             }}
             className="w-full sm:w-auto appearance-none pl-3.5 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1b6442]/20 focus:border-[#1b6442] shadow-2xs cursor-pointer"
           >
-            <option value="All status">All status</option>
-            <option value="Pending">Pending</option>
-            <option value="Preparing">Preparing</option>
-            <option value="Accepted">Confirmed</option>
-            <option value="Delivered">Delivered</option>
-            <option value="Cancelled">Cancelled</option>
+            <option value="All status">{t('allStatus')}</option>
+            <option value="Pending">{t('pending')}</option>
+            <option value="Preparing">{t('preparing')}</option>
+            <option value="Accepted">{t('accepted')}</option>
+            <option value="Delivered">{t('delivered')}</option>
+            <option value="Cancelled">{t('cancelled')}</option>
           </select>
           <FiChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
@@ -320,7 +322,7 @@ export default function GruhUdyogOrdersPage() {
             }}
             className="w-full sm:w-auto appearance-none pl-3.5 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1b6442]/20 focus:border-[#1b6442] shadow-2xs cursor-pointer"
           >
-            <option value="All customers">All customers</option>
+            <option value="All customers">{t('allCustomers')}</option>
             {uniqueCustomers.map((name) => (
               <option key={name} value={name}>
                 {name}
@@ -341,10 +343,10 @@ export default function GruhUdyogOrdersPage() {
             }}
             className="w-full sm:w-auto appearance-none pl-8 pr-8 py-2 bg-white border border-slate-200 rounded-xl text-xs font-medium text-slate-700 focus:outline-none focus:ring-2 focus:ring-[#1b6442]/20 focus:border-[#1b6442] shadow-2xs cursor-pointer"
           >
-            <option value="Select date range">Select date range</option>
-            <option value="Today">Today</option>
-            <option value="Last 7 days">Last 7 days</option>
-            <option value="Last 30 days">Last 30 days</option>
+            <option value="Select date range">{t('selectDateRange')}</option>
+            <option value="Today">{t('today')}</option>
+            <option value="Last 7 days">{t('last7Days')}</option>
+            <option value="Last 30 days">{t('last30Days')}</option>
           </select>
           <FiChevronDown className="w-3.5 h-3.5 text-slate-400 absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none" />
         </div>
@@ -355,7 +357,7 @@ export default function GruhUdyogOrdersPage() {
           onClick={clearFilters}
           className="shrink-0 px-4 py-2 bg-white border border-slate-200 rounded-xl text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors shadow-2xs cursor-pointer"
         >
-          Clear
+          {t('clear')}
         </button>
       </div>
 
@@ -367,13 +369,13 @@ export default function GruhUdyogOrdersPage() {
             <table className="w-full text-left border-collapse min-w-[560px]">
               <thead>
                 <tr className="text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 bg-white">
-                  <th className="py-3 px-4">Order ID</th>
-                  <th className="py-3 px-4">Customer</th>
-                  <th className="py-3 px-4">Items</th>
-                  <th className="py-3 px-4">Amount</th>
-                  <th className="py-3 px-4">Date</th>
-                  <th className="py-3 px-4">Status</th>
-                  <th className="py-3 px-4 text-right">Action</th>
+                  <th className="py-3 px-4">{t('orderId') || 'Order ID'}</th>
+                  <th className="py-3 px-4">{t('customer') || 'Customer'}</th>
+                  <th className="py-3 px-4">{t('itemsCount') || 'Items'}</th>
+                  <th className="py-3 px-4">{t('amount')}</th>
+                  <th className="py-3 px-4">{t('date')}</th>
+                  <th className="py-3 px-4">{t('status')}</th>
+                  <th className="py-3 px-4 text-right">{t('action') || 'Action'}</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-slate-100">
@@ -407,7 +409,7 @@ export default function GruhUdyogOrdersPage() {
                           )}
                         </td>
                         <td className="py-3.5 px-4 text-xs text-slate-500 whitespace-nowrap">
-                          {itemsCount} {itemsCount === 1 ? 'item' : 'items'}
+                          {itemsCount} {itemsCount === 1 ? t('itemCount') : t('itemsCount')}
                         </td>
                         <td className="py-3.5 px-4 text-xs font-bold text-slate-900 whitespace-nowrap">
                           ₹{formatCurrency(displayAmount)}
@@ -431,7 +433,7 @@ export default function GruhUdyogOrdersPage() {
                 ) : (
                   <tr>
                     <td colSpan={7} className="py-12 text-center text-xs text-slate-400 font-medium">
-                      No orders found.
+                      {t('noOrders')}
                     </td>
                   </tr>
                 )}
@@ -491,9 +493,9 @@ export default function GruhUdyogOrdersPage() {
                     <FiPackage className="w-5 h-5" />
                   </div>
                   <div>
-                    <h2 className="text-sm font-bold text-slate-900 leading-tight">Order Details</h2>
+                    <h2 className="text-sm font-bold text-slate-900 leading-tight">{t('orderDetails') || 'Order Details'}</h2>
                     <p className="text-[11px] text-slate-400 mt-0.5 leading-tight">
-                      View and manage order information
+                      {t('viewAndManageOrderInfo') || 'View and manage order information'}
                     </p>
                   </div>
                 </div>
@@ -506,7 +508,7 @@ export default function GruhUdyogOrdersPage() {
                   {formatOrderId(selectedOrder.id)}
                 </h3>
                 <p className="text-xs text-slate-400 mt-0.5">
-                  Placed on {formatPlacedDateTime(selectedOrder.createdAt)}
+                  {t('placedOn') || 'Placed on'} {formatPlacedDateTime(selectedOrder.createdAt)}
                 </p>
               </div>
 
@@ -518,7 +520,7 @@ export default function GruhUdyogOrdersPage() {
                   </div>
                   <div className="min-w-0">
                     <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400 block">
-                      Customer
+                      {t('customer') || 'Customer'}
                     </span>
                     <strong className="text-xs sm:text-sm font-bold text-slate-900 block leading-tight truncate">
                       {selectedOrder.customer || selectedOrder.shopName || selectedOrder.shopOwner || 'Retail Shop'}
@@ -546,7 +548,7 @@ export default function GruhUdyogOrdersPage() {
                     className="shrink-0 inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 hover:border-slate-300 transition-colors shadow-2xs"
                   >
                     <FiPhone className="w-3.5 h-3.5 text-[#1b6442]" />
-                    <span>Call customer</span>
+                    <span>{t('callCustomer') || 'Call customer'}</span>
                   </a>
                 )}
               </div>
@@ -555,7 +557,7 @@ export default function GruhUdyogOrdersPage() {
               <div>
                 <div className="flex items-center gap-2 text-xs font-bold text-slate-800 mb-2.5">
                   <FiPackage className="w-3.5 h-3.5 text-slate-500" />
-                  <span>Items ({selectedOrder.items?.length || 1})</span>
+                  <span>{t('itemsLabel') || 'Items'} ({selectedOrder.items?.length || 1})</span>
                 </div>
 
                 <div className="divide-y divide-slate-100 max-h-48 overflow-y-auto pr-1">
@@ -599,17 +601,17 @@ export default function GruhUdyogOrdersPage() {
                 {/* Subtotal / Delivery / Total Breakdown */}
                 <div className="mt-3 pt-3 border-t border-slate-100 space-y-1.5 text-xs text-slate-500">
                   <div className="flex items-center justify-between">
-                    <span>Subtotal</span>
+                    <span>{t('subtotal')}</span>
                     <span className="font-semibold text-slate-800">
                       ₹{formatCurrency(selectedOrder.amount || selectedOrder.subtotal || 0)}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span>Delivery Charge</span>
+                    <span>{t('deliveryCharge') || 'Delivery Charge'}</span>
                     <span className="font-semibold text-slate-800">₹0</span>
                   </div>
                   <div className="flex items-center justify-between pt-2 border-t border-slate-100">
-                    <span className="text-xs font-bold text-slate-900">Total Amount</span>
+                    <span className="text-xs font-bold text-slate-900">{t('totalAmount')}</span>
                     <span className="text-base font-black text-slate-900">
                       ₹{formatCurrency(selectedOrder.amount || selectedOrder.subtotal || 0)}
                     </span>
@@ -628,7 +630,7 @@ export default function GruhUdyogOrdersPage() {
                       className="flex-1 py-2.5 px-3 rounded-xl bg-[#1b6442] hover:bg-[#144d32] text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm shadow-emerald-900/10 transition-all cursor-pointer disabled:opacity-60"
                     >
                       <FiCheck className="w-4 h-4 stroke-[3]" />
-                      <span>Accept Order</span>
+                      <span>{t('acceptOrder')}</span>
                     </button>
 
                     <button
@@ -658,7 +660,7 @@ export default function GruhUdyogOrdersPage() {
                             onClick={() => updateStatus(selectedOrder.id, 'Cancelled')}
                             className="w-full px-3 py-2 text-left text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors"
                           >
-                            Cancel Order
+                            {t('cancelOrder')}
                           </button>
                         </div>
                       )}
@@ -698,7 +700,7 @@ export default function GruhUdyogOrdersPage() {
                       className="flex-1 py-2.5 px-3 rounded-xl bg-[#1b6442] hover:bg-[#144d32] text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-60"
                     >
                       <FiCheck className="w-4 h-4 stroke-[3]" />
-                      <span>Mark Out for Delivery</span>
+                      <span>{t('markOutForDelivery')}</span>
                     </button>
 
                     <button
@@ -720,28 +722,28 @@ export default function GruhUdyogOrdersPage() {
                     className="w-full py-2.5 px-4 rounded-xl bg-[#1b6442] hover:bg-[#144d32] text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-60"
                   >
                     <FiCheck className="w-4 h-4 stroke-[3]" />
-                    <span>Mark as Delivered</span>
+                    <span>{t('markAsDelivered') || 'Mark as Delivered'}</span>
                   </button>
                 )}
 
                 {selectedOrder.status === 'Delivered' && (
                   <div className="w-full py-2.5 px-3 rounded-xl bg-emerald-50 border border-emerald-200 text-[#1b6442] text-xs font-bold flex items-center justify-center gap-1.5">
                     <FiCheck className="w-4 h-4 stroke-[3]" />
-                    <span>Order Successfully Delivered</span>
+                    <span>{t('orderSuccessfullyDelivered') || 'Order Successfully Delivered'}</span>
                   </div>
                 )}
 
                 {selectedOrder.status === 'Cancelled' && (
                   <div className="w-full py-2.5 px-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-bold flex items-center justify-center gap-1.5">
                     <FiX className="w-4 h-4 stroke-[3]" />
-                    <span>Order Cancelled</span>
+                    <span>{t('orderCancelled') || 'Order Cancelled'}</span>
                   </div>
                 )}
               </div>
             </div>
           ) : (
             <div className="py-16 text-center text-xs text-slate-400 font-medium">
-              Select an order to view its details.
+              {t('selectOrderToViewDetails') || 'Select an order to view its details.'}
             </div>
           )}
         </section>

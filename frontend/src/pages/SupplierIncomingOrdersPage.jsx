@@ -8,7 +8,6 @@ import { getSupplierOrders, updateSupplierOrderStatus } from '../services/suppli
 
 const pageSize = 8
 
-const tabs = ['All Orders', 'Pending', 'Accepted', 'Preparing', 'Out for Delivery', 'Delivered', 'Cancelled']
 const statusValues = ['All Statuses', 'Pending', 'Accepted', 'Preparing', 'Out for Delivery', 'Delivered', 'Cancelled']
 
 function normalizeOrder(order) {
@@ -52,6 +51,27 @@ export default function SupplierIncomingOrdersPage() {
   const [statusFilter, setStatusFilter] = useState('All Statuses')
   const [customerFilter, setCustomerFilter] = useState('All Customers')
   const [dateFilter, setDateFilter] = useState('Select Date Range')
+
+  const tabs = [
+    t('ordersAll'),
+    t('pending'),
+    t('accepted'),
+    t('preparing'),
+    t('outForDelivery'),
+    t('delivered'),
+    t('cancelled'),
+  ]
+  const statusOptions = [
+    { label: t('allStatuses'), value: 'All Statuses' },
+    { label: t('pending'), value: 'Pending' },
+    { label: t('accepted'), value: 'Accepted' },
+    { label: t('preparing'), value: 'Preparing' },
+    { label: t('outForDelivery'), value: 'Out for Delivery' },
+    { label: t('delivered'), value: 'Delivered' },
+    { label: t('cancelled'), value: 'Cancelled' },
+  ]
+  const customerOptions = useMemo(() => ['All Customers', ...new Set(orders.map((order) => order.customer).filter(Boolean))], [orders])
+  const translatedCustomerOptions = useMemo(() => [{ label: t('allCustomers'), value: 'All Customers' }, ...customerOptions.slice(1).map((customer) => ({ label: customer, value: customer }))], [customerOptions, t])
   const [page, setPage] = useState(1)
   const [selectedIds, setSelectedIds] = useState([])
   const [isUpdating, setIsUpdating] = useState(false)
@@ -82,8 +102,6 @@ export default function SupplierIncomingOrdersPage() {
   useEffect(() => {
     setPage(1)
   }, [activeTab, search, statusFilter, customerFilter, dateFilter])
-
-  const customerOptions = useMemo(() => ['All Customers', ...new Set(orders.map((order) => order.customer).filter(Boolean))], [orders])
 
   const counts = useMemo(() => ({
     'All Orders': orders.length,
@@ -205,8 +223,8 @@ export default function SupplierIncomingOrdersPage() {
 
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-          <h1 className="text-2xl sm:text-3xl font-bold font-serif text-[#102d45]">Orders</h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">Manage and fulfill orders from your shop customers.</p>
+          <h1 className="text-2xl sm:text-3xl font-bold font-serif text-[#102d45]">{t('orders')}</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('manageOrdersProductsCustomers')}</p>
         </div>
 
         <div className="flex items-center gap-2.5">
@@ -215,7 +233,7 @@ export default function SupplierIncomingOrdersPage() {
             onClick={exportOrders}
             type="button"
           >
-            Export
+            {t('export')}
           </button>
           <div>
             <select
@@ -228,12 +246,12 @@ export default function SupplierIncomingOrdersPage() {
                 event.target.value = ''
               }}
             >
-              <option value="">Bulk Actions</option>
-              <option value="Accepted">Mark as accepted</option>
-              <option value="Preparing">Mark as preparing</option>
-              <option value="Out for Delivery">Mark as out for delivery</option>
-              <option value="Delivered">Mark as delivered</option>
-              <option value="Cancelled">Cancel orders</option>
+              <option value="">{t('bulkActions')}</option>
+              <option value="Accepted">{t('markAccepted')}</option>
+              <option value="Preparing">{t('markPreparing')}</option>
+              <option value="Out for Delivery">{t('markOutForDelivery')}</option>
+              <option value="Delivered">{t('markDelivered')}</option>
+              <option value="Cancelled">{t('cancelOrder')}</option>
             </select>
           </div>
         </div>
@@ -264,7 +282,7 @@ export default function SupplierIncomingOrdersPage() {
             <span className="absolute left-3 top-2.5 text-slate-400" aria-hidden="true">⌕</span>
             <input
               onChange={(event) => setSearch(event.target.value)}
-              placeholder="Search by order ID or customer name..."
+              placeholder={t('searchOrdersByIdOrCustomer')}
               type="search"
               value={search}
               className="w-full pl-8 pr-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition-colors"
@@ -276,31 +294,31 @@ export default function SupplierIncomingOrdersPage() {
               value={statusFilter}
               className="flex-1 sm:flex-initial px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 bg-white outline-none cursor-pointer"
             >
-              {statusValues.map((status) => <option key={status} value={status}>{status}</option>)}
+              {statusOptions.map((status) => <option key={status.value} value={status.value}>{status.label}</option>)}
             </select>
             <select
               onChange={(event) => setCustomerFilter(event.target.value)}
               value={customerFilter}
               className="flex-1 sm:flex-initial px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 bg-white outline-none cursor-pointer"
             >
-              {customerOptions.map((customer) => <option key={customer} value={customer}>{customer}</option>)}
+              {translatedCustomerOptions.map((customer) => <option key={customer.value} value={customer.value}>{customer.label}</option>)}
             </select>
             <select
               onChange={(event) => setDateFilter(event.target.value)}
               value={dateFilter}
               className="flex-1 sm:flex-initial px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 bg-white outline-none cursor-pointer"
             >
-              <option value="Select Date Range">Select Date Range</option>
-              <option value="Today">Today</option>
-              <option value="Last 7 days">Last 7 days</option>
-              <option value="Last 30 days">Last 30 days</option>
+              <option value="Select Date Range">{t('selectDateRange')}</option>
+              <option value="Today">{t('today')}</option>
+              <option value="Last 7 days">{t('last7Days')}</option>
+              <option value="Last 30 days">{t('last30Days')}</option>
             </select>
             <button
               onClick={clearFilters}
               type="button"
               className="px-3.5 py-2 rounded-xl text-xs font-medium text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
             >
-              Clear
+              {t('clear')}
             </button>
           </div>
         </div>
@@ -312,13 +330,13 @@ export default function SupplierIncomingOrdersPage() {
             <label className="flex items-center cursor-pointer">
               <input checked={allVisibleSelected} onChange={(event) => handleSelectAll(event.target.checked)} type="checkbox" className="rounded text-emerald-600 focus:ring-emerald-500" />
             </label>
-            <span>Order ID</span>
-            <span>Customer (Shop)</span>
-            <span>Items</span>
-            <span>Amount</span>
-            <span>Status</span>
-            <span>Date &amp; Time</span>
-            <span>Action</span>
+            <span>{t('orderId')}</span>
+            <span>{t('customerShop')}</span>
+            <span>{t('itemsCount')}</span>
+            <span>{t('amount')}</span>
+            <span>{t('status')}</span>
+            <span>{t('dateTime')}</span>
+            <span>{t('action')}</span>
           </div>
 
           {visibleOrders.length ? (
@@ -347,7 +365,7 @@ export default function SupplierIncomingOrdersPage() {
                         className="px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors inline-block text-center"
                         to={`/dashboard/supplier/orders/${encodeURIComponent(order.id)}`}
                       >
-                        View
+                        {t('view')}
                       </Link>
                     </div>
                   </div>
@@ -355,13 +373,13 @@ export default function SupplierIncomingOrdersPage() {
               })}
             </div>
           ) : (
-            <EmptyState title="No orders found" message="Try another search or reset the filters to view more orders." />
+            <EmptyState title={t('noOrdersFound')} message={t('noOrdersFoundMessage')} />
           )}
         </div>
 
         {visibleOrders.length > 0 && (
           <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3.5 bg-slate-50/50 border-t border-slate-100 text-xs text-slate-500">
-            <span>Showing {filteredOrders.length ? (page - 1) * pageSize + 1 : 0}–{Math.min(page * pageSize, filteredOrders.length)} of {filteredOrders.length} orders</span>
+            <span>{t('showingOrdersCount', { start: filteredOrders.length ? (page - 1) * pageSize + 1 : 0, end: Math.min(page * pageSize, filteredOrders.length), total: filteredOrders.length })}</span>
             <div className="flex items-center gap-1">
               <button disabled={page === 1} onClick={() => setPage((current) => Math.max(1, current - 1))} type="button" className="w-7 h-7 rounded-lg border border-slate-200 flex items-center justify-center font-bold disabled:opacity-40 cursor-pointer">‹</button>
               {Array.from({ length: totalPages }, (_, index) => index + 1).slice(0, 5).map((pageNumber) => (

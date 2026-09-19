@@ -166,7 +166,7 @@ export default function SupplierProductManagementPage() {
       {feedback && (
         <div className="p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-semibold flex items-center justify-between" role="status">
           <span>{feedback}</span>
-          <button className="text-emerald-600 hover:text-emerald-900 text-xs font-bold ml-2 cursor-pointer" onClick={() => setFeedback('')} type="button">Dismiss</button>
+          <button className="text-emerald-600 hover:text-emerald-900 text-xs font-bold ml-2 cursor-pointer" onClick={() => setFeedback('')} type="button">{t('dismiss')}</button>
         </div>
       )}
 
@@ -191,7 +191,7 @@ export default function SupplierProductManagementPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 items-start">
         <aside className="bg-white rounded-2xl border border-slate-200/80 p-4 shadow-xs space-y-1 lg:sticky lg:top-20 self-start">
-          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 py-2">Categories</h2>
+          <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 py-2">{t('categoriesTitle')}</h2>
           <div className="flex flex-row lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
             {categories.map((category) => (
               <button
@@ -230,10 +230,10 @@ export default function SupplierProductManagementPage() {
                 onChange={(event) => setSortBy(event.target.value)} 
                 value={sortBy}
               >
-                <option value="popular">Popular</option>
-                <option value="name">Name</option>
-                <option value="price-low">Price: Low to High</option>
-                <option value="price-high">Price: High to Low</option>
+                <option value="popular">{t('popular')}</option>
+                <option value="name">{t('sortName')}</option>
+                <option value="price-low">{t('priceLowToHigh')}</option>
+                <option value="price-high">{t('priceHighToLow')}</option>
               </select>
             </label>
 
@@ -246,13 +246,13 @@ export default function SupplierProductManagementPage() {
               }}
               type="button"
             >
-              Clear
+              {t('clear')}
             </button>
           </div>
 
           <div className="flex items-center justify-between text-xs sm:text-sm font-semibold text-slate-500 px-1">
-            <h2 className="font-bold text-slate-800">{visibleProducts.length} products</h2>
-            <span>{query ? `Filtered by “${query}”` : 'Showing all products'}</span>
+            <h2 className="font-bold text-slate-800">{visibleProducts.length} {t('products')}</h2>
+            <span>{query ? t('filteredByQuery', { query }) : t('showingAllProducts')}</span>
           </div>
 
           {visibleProducts.length ? (
@@ -297,8 +297,8 @@ export default function SupplierProductManagementPage() {
 
                     <div>
                       <div className="flex items-center justify-between text-xs text-slate-500 py-2 border-y border-slate-100 mb-3 font-medium">
-                        <span>Min: {product.minimumQuantity} · Stock: {product.availableStock ?? 0}</span>
-                        <span>{product.isActive ? 'Live' : 'Hidden'}</span>
+                        <span>{t('minStock', { minimum: product.minimumQuantity, stock: product.availableStock ?? 0 })}</span>
+                        <span>{product.isActive ? t('live') : t('hidden')}</span>
                       </div>
 
                       <div className="flex items-center justify-between gap-2">
