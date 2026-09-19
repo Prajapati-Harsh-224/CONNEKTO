@@ -73,10 +73,10 @@ export default function ProductManagementForm({
       <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 items-start">
         <div className="flex flex-col items-center justify-center p-5 rounded-2xl bg-slate-50 border border-dashed border-slate-200">
           <div className="flex items-center justify-between w-full mb-3">
-            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">Preview</span>
+            <span className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('preview') || 'Preview'}</span>
             {form.imageUrl && form.imageUrl.trim() ? (
               <span className="px-2 py-0.5 text-[10px] font-bold uppercase tracking-wider bg-emerald-50 text-emerald-600 rounded-full border border-emerald-200">
-                Live Preview
+                {t('livePreview') || 'Live Preview'}
               </span>
             ) : null}
           </div>
@@ -90,8 +90,8 @@ export default function ProductManagementForm({
           </div>
           <span className="text-[11px] text-slate-400 text-center mt-3 font-medium">
             {form.imageUrl && form.imageUrl.trim()
-              ? 'Showing image from URL'
-              : 'Paste an image URL below to fetch preview'}
+              ? (t('showingImageFromUrl') || 'Showing image from URL')
+              : (t('pasteImageUrlPrompt') || 'Paste an image URL below to fetch preview')}
           </span>
         </div>
 
@@ -115,7 +115,7 @@ export default function ProductManagementForm({
                   onClick={handleSwitchToDropdown}
                   type="button"
                 >
-                  ← Choose from categories list
+                  ← {t('chooseFromCategoriesList') || 'Choose from categories list'}
                 </button>
               </div>
             ) : (
@@ -135,12 +135,12 @@ export default function ProductManagementForm({
                     {cat}
                   </option>
                 ))}
-                <option value={CUSTOM_VALUE}>+ Add custom category...</option>
+                <option value={CUSTOM_VALUE}>{t('addCustomCategory') || '+ Add custom category...'}</option>
               </FormField>
             )}
 
             <FormField error={errors.packSize} label={t('packSize')} name="packSize" onChange={onChange} placeholder="e.g. 1 kg" value={form.packSize} />
-            <FormField error={errors.price} label={`${t('price')} (Rs)`} name="price" onChange={onChange} placeholder="0" type="number" value={form.price} />
+            <FormField error={errors.price} label={`${t('price')} (₹)`} name="price" onChange={onChange} placeholder="0" type="number" value={form.price} />
             <FormField error={errors.minimumQuantity} label={t('minimumQuantity')} name="minimumQuantity" onChange={onChange} placeholder="1" type="number" value={form.minimumQuantity} />
             <FormField
               error={errors.availableStock}

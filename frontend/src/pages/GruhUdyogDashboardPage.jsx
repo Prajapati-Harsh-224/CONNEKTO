@@ -26,8 +26,10 @@ function formatDashboardOrderId(orderId = '') {
 }
 
 function StatusPill({ status, locale }) {
+  const { t } = useLocale()
+  const activeLocale = locale || t
   const normalized = String(status || '').toLowerCase()
-  const text = (key, fallback) => locale ? locale(key, null, fallback) || fallback : fallback
+  const text = (key, fallback) => (activeLocale ? activeLocale(key) || fallback : fallback)
 
   if (normalized === 'pending') {
     return (
@@ -46,7 +48,7 @@ function StatusPill({ status, locale }) {
   if (normalized === 'confirmed' || normalized === 'accepted') {
     return (
       <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#eaf5ef] text-[#1b6442] border border-[#c4e4d0]">
-        {text('accepted', 'Confirmed')}
+        {text('confirmed', text('accepted', 'Confirmed'))}
       </span>
     )
   }
@@ -131,7 +133,8 @@ export default function GruhUdyogDashboardPage() {
   const dynamicGreeting = useMemo(() => {
     const hour = new Date().getHours()
     const prefix = hour < 12 ? t('goodMorning') : hour < 17 ? t('goodAfternoon') : t('goodEvening')
-    return `${prefix} ${firstName}`
+    const cleanPrefix = String(prefix || '').replace(/,\s*$/, '').trim()
+    return `${cleanPrefix}, ${firstName}`
   }, [firstName, t])
 
   if (isLoading) return <LoadingState message={t('loadingWorkspace')} />

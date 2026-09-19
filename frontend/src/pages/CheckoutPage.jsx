@@ -113,7 +113,7 @@ export default function CheckoutPage() {
     if (!Number.isInteger(numericValue) || numericValue < 1) {
       setQuantityErrors((current) => ({
         ...current,
-        [item.productId]: 'Minimum order is 1 box'
+        [item.productId]: t('minimumOrderIsOneBox')
       }))
       return
     }
@@ -332,14 +332,14 @@ export default function CheckoutPage() {
       <div className="flex items-center gap-3 p-4 rounded-2xl bg-blue-50 border border-blue-200/80 text-blue-950">
         <span className="flex items-center justify-center w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold shrink-0">✓</span>
         <div className="text-xs sm:text-sm">
-          <strong className="font-bold block">You're ordering from multiple suppliers</strong>
-          <span className="text-blue-700">This checkout will create separate orders for each supplier.</span>
+          <strong className="font-bold block">{t('orderingFromMultipleSuppliers')}</strong>
+          <span className="text-blue-700">{t('checkoutSeparateOrdersNote')}</span>
         </div>
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 items-start">
         <div className="space-y-6">
-          <h2 className="text-base font-bold text-slate-900">Order items by supplier</h2>
+          <h2 className="text-base font-bold text-slate-900">{t('orderItemsBySupplier')}</h2>
           {groups.map((group) => {
             const subtotal = group.items.reduce((sum, item) => sum + priceValue(item.unitPrice) * Number(item.quantity), 0)
             const collapsed = collapsedSuppliers[group.supplierId]
@@ -353,7 +353,7 @@ export default function CheckoutPage() {
                     <div>
                       <div className="flex items-center gap-2">
                         <h3 className="text-sm sm:text-base font-bold text-slate-900">{group.name}</h3>
-                        {group.verified && <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">● Verified</span>}
+                        {group.verified && <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">● {t('verified')}</span>}
                       </div>
                       <p className="text-xs text-slate-400">{group.location} • {group.category}</p>
                     </div>
@@ -361,13 +361,13 @@ export default function CheckoutPage() {
 
                   <div className="flex items-center gap-4">
                     <div className="text-right">
-                      <small className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">Supplier subtotal</small>
+                      <small className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider block">{t('supplierSubtotal')}</small>
                       <strong className="text-base sm:text-lg font-black text-slate-900">{formatPrice(subtotal)}</strong>
                     </div>
                     <button 
                       className="p-1.5 rounded-lg border border-slate-200 hover:bg-white text-slate-600 transition-colors cursor-pointer text-xs font-bold" 
                       type="button" 
-                      aria-label={collapsed ? `Expand ${group.name}` : `Collapse ${group.name}`} 
+                      aria-label={collapsed ? t('expandSupplier', { supplier: group.name }) : t('collapseSupplier', { supplier: group.name })} 
                       aria-expanded={!collapsed} 
                       onClick={() => setCollapsedSuppliers((current) => ({ ...current, [group.supplierId]: !current[group.supplierId] }))}
                     >
@@ -397,7 +397,7 @@ export default function CheckoutPage() {
                               <strong className="text-sm sm:text-base font-bold text-slate-900 truncate">{item.name}</strong>
                               <span className="text-xs text-slate-400 font-medium">{item.packSize} • {item.brand}</span>
                               <div className="text-xs text-emerald-700 font-semibold mt-1">
-                                1 Box = {unitsPerBox} pkts ({formatPrice(boxPrice)}/box)
+                                1 {t('box')} = {unitsPerBox} {t('packetsShort')} ({formatPrice(boxPrice)}/{t('box')})
                               </div>
                             </div>
                           </div>
@@ -414,7 +414,7 @@ export default function CheckoutPage() {
                               <strong className="text-sm sm:text-base font-black text-slate-900 block">
                                 {formatPrice(unitPrice * Number(item.quantity))}
                               </strong>
-                              <span className="text-[11px] text-slate-400">{item.quantity} pkts</span>
+                              <span className="text-[11px] text-slate-400">{item.quantity} {t('packetsShort')}</span>
                             </div>
                             <button 
                               className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer text-lg font-bold" 
@@ -434,7 +434,7 @@ export default function CheckoutPage() {
                 <div className="flex items-center justify-between px-5 py-3 bg-slate-50/50 border-t border-slate-100 text-xs text-slate-500 font-medium">
                   <span>{group.items.length} {group.items.length === 1 ? t('itemCount') : t('itemsCount')}</span>
                   <button className="text-rose-600 hover:text-rose-800 font-semibold cursor-pointer" type="button" onClick={() => clearSupplier(group)}>
-                    Clear supplier items
+                    {t('clearSupplierCart')}
                   </button>
                 </div>
               </section>
@@ -451,15 +451,15 @@ export default function CheckoutPage() {
             
             <div className="space-y-2 text-xs sm:text-sm text-slate-600">
               <div className="flex justify-between">
-                <span>Total Suppliers</span>
+                <span>{t('totalSuppliers')}</span>
                 <strong className="font-bold text-slate-800">{groups.length}</strong>
               </div>
               <div className="flex justify-between">
-                <span>Total Boxes</span>
+                <span>{t('totalBoxes')}</span>
                 <strong className="font-bold text-slate-800">{totalBoxes}</strong>
               </div>
               <div className="flex items-center justify-between text-base font-black text-slate-900 pt-3 border-t border-slate-100">
-                <span>Total Amount</span>
+                <span>{t('totalAmount')}</span>
                 <span>{formatPrice(total)}</span>
               </div>
             </div>
@@ -471,9 +471,9 @@ export default function CheckoutPage() {
               disabled={isSubmitting} 
               type="submit"
             >
-              {isSubmitting ? t('sendingRequest') : 'Place Order →'}
+              {isSubmitting ? t('sendingRequest') : `${t('placeOrder')} →`}
             </button>
-            <small className="block text-[11px] text-slate-400 text-center">This will create separate orders for each supplier.</small>
+            <small className="block text-[11px] text-slate-400 text-center">{t('checkoutSeparateOrdersNote')}</small>
           </form>
 
           <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4">
@@ -506,8 +506,8 @@ export default function CheckoutPage() {
             <div className="flex items-center gap-2.5 p-3 rounded-xl bg-slate-50 border border-slate-100 text-xs text-slate-500">
               <span className="text-emerald-600 font-bold">✓</span>
               <div>
-                <strong className="text-slate-700 block font-semibold">Secure & split payments</strong>
-                <small className="text-slate-400">Your payment will be securely processed and split with each supplier.</small>
+                <strong className="text-slate-700 block font-semibold">{t('secureSplitPayments')}</strong>
+                <small className="text-slate-400">{t('secureSplitPaymentsDescription')}</small>
               </div>
             </div>
           </div>

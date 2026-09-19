@@ -77,7 +77,8 @@ export default function SupplierDashboardPage() {
   const getDynamicGreeting = () => {
     const hour = new Date().getHours()
     const label = hour < 12 ? t('goodMorning') : hour < 17 ? t('goodAfternoon') : t('goodEvening')
-    return `${label}, ${firstName}`
+    const cleanLabel = String(label || '').replace(/,\s*$/, '').trim()
+    return `${cleanLabel}, ${firstName}`
   }
 
   if (isLoading) return <LoadingState message={t('loadingWorkspace')} />
@@ -107,17 +108,34 @@ export default function SupplierDashboardPage() {
       </header>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
-        {dashboard.metrics.map((metric) => (
-          <MetricCard
-            key={metric.label}
-            accent={metric.accent}
-            actionTo={metric.actionTo}
-            detail={metric.detail}
-            icon={metric.icon || getMetricIcon(metric.label)}
-            label={metric.label}
-            value={metric.value}
-          />
-        ))}
+        {dashboard.metrics.map((metric) => {
+          const metricLabelKeyMap = {
+            'New orders': 'newOrders',
+            'Pending orders': 'pendingOrders',
+            'Completed orders': 'completedOrders',
+            "Today's Revenue": 'todayRevenue',
+          }
+          const metricDetailKeyMap = {
+            'Received this week': 'receivedThisWeek',
+            'Awaiting fulfilment': 'awaitingFulfilment',
+            'Delivered successfully': 'deliveredSuccessfully',
+            'Revenue received today': 'revenueReceivedToday',
+          }
+          const label = metricLabelKeyMap[metric.label] ? t(metricLabelKeyMap[metric.label]) : metric.label
+          const detail = metricDetailKeyMap[metric.detail] ? t(metricDetailKeyMap[metric.detail]) : metric.detail
+
+          return (
+            <MetricCard
+              key={metric.label}
+              accent={metric.accent}
+              actionTo={metric.actionTo}
+              detail={detail}
+              icon={metric.icon || getMetricIcon(metric.label)}
+              label={label}
+              value={metric.value}
+            />
+          )
+        })}
       </div>
 
       <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6">

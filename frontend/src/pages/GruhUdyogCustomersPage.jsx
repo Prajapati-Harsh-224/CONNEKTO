@@ -229,10 +229,10 @@ export default function GruhUdyogCustomersPage() {
         <div className="hidden sm:flex items-center gap-4 bg-gradient-to-r from-emerald-50/90 via-teal-50/80 to-emerald-50/90 border border-emerald-100/90 rounded-2xl px-5 py-2.5 shadow-2xs">
           <div>
             <p className="font-serif italic font-bold text-[#1b6442] text-xs leading-tight">
-              Small Businesses
+              {t('smallBusinesses') || 'Small Businesses'}
             </p>
             <p className="font-serif italic font-bold text-emerald-950 text-xs leading-tight flex items-center gap-1">
-              <span>Stronger Together</span>
+              <span>{t('strongerTogether') || 'Stronger Together'}</span>
               <span className="not-italic text-emerald-600 text-xs">♡</span>
             </p>
           </div>
@@ -256,10 +256,8 @@ export default function GruhUdyogCustomersPage() {
               <circle cx="72" cy="20" r="10" stroke="currentColor" strokeWidth="2.5" fill="#eaf5ef" />
               <path d="M56 48C56 37 63 32 72 32C81 32 88 37 88 48" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
             </svg>
-            <div className="text-[10px] font-semibold text-emerald-800 leading-tight">
-              <span className="block">Shops</span>
-              <span className="block">Support</span>
-              <span className="block">Communities</span>
+            <div className="text-[10px] font-semibold text-emerald-800 leading-tight max-w-[80px]">
+              {t('shopsSupportCommunities') || 'Shops Support Communities'}
             </div>
           </div>
         </div>
@@ -775,7 +773,7 @@ export default function GruhUdyogCustomersPage() {
                   ) : (
                     <div className="text-center py-6 text-xs text-slate-400">
                       <FiPackage className="w-7 h-7 mx-auto text-slate-300 mb-1.5" />
-                      <p>Past orders will appear here.</p>
+                      <p>{t('noOrdersRecorded') || 'Past orders will appear here.'}</p>
                     </div>
                   )}
                 </div>
@@ -787,7 +785,7 @@ export default function GruhUdyogCustomersPage() {
                   <form onSubmit={handleSaveNote} className="space-y-2">
                     <textarea
                       rows="3"
-                      placeholder="Add relationship notes, delivery preferences..."
+                      placeholder={t('addNotesPlaceholder') || 'Add relationship notes, delivery preferences...'}
                       value={noteInput}
                       onChange={(e) => setNoteInput(e.target.value)}
                       className="w-full p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-[#1b6442]/20 focus:border-[#1b6442] focus:bg-white"
@@ -795,17 +793,17 @@ export default function GruhUdyogCustomersPage() {
                     <div className="flex items-center justify-between">
                       {isNoteSuccess ? (
                         <span className="text-[11px] text-emerald-700 font-semibold flex items-center gap-1">
-                          <FiCheckCircle className="w-3.5 h-3.5" /> Note saved!
+                          <FiCheckCircle className="w-3.5 h-3.5" /> {t('noteSaved') || 'Note saved!'}
                         </span>
                       ) : (
-                        <span className="text-[10px] text-slate-400">Private internal note</span>
+                        <span className="text-[10px] text-slate-400">{t('privateInternalNote') || 'Private internal note'}</span>
                       )}
                       <button
                         type="submit"
                         disabled={!noteInput.trim()}
                         className="px-3 py-1.5 rounded-xl bg-[#1b6442] text-white text-xs font-semibold hover:bg-[#144d32] disabled:opacity-50 transition-colors cursor-pointer"
                       >
-                        Save Note
+                        {t('saveNote') || 'Save Note'}
                       </button>
                     </div>
                   </form>
@@ -820,7 +818,7 @@ export default function GruhUdyogCustomersPage() {
                         </div>
                       ))
                     ) : (
-                      <p className="text-[11px] text-slate-400 text-center py-4">No notes recorded yet.</p>
+                      <p className="text-[11px] text-slate-400 text-center py-4">{t('noNotesYet') || 'No notes recorded yet.'}</p>
                     )}
                   </div>
                 </div>
@@ -829,7 +827,7 @@ export default function GruhUdyogCustomersPage() {
           ) : (
             <div className="text-center py-12 text-slate-400 text-xs">
               <FiUser className="w-8 h-8 mx-auto text-slate-300 mb-2" />
-              <p>Select a customer to view their details.</p>
+              <p>{t('selectCustomerToViewDetails') || 'Select a customer to view their details.'}</p>
             </div>
           )}
         </aside>
@@ -845,7 +843,7 @@ export default function GruhUdyogCustomersPage() {
                   <FiMessageSquare className="w-4 h-4" />
                 </div>
                 <div>
-                  <h3 className="text-sm font-bold text-slate-900">Message {messageModalCustomer.name}</h3>
+                  <h3 className="text-sm font-bold text-slate-900">{t('message') || 'Message'} {messageModalCustomer.name}</h3>
                   <p className="text-[11px] text-slate-400">{messageModalCustomer.phone || messageModalCustomer.shopOwner}</p>
                 </div>
               </div>
@@ -861,14 +859,18 @@ export default function GruhUdyogCustomersPage() {
             {messageSent ? (
               <div className="py-6 text-center space-y-2">
                 <FiCheckCircle className="w-10 h-10 text-emerald-600 mx-auto" />
-                <p className="text-xs font-bold text-slate-800">Message sent successfully!</p>
-                <p className="text-[11px] text-slate-400">Your message was delivered to {messageModalCustomer.phone}.</p>
+                <p className="text-xs font-bold text-slate-800">{t('messageSentSuccessfully') || 'Message sent successfully!'}</p>
+                <p className="text-[11px] text-slate-400">
+                  {messageModalCustomer.phone
+                    ? t('messageDeliveredTo', { phone: messageModalCustomer.phone })
+                    : t('messageSentSuccessfully') || 'Message sent successfully!'}
+                </p>
                 <button
                   type="button"
                   onClick={() => setMessageModalCustomer(null)}
                   className="mt-3 px-4 py-1.5 rounded-xl bg-[#1b6442] text-white text-xs font-semibold"
                 >
-                  Done
+                  {t('done') || 'Done'}
                 </button>
               </div>
             ) : (
@@ -885,7 +887,7 @@ export default function GruhUdyogCustomersPage() {
                     onClick={() => setMessageModalCustomer(null)}
                     className="px-3.5 py-1.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50"
                   >
-                    Cancel
+                    {t('cancel') || 'Cancel'}
                   </button>
                   <button
                     type="button"
@@ -896,7 +898,7 @@ export default function GruhUdyogCustomersPage() {
                     className="px-4 py-1.5 rounded-xl bg-[#1b6442] hover:bg-[#144d32] text-white text-xs font-bold flex items-center gap-1.5"
                   >
                     <FiSend className="w-3.5 h-3.5" />
-                    <span>Send</span>
+                    <span>{t('send') || 'Send'}</span>
                   </button>
                 </div>
               </div>

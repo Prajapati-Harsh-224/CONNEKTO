@@ -178,6 +178,13 @@ export default function SupplierAnalyticsPage() {
     purple: { icon: 'bg-purple-50 text-purple-600 border-purple-100', text: 'text-purple-600' },
   }
 
+  const periodLabelMap = {
+    'This Month': 'thisMonth',
+    'Last 3 months': 'last3Months',
+    'Last 6 months': 'last6Months',
+    'This year': 'thisYear',
+  }
+
   return (
     <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
       <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
@@ -201,7 +208,7 @@ export default function SupplierAnalyticsPage() {
             value={dateFilter}
           >
             {dateOptions.map((option) => (
-              <option key={option} value={option}>{option}</option>
+              <option key={option} value={option}>{periodLabelMap[option] ? t(periodLabelMap[option]) : option}</option>
             ))}
           </select>
           <span className="text-slate-400 ml-auto pointer-events-none text-xs"><HeaderIcon type="chevron" /></span>
@@ -253,7 +260,7 @@ export default function SupplierAnalyticsPage() {
                 value={salesPeriod}
               >
                 {salesPeriodOptions.map((option) => (
-                  <option key={option} value={option}>{option}</option>
+                  <option key={option} value={option}>{periodLabelMap[option] ? t(periodLabelMap[option]) : option}</option>
                 ))}
               </select>
               <span className="text-slate-400 pointer-events-none text-xs"><HeaderIcon type="chevron" /></span>
@@ -285,7 +292,7 @@ export default function SupplierAnalyticsPage() {
                 value={revenuePeriod}
               >
                 {revenueOptions.map((option) => (
-                  <option key={option} value={option}>{option}</option>
+                  <option key={option} value={option}>{periodLabelMap[option] ? t(periodLabelMap[option]) : option}</option>
                 ))}
               </select>
               <span className="text-slate-400 pointer-events-none text-xs"><HeaderIcon type="chevron" /></span>
@@ -384,7 +391,7 @@ export default function SupplierAnalyticsPage() {
               <thead>
                 <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400">
                   <th className="pb-3 pr-2">#</th>
-                  <th className="pb-3 px-2">{t('customerOrders')}</th>
+                  <th className="pb-3 px-2">{t('customerShop')}</th>
                   <th className="pb-3 px-2">{t('orders')}</th>
                   <th className="pb-3 pl-2 text-right">{t('totalSpent')}</th>
                 </tr>

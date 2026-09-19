@@ -61,8 +61,10 @@ function formatCurrency(amount) {
 }
 
 function StatusPill({ status, locale }) {
+  const { t } = useLocale()
+  const activeLocale = locale || t
   const normalized = String(status || '').toLowerCase()
-  const text = (key, fallback) => locale ? locale(key, null, fallback) || fallback : fallback
+  const text = (key, fallback) => (activeLocale ? activeLocale(key) || fallback : fallback)
 
   if (normalized === 'pending') {
     return (
@@ -258,12 +260,12 @@ export default function GruhUdyogOrdersPage() {
       {/* Top Header: Breadcrumb & Title */}
       <div>
         <nav className="flex items-center gap-1.5 text-xs text-slate-400 mb-1 font-medium">
-          <span>Gruh Udyog</span>
+          <span>{t('gruhUdyog') || 'Gruh Udyog'}</span>
           <span className="text-slate-300">›</span>
-          <span className="text-slate-600">Orders</span>
+          <span className="text-slate-600">{t('orders') || 'Orders'}</span>
         </nav>
-        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">Orders</h1>
-        <p className="text-xs sm:text-sm text-slate-500 mt-0.5">Manage and fulfill orders from your customers.</p>
+        <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{t('orders') || 'Orders'}</h1>
+        <p className="text-xs sm:text-sm text-slate-500 mt-0.5">{t('manageOrdersDescription') || 'Manage and fulfill orders from your customers.'}</p>
       </div>
 
       {error && (
@@ -444,8 +446,8 @@ export default function GruhUdyogOrdersPage() {
           {/* Pagination Footer */}
           <div className="flex items-center justify-between px-4 py-3 border-t border-slate-100 text-xs text-slate-500">
             <span>
-              Showing {filteredOrders.length > 0 ? (page - 1) * pageSize + 1 : 0}-
-              {Math.min(page * pageSize, filteredOrders.length)} of {filteredOrders.length} orders
+              {t('showing') || 'Showing'} {filteredOrders.length > 0 ? (page - 1) * pageSize + 1 : 0}-
+              {Math.min(page * pageSize, filteredOrders.length)} {t('of') || 'of'} {filteredOrders.length} {t('orders') || 'orders'}
             </span>
             <div className="flex items-center gap-1.5">
               <button
@@ -639,7 +641,7 @@ export default function GruhUdyogOrdersPage() {
                       onClick={() => advanceToPreparing(selectedOrder.id)}
                       className="py-2.5 px-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs font-semibold flex items-center justify-center gap-1.5 transition-colors cursor-pointer disabled:opacity-60"
                     >
-                      <span>Mark as Preparing</span>
+                      <span>{t('markPreparing') || 'Mark as Preparing'}</span>
                     </button>
 
                     <div className="relative">
@@ -650,7 +652,7 @@ export default function GruhUdyogOrdersPage() {
                         aria-label="More options"
                       >
                         <FiMoreHorizontal className="w-4 h-4" />
-                        <span>More</span>
+                        <span>{t('more') || 'More'}</span>
                       </button>
 
                       {showMoreMenu && (
@@ -677,7 +679,7 @@ export default function GruhUdyogOrdersPage() {
                       className="flex-1 py-2.5 px-3 rounded-xl bg-[#1b6442] hover:bg-[#144d32] text-white text-xs font-bold flex items-center justify-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-60"
                     >
                       <FiCheck className="w-4 h-4 stroke-[3]" />
-                      <span>Mark as Preparing</span>
+                      <span>{t('markPreparing') || 'Mark as Preparing'}</span>
                     </button>
 
                     <button
@@ -686,7 +688,7 @@ export default function GruhUdyogOrdersPage() {
                       onClick={() => updateStatus(selectedOrder.id, 'Cancelled')}
                       className="py-2.5 px-3 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold transition-colors cursor-pointer"
                     >
-                      Cancel Order
+                      {t('cancelOrder') || 'Cancel Order'}
                     </button>
                   </div>
                 )}
@@ -709,7 +711,7 @@ export default function GruhUdyogOrdersPage() {
                       onClick={() => updateStatus(selectedOrder.id, 'Cancelled')}
                       className="py-2.5 px-3 rounded-xl border border-rose-200 text-rose-600 hover:bg-rose-50 text-xs font-semibold transition-colors cursor-pointer"
                     >
-                      Cancel Order
+                      {t('cancelOrder') || 'Cancel Order'}
                     </button>
                   </div>
                 )}

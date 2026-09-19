@@ -334,9 +334,9 @@ export default function ProfilePage({ role }) {
           <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-brand-orange block">
-                Update Account
+                {t('updateAccount') || 'Update Account'}
               </span>
-              <h2 className="text-xl font-bold text-slate-900">Edit Profile Details</h2>
+              <h2 className="text-xl font-bold text-slate-900">{t('editProfileDetails') || 'Edit Profile Details'}</h2>
             </div>
             <span className="text-xs font-semibold text-slate-500 bg-slate-100 px-3 py-1 rounded-full">
               {roleLabel}
@@ -347,7 +347,7 @@ export default function ProfilePage({ role }) {
             {/* Full Name */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 block" htmlFor="edit-name">
-                Full Name *
+                {t('fullName')} *
               </label>
               <input
                 className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-all shadow-xs ${
@@ -357,7 +357,7 @@ export default function ProfilePage({ role }) {
                 }`}
                 id="edit-name"
                 onChange={(e) => setFormName(e.target.value)}
-                placeholder="Enter full name"
+                placeholder={t('enterFullName') || 'Enter full name'}
                 required
                 type="text"
                 value={formName}
@@ -372,7 +372,7 @@ export default function ProfilePage({ role }) {
             {/* Email */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 block" htmlFor="edit-email">
-                Email Address
+                {t('emailAddress') || 'Email Address'}
               </label>
               <input
                 className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-all shadow-xs ${
@@ -382,7 +382,7 @@ export default function ProfilePage({ role }) {
                 }`}
                 id="edit-email"
                 onChange={(e) => setFormEmail(e.target.value)}
-                placeholder="Enter email address"
+                placeholder={t('enterEmailAddress') || 'Enter email address'}
                 type="email"
                 value={formEmail}
               />
@@ -396,7 +396,7 @@ export default function ProfilePage({ role }) {
             {/* Phone Number */}
             <div className="space-y-1.5">
               <label className="text-xs font-bold text-slate-700 block" htmlFor="edit-phone">
-                Phone Number *
+                {t('phoneNumber')} *
               </label>
               <input
                 className={`w-full px-3.5 py-2.5 bg-white border rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 transition-all shadow-xs ${
@@ -406,7 +406,7 @@ export default function ProfilePage({ role }) {
                 }`}
                 id="edit-phone"
                 onChange={(e) => setFormPhone(e.target.value)}
-                placeholder="Enter phone number"
+                placeholder={t('enterPhoneNumber') || 'Enter phone number'}
                 required
                 type="tel"
                 value={formPhone}
@@ -422,7 +422,7 @@ export default function ProfilePage({ role }) {
             {isSupplierLike && (
               <div className="space-y-1.5 relative" ref={categoryDropdownRef}>
                 <label className="text-xs font-bold text-slate-700 block">
-                  Categories (Select multiple) *
+                  {t('categoriesSelectMultiple') || 'Categories (Select multiple) *'}
                 </label>
                 <div
                   className={`w-full min-h-[2.65rem] px-3.5 py-2 bg-white border rounded-xl text-sm text-slate-800 cursor-pointer flex items-center justify-between gap-2 shadow-xs transition-all ${
@@ -448,7 +448,7 @@ export default function ProfilePage({ role }) {
                 {isCategoryDropdownOpen && (
                   <div className="absolute top-full left-0 right-0 z-50 mt-1 max-h-60 overflow-y-auto rounded-xl border border-slate-200 bg-white p-2 shadow-xl space-y-1">
                     <div className="text-[10px] font-bold text-slate-400 uppercase tracking-wider px-2 py-1">
-                      Choose Multiple Categories
+                      {t('chooseMultipleCategories') || 'Choose Multiple Categories'}
                     </div>
                     {AVAILABLE_CATEGORIES.map((cat) => {
                       const isSelected = formCategories.includes(cat)
@@ -512,7 +512,7 @@ export default function ProfilePage({ role }) {
           <div className="space-y-3 pt-3 border-t border-slate-100">
             <div>
               <label className="text-xs font-bold text-slate-700 block mb-1">
-                {isSupplierLike ? 'Covered Service Areas' : 'Shop Area'} *
+                {isSupplierLike ? (t('coveredServiceAreas') || 'Covered Service Areas') : (t('shopArea') || 'Shop Area')} *
               </label>
               <p className="text-xs text-slate-400">
                 {isSupplierLike
@@ -532,7 +532,7 @@ export default function ProfilePage({ role }) {
                     addServiceArea()
                   }
                 }}
-                placeholder="Type area (e.g. Maninagar, Satellite) and press Add"
+                placeholder={t('typeAreaPrompt') || 'Type area (e.g. Maninagar, Satellite) and press Add'}
                 type="text"
                 value={formAreaInput}
               />
@@ -542,13 +542,13 @@ export default function ProfilePage({ role }) {
                 type="button"
               >
                 <FiPlus className="w-4 h-4" />
-                <span>Add Area</span>
+                <span>{t('addArea') || 'Add Area'}</span>
               </button>
             </div>
 
             {/* Popular Area Suggestion Chips */}
             <div className="space-y-1">
-              <span className="text-[11px] font-semibold text-slate-400 block">Quick Suggestions:</span>
+              <span className="text-[11px] font-semibold text-slate-400 block">{t('popularAreasPrompt') || 'Quick Suggestions:'}</span>
               <div className="flex flex-wrap gap-1.5">
                 {POPULAR_AREAS.map((popArea) => {
                   const isAdded = formServiceAreas.some(
@@ -603,13 +603,13 @@ export default function ProfilePage({ role }) {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-3 border-t border-slate-100">
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 block" htmlFor="edit-shop-name">
-                  Shop Name
+                  {t('shopName')}
                 </label>
                 <input
                   className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange shadow-xs transition-all"
                   id="edit-shop-name"
                   onChange={(e) => setFormShopName(e.target.value)}
-                  placeholder="Enter shop name"
+                  placeholder={t('enterShopName')}
                   type="text"
                   value={formShopName}
                 />
@@ -617,13 +617,13 @@ export default function ProfilePage({ role }) {
 
               <div className="space-y-1.5">
                 <label className="text-xs font-bold text-slate-700 block" htmlFor="edit-shop-address">
-                  Shop Address
+                  {t('shopAddress')}
                 </label>
                 <input
                   className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange shadow-xs transition-all"
                   id="edit-shop-address"
                   onChange={(e) => setFormShopAddress(e.target.value)}
-                  placeholder="Enter full shop address"
+                  placeholder={t('enterShopAddress')}
                   type="text"
                   value={formShopAddress}
                 />
@@ -649,7 +649,7 @@ export default function ProfilePage({ role }) {
               {isSaving && (
                 <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
               )}
-              <span>{isSaving ? 'Saving Changes...' : 'Save Changes'}</span>
+              <span>{isSaving ? (t('savingChanges') || 'Saving Changes...') : (t('saveChanges') || 'Save Changes')}</span>
             </button>
           </div>
         </form>
@@ -696,7 +696,7 @@ export default function ProfilePage({ role }) {
 
               {/* Email */}
               <div className="p-3.5 bg-slate-50/70 rounded-xl border border-slate-100">
-                <dt className="text-xs font-medium text-slate-400 mb-1">Email</dt>
+                <dt className="text-xs font-medium text-slate-400 mb-1">{t('email') || 'Email'}</dt>
                 <dd className="font-semibold text-slate-800 flex items-center gap-2">
                   <FiMail className="w-4 h-4 text-brand-orange" />
                   <span>{contactEmail}</span>
@@ -705,7 +705,7 @@ export default function ProfilePage({ role }) {
 
               {/* Phone Number */}
               <div className="p-3.5 bg-slate-50/70 rounded-xl border border-slate-100">
-                <dt className="text-xs font-medium text-slate-400 mb-1">Phone Number</dt>
+                <dt className="text-xs font-medium text-slate-400 mb-1">{t('phoneNumber')}</dt>
                 <dd className="font-semibold text-slate-800 flex items-center gap-2">
                   <FiPhone className="w-4 h-4 text-brand-orange" />
                   <span>{contactPhone}</span>
@@ -714,7 +714,7 @@ export default function ProfilePage({ role }) {
 
               {/* Role & Joined */}
               <div className="p-3.5 bg-slate-50/70 rounded-xl border border-slate-100">
-                <dt className="text-xs font-medium text-slate-400 mb-1">Member Since</dt>
+                <dt className="text-xs font-medium text-slate-400 mb-1">{t('memberSince')}</dt>
                 <dd className="font-semibold text-slate-800">{joinedDate}</dd>
               </div>
 
@@ -723,7 +723,7 @@ export default function ProfilePage({ role }) {
                 <div className="p-3.5 bg-slate-50/70 rounded-xl border border-slate-100 sm:col-span-2">
                   <dt className="text-xs font-medium text-slate-400 mb-1.5 flex items-center gap-1.5">
                     <FiTag className="w-3.5 h-3.5 text-brand-orange" />
-                    <span>Categories</span>
+                    <span>{t('categories')}</span>
                   </dt>
                   <dd>
                     {displayCategories.length > 0 ? (
@@ -738,7 +738,7 @@ export default function ProfilePage({ role }) {
                         ))}
                       </div>
                     ) : (
-                      <span className="text-slate-400 italic text-xs">No categories assigned</span>
+                      <span className="text-slate-400 italic text-xs">{t('noCategoriesAssigned') || 'No categories assigned'}</span>
                     )}
                   </dd>
                 </div>
@@ -748,7 +748,7 @@ export default function ProfilePage({ role }) {
               <div className="p-3.5 bg-slate-50/70 rounded-xl border border-slate-100 sm:col-span-2">
                 <dt className="text-xs font-medium text-slate-400 mb-1.5 flex items-center gap-1.5">
                   <FiMapPin className="w-3.5 h-3.5 text-purple-600" />
-                  <span>{isSupplierLike ? 'Service Areas' : 'Area'}</span>
+                  <span>{isSupplierLike ? t('serviceAreas') : t('area')}</span>
                 </dt>
                 <dd>
                   {displayAreas.length > 0 ? (
@@ -764,7 +764,7 @@ export default function ProfilePage({ role }) {
                       ))}
                     </div>
                   ) : (
-                    <span className="text-slate-400 italic text-xs">No area configured</span>
+                    <span className="text-slate-400 italic text-xs">{t('noAreaConfigured') || 'No area configured'}</span>
                   )}
                 </dd>
               </div>

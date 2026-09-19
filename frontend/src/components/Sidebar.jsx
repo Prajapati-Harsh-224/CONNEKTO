@@ -81,8 +81,8 @@ export default function Sidebar({ role: routeRole }) {
           </svg>
         </div>
         <div>
-          <div className="text-xs font-bold text-slate-800 leading-tight">Supporting Local Businesses</div>
-          <div className="text-[11px] text-slate-400 mt-1 leading-snug">Handmade today for a better tomorrow.</div>
+          <div className="text-xs font-bold text-slate-800 leading-tight">{t('supportingLocalBusinesses') || 'Supporting Local Businesses'}</div>
+          <div className="text-[11px] text-slate-400 mt-1 leading-snug">{t('handmadeTodayBetterTomorrow') || 'Handmade today for a better tomorrow.'}</div>
         </div>
       </div>
     </aside>

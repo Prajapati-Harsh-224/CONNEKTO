@@ -45,9 +45,14 @@ function displayOrderId(orderId, maxLength = 25) {
   return value.length > maxLength ? `${value.slice(0, maxLength)}...` : value
 }
 
-function displayPaymentMethod(paymentMethod) {
-  const labels = { CASH_ON_DELIVERY: 'Cash on Delivery', PAY_LATER: 'Pay Later', REQUEST_ORDER: 'Request Order' }
+function displayPaymentMethod(paymentMethod, t) {
   const normalized = String(paymentMethod || '').trim().toUpperCase().replaceAll('-', '_').replaceAll(' ', '_')
+  if (t) {
+    if (normalized === 'CASH_ON_DELIVERY') return t('cashOnDelivery')
+    if (normalized === 'PAY_LATER') return t('payLater')
+    if (normalized === 'REQUEST_ORDER') return t('requestOrder')
+  }
+  const labels = { CASH_ON_DELIVERY: 'Cash on Delivery', PAY_LATER: 'Pay Later', REQUEST_ORDER: 'Request Order' }
   return labels[normalized] || paymentMethod || '—'
 }
 
@@ -237,9 +242,9 @@ export default function ShopOwnerOrdersPage() {
               onChange={(event) => setTimeFilter(event.target.value)}
               value={timeFilter}
             >
-              <option>{t('allTime')}</option>
-              <option>{t('last30Days')}</option>
-              <option>{t('last90Days')}</option>
+              <option value="All Time">{t('allTime')}</option>
+              <option value="Last 30 days">{t('last30Days')}</option>
+              <option value="Last 90 days">{t('last90Days')}</option>
             </select>
 
             <select
@@ -408,8 +413,8 @@ export default function ShopOwnerOrdersPage() {
                 <span className="font-medium text-slate-700">{formatOrderDate(selectedOrder.createdAt)}</span>
               </div>
               <div className="flex justify-between">
-                <span>Payment:</span>
-                <span className="font-medium text-slate-700">{displayPaymentMethod(selectedOrder.paymentMethod)}</span>
+                <span>{t('payment')}:</span>
+                <span className="font-medium text-slate-700">{displayPaymentMethod(selectedOrder.paymentMethod, t)}</span>
               </div>
             </div>
 

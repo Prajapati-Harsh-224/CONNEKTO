@@ -31,7 +31,11 @@ export default function ShopOwnerOrderDetailPage() {
   }
   if (!order) return <EmptyState title={t('orderNotFound')} message={t('orderUnavailable')} />
 
-  const paymentLabels = { CASH_ON_DELIVERY: 'Cash on Delivery', PAY_LATER: 'Pay Later', REQUEST_ORDER: 'Request Order' }
+  const paymentLabels = {
+    CASH_ON_DELIVERY: t('cashOnDelivery'),
+    PAY_LATER: t('payLater'),
+    REQUEST_ORDER: t('requestOrder')
+  }
 
   return (
     <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
@@ -72,7 +76,7 @@ export default function ShopOwnerOrderDetailPage() {
         <div className="p-4 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
           <span className="text-[11px] font-bold uppercase tracking-wider text-slate-400">{t('paymentMethod')}</span>
           <strong className="block text-sm sm:text-base font-bold text-slate-900 mt-1">
-            {paymentLabels[order.paymentMethod] || 'Request Order'}
+            {paymentLabels[order.paymentMethod] || t('requestOrder')}
           </strong>
         </div>
       </div>
@@ -85,7 +89,7 @@ export default function ShopOwnerOrderDetailPage() {
               <h2 className="text-lg font-black text-slate-900">{t('supplierOrderDetails')}</h2>
             </div>
             <span className="px-3 py-1 rounded-full bg-slate-100 text-xs font-bold text-slate-600">
-              {order.items.length} {order.items.length === 1 ? 'item' : 'items'}
+              {order.items.length} {order.items.length === 1 ? t('itemCount') : t('itemsCount')}
             </span>
           </div>
 
@@ -103,8 +107,8 @@ export default function ShopOwnerOrderDetailPage() {
                     </strong>
                     <span className="text-xs text-slate-500 mt-0.5">
                       {isBox
-                        ? `${boxes} ${boxes === 1 ? 'Box' : 'Boxes'} (${item.quantity} packets) × Rs ${unitPrice.toLocaleString('en-IN')}/packet`
-                        : `${item.quantity} units × Rs ${unitPrice.toLocaleString('en-IN')}`}
+                        ? `${boxes} ${boxes === 1 ? t('boxSingular') : t('boxPlural')} (${item.quantity} ${t('packetPlural')}) × Rs ${unitPrice.toLocaleString('en-IN')}/${t('packetSingular')}`
+                        : `${item.quantity} ${t('units')} × Rs ${unitPrice.toLocaleString('en-IN')}`}
                     </span>
                   </div>
                   <strong className="text-sm sm:text-base font-bold text-slate-900 whitespace-nowrap">

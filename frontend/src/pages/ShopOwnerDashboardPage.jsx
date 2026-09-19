@@ -47,9 +47,8 @@ export default function ShopOwnerDashboardPage() {
 
   const getDynamicGreeting = () => {
     const hour = new Date().getHours()
-    if (hour < 12) return t('goodMorning')
-    if (hour < 17) return t('goodAfternoon')
-    return t('goodEvening')
+    const label = hour < 12 ? t('goodMorning') : hour < 17 ? t('goodAfternoon') : t('goodEvening')
+    return String(label || '').replace(/,\s*$/, '').trim()
   }
 
   const totalOrdersCount = orders.length

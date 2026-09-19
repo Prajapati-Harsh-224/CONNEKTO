@@ -1,8 +1,10 @@
 import { useState, useEffect, useRef } from 'react'
 import { Link } from 'react-router-dom'
 import { apiRequest } from '../services/api.js'
+import { useLocale } from '../context/LocaleContext.jsx'
 
 export default function NotificationDropdown({ role, isOpen, onClose, onUnreadChange }) {
+  const { t } = useLocale()
   const [notifications, setNotifications] = useState([])
   const [loading, setLoading] = useState(false)
   const [readIds, setReadIds] = useState(() => {
@@ -119,7 +121,7 @@ export default function NotificationDropdown({ role, isOpen, onClose, onUnreadCh
     >
       <div className="px-4 py-3 border-b border-slate-100 flex items-center justify-between bg-slate-50/80">
         <div className="font-bold text-sm text-slate-900 flex items-center gap-1.5">
-          <span>Notifications</span>
+          <span>{t('notifications') || 'Notifications'}</span>
           {unreadCount > 0 && (
             <span className="bg-rose-500 text-white rounded-full px-2 py-0.5 text-[11px] font-bold">
               {unreadCount}
@@ -132,7 +134,7 @@ export default function NotificationDropdown({ role, isOpen, onClose, onUnreadCh
             type="button"
             className="text-xs font-semibold text-[#f06535] hover:text-[#e05424] cursor-pointer bg-transparent border-none p-0"
           >
-            Mark all read
+            {t('markAllAsRead') || 'Mark all read'}
           </button>
         )}
       </div>
@@ -140,11 +142,11 @@ export default function NotificationDropdown({ role, isOpen, onClose, onUnreadCh
       <div className="overflow-y-auto flex-1 divide-y divide-slate-50 py-1">
         {loading ? (
           <div className="p-6 text-center text-slate-400 text-xs">
-            Loading notifications...
+            {t('loadingNotifications') || 'Loading notifications...'}
           </div>
         ) : notifications.length === 0 ? (
           <div className="p-6 text-center text-slate-400 text-xs">
-            No notifications available
+            {t('noNotifications') || 'No notifications available'}
           </div>
         ) : (
           notifications.map(n => {

@@ -40,7 +40,7 @@ export default function GruhUdyogServiceAreasPage() {
 
       {areas.length ? (
         <div className="bg-white rounded-2xl border border-slate-200/80 p-6 shadow-xs">
-          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">Covered Localities</h2>
+          <h2 className="text-sm font-bold text-slate-900 uppercase tracking-wider mb-4">{t('coveredLocalities') || 'Covered Localities'}</h2>
           <div className="flex flex-wrap gap-2.5">
             {areas.map((area) => (
               <span

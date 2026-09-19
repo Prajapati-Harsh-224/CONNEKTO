@@ -1,14 +1,27 @@
+import { useLocale } from '../context/LocaleContext.jsx'
+
+const statusKeys = {
+  Pending: 'pending',
+  Accepted: 'accepted',
+  Preparing: 'preparing',
+  'Out for Delivery': 'outForDelivery',
+  Delivered: 'delivered',
+  Cancelled: 'cancelled',
+}
+
 const statuses = ['Pending', 'Accepted', 'Preparing', 'Out for Delivery', 'Delivered']
 
 export default function StatusTimeline({ currentStatus }) {
+  const { t } = useLocale()
   const currentIndex = statuses.indexOf(currentStatus)
   const isCancelled = currentStatus === 'Cancelled'
 
   return (
-    <ol className="relative pl-7 sm:pl-8 space-y-6 before:absolute before:left-3 sm:before:left-3.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200" aria-label="Order status timeline">
+    <ol className="relative pl-7 sm:pl-8 space-y-6 before:absolute before:left-3 sm:before:left-3.5 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200" aria-label={t('statusTimeline') || 'Order status timeline'}>
       {statuses.map((status, index) => {
         const isDone = !isCancelled && index <= currentIndex
         const isCurrent = status === currentStatus
+        const label = t(statusKeys[status]) || status
 
         return (
           <li className="relative flex items-start gap-3" key={status}>
@@ -24,11 +37,11 @@ export default function StatusTimeline({ currentStatus }) {
             </span>
             <div className="flex flex-col min-w-0">
               <strong className={`text-xs sm:text-sm font-bold ${isDone ? 'text-slate-900' : 'text-slate-400'}`}>
-                {status}
+                {label}
               </strong>
               {isCurrent && (
                 <span className="text-[11px] font-bold uppercase tracking-wider text-brand-orange mt-0.5">
-                  Current status
+                  {t('currentStatus') || 'Current status'}
                 </span>
               )}
             </div>
@@ -44,9 +57,9 @@ export default function StatusTimeline({ currentStatus }) {
             !
           </span>
           <div className="flex flex-col min-w-0">
-            <strong className="text-xs sm:text-sm font-bold text-rose-600">Cancelled</strong>
+            <strong className="text-xs sm:text-sm font-bold text-rose-600">{t('cancelled') || 'Cancelled'}</strong>
             <span className="text-[11px] font-bold uppercase tracking-wider text-rose-500 mt-0.5">
-              Current status
+              {t('currentStatus') || 'Current status'}
             </span>
           </div>
         </li>

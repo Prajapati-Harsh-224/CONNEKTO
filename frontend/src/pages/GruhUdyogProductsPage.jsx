@@ -387,7 +387,7 @@ export default function GruhUdyogProductsPage() {
           <FiSearch className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
           <input
             type="text"
-            placeholder="Search products by name..."
+            placeholder={t('searchProductsByName') || 'Search products by name...'}
             value={search}
             onChange={(e) => {
               setSearch(e.target.value)
@@ -702,8 +702,8 @@ export default function GruhUdyogProductsPage() {
       {filteredProducts.length > 0 && (
         <div className="flex items-center justify-between pt-2 text-xs text-slate-500">
           <span>
-            Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, filteredProducts.length)} of{' '}
-            {filteredProducts.length} products
+            {t('showing') || 'Showing'} {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, filteredProducts.length)} {t('of') || 'of'}{' '}
+            {filteredProducts.length} {t('products') || 'products'}
           </span>
 
           <div className="flex items-center gap-1.5">
@@ -779,11 +779,11 @@ export default function GruhUdyogProductsPage() {
             <form onSubmit={handleSaveProduct} className="space-y-3.5">
               {/* Product Name */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Product Name *</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{t('productNameLabel') || 'Product Name *'}</label>
                 <input
                   type="text"
                   required
-                  placeholder="e.g. Homemade Mango Pickle, Khakhra..."
+                  placeholder={t('productNamePlaceholder') || 'e.g. Homemade Mango Pickle, Khakhra...'}
                   value={form.name}
                   onChange={(e) => setForm({ ...form, name: e.target.value })}
                   className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1b6442]/20 focus:border-[#1b6442] focus:bg-white"
@@ -793,7 +793,7 @@ export default function GruhUdyogProductsPage() {
               {/* Category & Pack Size */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Category *</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">{t('categoryLabel') || 'Category *'}</label>
                   <select
                     value={form.category}
                     onChange={(e) => setForm({ ...form, category: e.target.value })}
@@ -808,7 +808,7 @@ export default function GruhUdyogProductsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Unit / Pack Size *</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">{t('unitPackSizeLabel') || 'Unit / Pack Size *'}</label>
                   <input
                     type="text"
                     required
@@ -823,7 +823,7 @@ export default function GruhUdyogProductsPage() {
               {/* Price, Stock Quantity & Status */}
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Price (₹) *</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">{t('priceLabel') || 'Price (₹) *'}</label>
                   <input
                     type="number"
                     min="1"
@@ -837,7 +837,7 @@ export default function GruhUdyogProductsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Available Stock *</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">{t('availableStockLabel') || 'Available Stock *'}</label>
                   <input
                     type="number"
                     min="0"
@@ -850,24 +850,24 @@ export default function GruhUdyogProductsPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Status</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">{t('statusLabel') || 'Status'}</label>
                   <select
                     value={form.isActive ? 'true' : 'false'}
                     onChange={(e) => setForm({ ...form, isActive: e.target.value === 'true' })}
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1b6442]/20 focus:border-[#1b6442] focus:bg-white cursor-pointer"
                   >
-                    <option value="true">Active</option>
-                    <option value="false">Inactive</option>
+                    <option value="true">{t('active') || 'Active'}</option>
+                    <option value="false">{t('inactive') || 'Inactive'}</option>
                   </select>
                 </div>
               </div>
 
               {/* Description */}
               <div>
-                <label className="block text-xs font-bold text-slate-700 mb-1">Description</label>
+                <label className="block text-xs font-bold text-slate-700 mb-1">{t('descriptionLabel') || 'Description'}</label>
                 <textarea
                   rows="2"
-                  placeholder="Describe ingredients, process, specialty..."
+                  placeholder={t('descriptionPlaceholder') || 'Describe ingredients, process, specialty...'}
                   value={form.description}
                   onChange={(e) => setForm({ ...form, description: e.target.value })}
                   className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-[#1b6442]/20 focus:border-[#1b6442] focus:bg-white"
@@ -877,8 +877,8 @@ export default function GruhUdyogProductsPage() {
               {/* Product Image URL with Presets and Live Preview */}
               <div>
                 <div className="flex items-center justify-between mb-1">
-                  <label className="text-xs font-bold text-slate-700">Product Image URL</label>
-                  <span className="text-[11px] text-slate-400">Pick preset or paste link</span>
+                  <label className="text-xs font-bold text-slate-700">{t('productImageUrlLabel') || 'Product Image URL'}</label>
+                  <span className="text-[11px] text-slate-400">{t('pickPresetOrPaste') || 'Pick preset or paste link'}</span>
                 </div>
 
                 {/* Quick Presets */}
@@ -933,7 +933,7 @@ export default function GruhUdyogProductsPage() {
                           : 'bg-[#fef4ea] text-[#d95d2c]'
                       }`}
                     >
-                      {form.isActive ? 'Active' : 'Inactive'}
+                      {form.isActive ? (t('active') || 'Active') : (t('inactive') || 'Inactive')}
                     </span>
                   </div>
                 </div>
@@ -947,7 +947,7 @@ export default function GruhUdyogProductsPage() {
                   disabled={isSaving}
                   className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
                 >
-                  Cancel
+                  {t('cancel') || 'Cancel'}
                 </button>
                 <button
                   type="submit"
@@ -955,11 +955,11 @@ export default function GruhUdyogProductsPage() {
                   className="px-5 py-2 rounded-xl bg-[#1b6442] hover:bg-[#144d32] text-white text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-emerald-900/10 transition-all cursor-pointer disabled:opacity-60"
                 >
                   {isSaving ? (
-                    <span>Saving...</span>
+                    <span>{t('saving') || 'Saving...'}</span>
                   ) : (
                     <>
                       <FiCheck className="w-4 h-4 stroke-[3]" />
-                      <span>{modalMode === 'add' ? 'Save Product' : 'Update Product'}</span>
+                      <span>{modalMode === 'add' ? (t('saveProduct') || 'Save Product') : (t('updateProduct') || 'Update Product')}</span>
                     </>
                   )}
                 </button>
@@ -1052,7 +1052,7 @@ export default function GruhUdyogProductsPage() {
                 onClick={() => openEditModal(viewingProduct)}
                 className="px-4 py-2 rounded-xl bg-[#1b6442] text-white text-xs font-bold hover:bg-[#144d32] transition-colors"
               >
-                Edit Product
+                {t('editProduct') || 'Edit Product'}
               </button>
             </div>
           </div>

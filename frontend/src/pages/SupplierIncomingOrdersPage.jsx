@@ -53,13 +53,13 @@ export default function SupplierIncomingOrdersPage() {
   const [dateFilter, setDateFilter] = useState('Select Date Range')
 
   const tabs = [
-    t('ordersAll'),
-    t('pending'),
-    t('accepted'),
-    t('preparing'),
-    t('outForDelivery'),
-    t('delivered'),
-    t('cancelled'),
+    { key: 'All Orders', label: t('ordersAll') || 'All Orders' },
+    { key: 'Pending', label: t('pending') || 'Pending' },
+    { key: 'Accepted', label: t('accepted') || 'Accepted' },
+    { key: 'Preparing', label: t('preparing') || 'Preparing' },
+    { key: 'Out for Delivery', label: t('outForDelivery') || 'Out for Delivery' },
+    { key: 'Delivered', label: t('delivered') || 'Delivered' },
+    { key: 'Cancelled', label: t('cancelled') || 'Cancelled' },
   ]
   const statusOptions = [
     { label: t('allStatuses'), value: 'All Statuses' },
@@ -261,17 +261,17 @@ export default function SupplierIncomingOrdersPage() {
         {tabs.map((tab) => (
           <button
             className={`px-3.5 py-2 rounded-xl text-xs font-semibold whitespace-nowrap transition-colors cursor-pointer flex items-center gap-1.5 ${
-              activeTab === tab
+              activeTab === tab.key
                 ? 'bg-emerald-600 text-white shadow-xs'
                 : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
             }`}
-            key={tab}
-            onClick={() => setActiveTab(tab)}
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
             role="tab"
             type="button"
           >
-            <span>{tab}</span>
-            {tab !== 'All Orders' && <small className="opacity-80">({counts[tab] || 0})</small>}
+            <span>{tab.label}</span>
+            {tab.key !== 'All Orders' && <small className="opacity-80">({counts[tab.key] || 0})</small>}
           </button>
         ))}
       </div>
@@ -355,7 +355,9 @@ export default function SupplierIncomingOrdersPage() {
                       <small className="text-slate-400 text-[11px]">{order.area}</small>
                     </div>
                     <div>
-                      <small className="text-slate-500 text-xs font-medium">{orderItems.length} items</small>
+                      <small className="text-slate-500 text-xs font-medium">
+                        {orderItems.length} {orderItems.length === 1 ? (t('itemCount') || 'item') : (t('itemsCount') || 'items')}
+                      </small>
                     </div>
                     <div className="font-bold text-slate-900 tabular-nums">{formatCurrency(order.amount)}</div>
                     <div><StatusBadge status={order.status} /></div>
