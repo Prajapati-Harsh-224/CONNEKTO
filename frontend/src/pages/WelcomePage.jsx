@@ -2,7 +2,7 @@ import { useCallback, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { FiArrowRight, FiPlay, FiBriefcase, FiShield, FiTrendingUp, FiShoppingBag, FiTruck, FiUsers, FiMail, FiMapPin } from 'react-icons/fi'
 import { useLocale } from '../context/LocaleContext.jsx'
-import heroReference from '../assets/connekto_hero_visual_reference.png'
+import homeHeroBg from '../assets/Home_Hero.png'
 import contactIllustration from '../assets/contact_illustration.svg'
 
 export default function WelcomePage() {
@@ -43,11 +43,26 @@ export default function WelcomePage() {
     <div className="w-full min-h-screen bg-brand-cream/30 text-slate-800 selection:bg-brand-orange/20 selection:text-brand-orange">
 
       {/* ── HERO SECTION ── */}
-      <section className="relative overflow-hidden pt-6 sm:pt-12 pb-14 sm:pb-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" id="home" aria-label="Hero">
-        <div className="grid grid-cols-1 lg:grid-cols-12 gap-10 lg:gap-12 items-center">
+      <section className="relative w-full overflow-hidden pt-6 sm:pt-12 pb-14 sm:pb-20" id="home" aria-label="Hero">
+        {/* Full Hero Background Image */}
+        <div
+          className="absolute inset-0 w-full h-full bg-cover bg-center sm:bg-[position:65%_center] lg:bg-center pointer-events-none"
+          style={{
+            backgroundImage: `url(${homeHeroBg})`,
+            backgroundRepeat: 'no-repeat',
+          }}
+          aria-hidden="true"
+        />
 
-          {/* LEFT COLUMN */}
-          <div className="lg:col-span-7 space-y-6">
+        {/* Subtle overlay/gradient for readability */}
+        <div
+          className="absolute inset-0 bg-gradient-to-r from-white/90 via-white/60 to-white/10 sm:from-white/80 sm:via-white/40 sm:to-transparent pointer-events-none"
+          aria-hidden="true"
+        />
+
+        {/* Hero Content Layer */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+          <div className="max-w-2xl lg:max-w-3xl space-y-6">
             <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-50 border border-orange-200 shadow-xs">
               {t('heroEyebrow')}
             </span>
@@ -112,19 +127,6 @@ export default function WelcomePage() {
               </div>
             </div>
           </div>
-
-          {/* RIGHT COLUMN — Hero Visual */}
-          <div className="lg:col-span-5 flex justify-center">
-            <div className="relative w-full max-w-lg lg:max-w-none">
-              <div className="absolute -inset-2 bg-gradient-to-r from-orange-200 to-amber-200 rounded-3xl blur-xl opacity-40 -z-10" />
-              <img
-                alt="Local businesses connected through Connekto"
-                className="w-full h-auto rounded-2xl shadow-xl border border-white/80 object-cover"
-                src={heroReference}
-              />
-            </div>
-          </div>
-
         </div>
       </section>
 
