@@ -17,11 +17,11 @@ const statusLabels = {
 
 function StatusIcon({ status }) {
   const norm = String(status).toLowerCase()
-  if (norm === 'pending' || norm === 'new') return <FiClock style={{ marginRight: '4px' }} />
-  if (norm === 'accepted' || norm === 'confirmed' || norm === 'delivered') return <FiCheckCircle style={{ marginRight: '4px' }} />
-  if (norm === 'preparing' || norm === 'processing') return <FiPackage style={{ marginRight: '4px' }} />
-  if (norm === 'out for delivery' || norm === 'on the way') return <FiTruck style={{ marginRight: '4px' }} />
-  if (norm === 'cancelled') return <FiXCircle style={{ marginRight: '4px' }} />
+  if (norm === 'pending' || norm === 'new') return <FiClock className="shrink-0" />
+  if (norm === 'accepted' || norm === 'confirmed' || norm === 'delivered') return <FiCheckCircle className="shrink-0" />
+  if (norm === 'preparing' || norm === 'processing') return <FiPackage className="shrink-0" />
+  if (norm === 'out for delivery' || norm === 'on the way') return <FiTruck className="shrink-0" />
+  if (norm === 'cancelled') return <FiXCircle className="shrink-0" />
   return null
 }
 
@@ -47,7 +47,7 @@ export default function StatusBadge({ status }) {
   const styleClass = statusStyles[norm] || 'bg-slate-50 text-slate-700 border-slate-200'
 
   return (
-    <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[11px] font-semibold tracking-wide border ${styleClass}`}>
+    <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] sm:text-[11px] font-semibold tracking-wide border whitespace-nowrap shrink-0 ${styleClass}`}>
       <StatusIcon status={status} />
       <span>{t(labelKey)}</span>
     </span>

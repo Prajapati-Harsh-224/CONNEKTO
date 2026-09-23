@@ -11,7 +11,7 @@ export default function AppShell() {
   const { pathname, search } = useLocation()
 
   const isWorkspace = pathname.startsWith('/dashboard/')
-  const isAuthPage = pathname === '/signup' || pathname === '/login' || pathname === '/role-selection' || pathname === '/forgot-password'
+  const isAuthPage = pathname === '/signup' || pathname === '/login' || pathname === '/role-selection' || pathname === '/forgot-password' || pathname === '/register'
   const isNoScrollPage = isAuthPage || pathname === '/'
 
   useEffect(() => {
@@ -37,9 +37,10 @@ export default function AppShell() {
   const isSupplierLogin = pathname === '/login' && getSelectedRole() === 'SUPPLIER'
   const isGruhUdyogLogin = pathname === '/login' && getSelectedRole() === 'GRUH_UDYOG'
   const isForgotPassword = pathname === '/forgot-password'
+  const isRegister = pathname === '/register'
 
   return (
-    <div className={`min-h-screen flex flex-col ${isWorkspace ? '' : 'bg-[#f4f6f9]'}`}>
+    <div className="min-h-screen flex flex-col bg-[#f4f6f9]">
       {!isWorkspace && (
         <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
@@ -55,8 +56,11 @@ export default function AppShell() {
             {!isAuthPage && <Navbar />}
             <div className="flex items-center gap-2 sm:gap-3 shrink-0">
               <LanguageSelector />
-              <Link className="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100/60 transition-colors" to="/login">
-                {t('signIn')}
+              <Link 
+                className="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100/60 transition-colors" 
+                to={search && search.includes('role=') ? `/register${search}` : '/register'}
+              >
+                {t('signUp')}
               </Link>
               <Link className="px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#f06535] hover:bg-[#e05424] shadow-xs hover:shadow-sm transition-all flex items-center gap-1.5" to="/role-selection">
                 <span>{t('getStarted')}</span>
@@ -66,10 +70,10 @@ export default function AppShell() {
           </div>
         </header>
       )}
-      <main className="flex-1 w-full">
+      <main className={`flex-1 w-full ${isWorkspace ? 'h-full overflow-hidden' : ''}`}>
         <Outlet />
       </main>
-      {!isWorkspace && !isShopOwnerSignup && !isSupplierSignup && !isGruhUdyogSignup && !isShopOwnerLogin && !isSupplierLogin && !isGruhUdyogLogin && !isForgotPassword && (
+      {!isWorkspace && !isShopOwnerSignup && !isSupplierSignup && !isGruhUdyogSignup && !isShopOwnerLogin && !isSupplierLogin && !isGruhUdyogLogin && !isForgotPassword && !isRegister && (
         <Footer />
       )}
     </div>

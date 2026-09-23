@@ -153,45 +153,66 @@ export default function SupplierDashboardPage() {
           </button>
         </div>
 
-        <div className="overflow-x-auto -mx-5 sm:-mx-6 px-5 sm:px-6" role="table" aria-label={t('recentOrders')}>
-          <div className="min-w-[760px]">
-            <div className="grid grid-cols-[1.2fr_2fr_1fr_1.2fr_1.2fr_1.6fr_auto] gap-4 py-3 px-4 bg-slate-50/80 rounded-xl text-xs font-bold text-slate-500 uppercase tracking-wider mt-4" role="row">
-              <span role="columnheader">{t('orderId')}</span>
-              <span role="columnheader">{t('customerShop')}</span>
-              <span role="columnheader">{t('itemsCount')}</span>
-              <span role="columnheader">{t('amount')}</span>
-              <span role="columnheader">{t('status')}</span>
-              <span role="columnheader">{t('dateTime')}</span>
-              <span aria-hidden="true" />
-            </div>
-
-            <div className="divide-y divide-slate-100">
-              {recentOrders.map((order) => (
-                <div 
-                  className="grid grid-cols-[1.2fr_2fr_1fr_1.2fr_1.2fr_1.6fr_auto] gap-4 items-center py-3.5 px-4 hover:bg-slate-50/60 transition-colors" 
-                  key={order.id} 
-                  role="row"
-                >
-                  <span className="text-xs font-mono font-bold text-slate-800" role="cell">{order.orderIdDisplay}</span>
-                  <span className="flex flex-col min-w-0" role="cell">
-                    <span className="text-sm font-semibold text-slate-900 truncate">{order.shopOwner}</span>
-                    <small className="text-xs text-slate-400 truncate">{order.location}</small>
-                  </span>
-                  <span className="text-xs text-slate-600 font-medium" role="cell">{order.items} {order.items === 1 ? t('itemCount') : t('itemsCount')}</span>
-                  <span className="text-xs font-bold text-slate-900" role="cell">{order.amountLabel}</span>
-                  <span role="cell"><StatusBadge status={order.status} /></span>
-                  <span className="text-xs text-slate-500 whitespace-nowrap" role="cell">{order.dateLabel}</span>
-                  <button 
-                    className="px-3 py-1.5 rounded-lg border border-slate-200 hover:border-brand-orange hover:bg-orange-50 hover:text-brand-orange text-xs font-semibold text-slate-700 transition-all cursor-pointer whitespace-nowrap" 
-                    onClick={() => navigate(`/dashboard/supplier/orders/${encodeURIComponent(order.id)}`)} 
-                    type="button"
-                  >
-                    {t('view')}
-                  </button>
-                </div>
-              ))}
-            </div>
-          </div>
+        <div className="overflow-x-auto -mx-5 sm:-mx-6 px-5 sm:px-6 mt-4">
+          <table className="w-full text-left border-separate border-spacing-0 min-w-[760px]">
+            <thead>
+              <tr className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                <th className="py-3 px-4 bg-slate-50/80 rounded-l-xl font-bold w-[15%]">{t('orderId')}</th>
+                <th className="py-3 px-4 bg-slate-50/80 font-bold w-[25%]">{t('customerShop')}</th>
+                <th className="py-3 px-4 bg-slate-50/80 font-bold w-[10%]">{t('itemsCount')}</th>
+                <th className="py-3 px-4 bg-slate-50/80 font-bold w-[12%]">{t('amount')}</th>
+                <th className="py-3 px-4 bg-slate-50/80 font-bold w-[14%]">{t('status')}</th>
+                <th className="py-3 px-4 bg-slate-50/80 font-bold w-[16%]">{t('dateTime')}</th>
+                <th className="py-3 px-4 bg-slate-50/80 rounded-r-xl text-right font-bold w-[8%]">
+                  <span className="sr-only">{t('action') || 'Action'}</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {recentOrders.length ? (
+                recentOrders.map((order) => (
+                  <tr key={order.id} className="hover:bg-slate-50/60 transition-colors">
+                    <td className="py-3.5 px-4 text-xs font-mono font-bold text-slate-800 whitespace-nowrap border-b border-slate-100">
+                      {order.orderIdDisplay}
+                    </td>
+                    <td className="py-3.5 px-4 border-b border-slate-100">
+                      <div className="flex flex-col min-w-0">
+                        <span className="text-sm font-semibold text-slate-900 truncate">{order.shopOwner}</span>
+                        <small className="text-xs text-slate-400 truncate">{order.location}</small>
+                      </div>
+                    </td>
+                    <td className="py-3.5 px-4 text-xs text-slate-600 font-medium whitespace-nowrap border-b border-slate-100">
+                      {order.items} {order.items === 1 ? (t('itemCount') || 'item') : (t('itemsCount') || 'items')}
+                    </td>
+                    <td className="py-3.5 px-4 text-xs font-bold text-slate-900 tabular-nums whitespace-nowrap border-b border-slate-100">
+                      {order.amountLabel}
+                    </td>
+                    <td className="py-3.5 px-4 whitespace-nowrap border-b border-slate-100">
+                      <StatusBadge status={order.status} />
+                    </td>
+                    <td className="py-3.5 px-4 text-xs text-slate-500 whitespace-nowrap border-b border-slate-100">
+                      {order.dateLabel}
+                    </td>
+                    <td className="py-3.5 px-4 text-right whitespace-nowrap border-b border-slate-100">
+                      <button 
+                        className="px-3 py-1.5 rounded-lg border border-slate-200 hover:border-brand-orange hover:bg-orange-50 hover:text-brand-orange text-xs font-semibold text-slate-700 transition-all cursor-pointer whitespace-nowrap" 
+                        onClick={() => navigate(`/dashboard/supplier/orders/${encodeURIComponent(order.id)}`)} 
+                        type="button"
+                      >
+                        {t('view') || 'View'}
+                      </button>
+                    </td>
+                  </tr>
+                ))
+              ) : (
+                <tr>
+                  <td colSpan={7} className="py-10 text-center text-xs text-slate-400 font-medium border-b border-slate-100">
+                    {t('noRecentOrders') || 'No recent orders'}
+                  </td>
+                </tr>
+              )}
+            </tbody>
+          </table>
         </div>
       </div>
     </section>

@@ -326,57 +326,77 @@ export default function SupplierIncomingOrdersPage() {
 
       <div className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
-          <div className="min-w-[850px] grid grid-cols-[2.5rem_1.1fr_1.5fr_0.8fr_0.9fr_1fr_1.2fr_4.5rem] items-center gap-3 px-5 py-3 border-b border-slate-100 bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-            <label className="flex items-center cursor-pointer">
-              <input checked={allVisibleSelected} onChange={(event) => handleSelectAll(event.target.checked)} type="checkbox" className="rounded text-emerald-600 focus:ring-emerald-500" />
-            </label>
-            <span>{t('orderId')}</span>
-            <span>{t('customerShop')}</span>
-            <span>{t('itemsCount')}</span>
-            <span>{t('amount')}</span>
-            <span>{t('status')}</span>
-            <span>{t('dateTime')}</span>
-            <span>{t('action')}</span>
-          </div>
+          <table className="w-full text-left border-collapse min-w-[850px]">
+            <thead>
+              <tr className="border-b border-slate-100 bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <th className="py-3 px-5 w-12">
+                  <label className="flex items-center cursor-pointer">
+                    <input checked={allVisibleSelected} onChange={(event) => handleSelectAll(event.target.checked)} type="checkbox" className="rounded text-emerald-600 focus:ring-emerald-500" />
+                  </label>
+                </th>
+                <th className="py-3 px-4 font-bold w-[14%]">{t('orderId')}</th>
+                <th className="py-3 px-4 font-bold w-[24%]">{t('customerShop')}</th>
+                <th className="py-3 px-4 font-bold w-[10%]">{t('itemsCount')}</th>
+                <th className="py-3 px-4 font-bold w-[11%]">{t('amount')}</th>
+                <th className="py-3 px-4 font-bold w-[14%]">{t('status')}</th>
+                <th className="py-3 px-4 font-bold w-[17%]">{t('dateTime')}</th>
+                <th className="py-3 px-5 text-right font-bold w-[10%]">{t('action')}</th>
+              </tr>
+            </thead>
 
-          {visibleOrders.length ? (
-            <div className="divide-y divide-slate-50 min-w-[850px]">
-              {visibleOrders.map((order) => {
-                const orderItems = Array.isArray(order.items) ? order.items : []
+            {visibleOrders.length ? (
+              <tbody className="divide-y divide-slate-100">
+                {visibleOrders.map((order) => {
+                  const orderItems = Array.isArray(order.items) ? order.items : []
 
-                return (
-                  <div className="grid grid-cols-[2.5rem_1.1fr_1.5fr_0.8fr_0.9fr_1fr_1.2fr_4.5rem] items-center gap-3 px-5 py-3.5 hover:bg-slate-50/70 transition-colors text-xs" key={order.id}>
-                    <label className="flex items-center cursor-pointer">
-                      <input checked={selectedIds.includes(order.id)} onChange={() => toggleSelection(order.id)} type="checkbox" className="rounded text-emerald-600 focus:ring-emerald-500" />
-                    </label>
-                    <div className="font-bold text-slate-900 font-mono text-[11px]">{formatOrderId(order.id)}</div>
-                    <div>
-                      <strong className="font-semibold text-slate-800 block">{order.customer}</strong>
-                      <small className="text-slate-400 text-[11px]">{order.area}</small>
-                    </div>
-                    <div>
-                      <small className="text-slate-500 text-xs font-medium">
+                  return (
+                    <tr className="hover:bg-slate-50/70 transition-colors text-xs" key={order.id}>
+                      <td className="py-3.5 px-5">
+                        <label className="flex items-center cursor-pointer">
+                          <input checked={selectedIds.includes(order.id)} onChange={() => toggleSelection(order.id)} type="checkbox" className="rounded text-emerald-600 focus:ring-emerald-500" />
+                        </label>
+                      </td>
+                      <td className="py-3.5 px-4 font-bold text-slate-900 font-mono text-[11px] whitespace-nowrap">
+                        {formatOrderId(order.id)}
+                      </td>
+                      <td className="py-3.5 px-4 min-w-0">
+                        <strong className="font-semibold text-slate-800 block truncate">{order.customer}</strong>
+                        <small className="text-slate-400 text-[11px] truncate">{order.area}</small>
+                      </td>
+                      <td className="py-3.5 px-4 text-xs font-medium text-slate-500 whitespace-nowrap">
                         {orderItems.length} {orderItems.length === 1 ? (t('itemCount') || 'item') : (t('itemsCount') || 'items')}
-                      </small>
-                    </div>
-                    <div className="font-bold text-slate-900 tabular-nums">{formatCurrency(order.amount)}</div>
-                    <div><StatusBadge status={order.status} /></div>
-                    <div className="text-slate-500 text-[11px]">{formatDateTime(order.date)}</div>
-                    <div>
-                      <Link
-                        className="px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors inline-block text-center"
-                        to={`/dashboard/supplier/orders/${encodeURIComponent(order.id)}`}
-                      >
-                        {t('view')}
-                      </Link>
-                    </div>
-                  </div>
-                )
-              })}
-            </div>
-          ) : (
-            <EmptyState title={t('noOrdersFound')} message={t('noOrdersFoundMessage')} />
-          )}
+                      </td>
+                      <td className="py-3.5 px-4 font-bold text-slate-900 tabular-nums whitespace-nowrap">
+                        {formatCurrency(order.amount)}
+                      </td>
+                      <td className="py-3.5 px-4 whitespace-nowrap">
+                        <StatusBadge status={order.status} />
+                      </td>
+                      <td className="py-3.5 px-4 text-slate-500 text-[11px] whitespace-nowrap">
+                        {formatDateTime(order.date)}
+                      </td>
+                      <td className="py-3.5 px-5 text-right whitespace-nowrap">
+                        <Link
+                          className="px-3 py-1.5 rounded-lg text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 border border-emerald-200 transition-colors inline-block text-center"
+                          to={`/dashboard/supplier/orders/${encodeURIComponent(order.id)}`}
+                        >
+                          {t('view')}
+                        </Link>
+                      </td>
+                    </tr>
+                  )
+                })}
+              </tbody>
+            ) : (
+              <tbody>
+                <tr>
+                  <td colSpan={8} className="py-12">
+                    <EmptyState title={t('noOrdersFound')} message={t('noOrdersFoundMessage')} />
+                  </td>
+                </tr>
+              </tbody>
+            )}
+          </table>
         </div>
 
         {visibleOrders.length > 0 && (

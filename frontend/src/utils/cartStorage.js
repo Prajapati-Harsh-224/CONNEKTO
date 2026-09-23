@@ -1,28 +1,13 @@
-import { catalogProducts } from './supplierCatalogDemoData.js'
-
 const cartKey = 'connecto.demoCart'
 
 export function normalizeCartItem(item) {
-  let boxUnits = Number(item.unitsPerBox || item.minimumQuantity)
-
-  if (!boxUnits || boxUnits <= 0) {
-    const found = catalogProducts.find((product) => product.id === item.productId)
-    if (found) {
-      boxUnits = Number(found.minimumQuantity || found.unitsPerBox || 1)
-    } else {
-      boxUnits = 1
-    }
-  }
-
-  const unitsPerBox = Math.max(1, boxUnits)
+  const unitsPerBox = Math.max(1, Number(item.unitsPerBox || item.minimumQuantity || 1))
   const minimumQuantity = unitsPerBox
 
   let boxes = Number(item.boxes)
   if (!Number.isInteger(boxes) || boxes < 1) {
     const rawQuantity = Number(item.quantity)
     if (Number.isInteger(rawQuantity) && rawQuantity > 0) {
-      // Legacy cart item where quantity represented individual units
-      // E.g., rawQuantity = 5 and unitsPerBox = 5 -> boxes = 1
       boxes = Math.max(1, Math.round(rawQuantity / unitsPerBox))
     } else {
       boxes = 1
@@ -32,12 +17,16 @@ export function normalizeCartItem(item) {
   }
 
   const quantity = boxes * unitsPerBox
+  const unitPrice = Number(item.unitPrice ?? item.price ?? 0)
+
   return {
     ...item,
+    unitPrice,
+    price: unitPrice,
     unitsPerBox,
     minimumQuantity,
     boxes,
-    quantity
+    quantity,
   }
 }
 
@@ -61,12 +50,13 @@ function writeCart(cart) {
 export function addToCart(item) {
   const cart = readCart()
   const normalizedItem = normalizeCartItem(item)
-  const existingItem = cart.find((cartItem) => cartItem.productId === normalizedItem.productId && cartItem.supplierId === normalizedItem.supplierId)
+  const existingIndex = cart.findIndex((cartItem) => cartItem.productId === normalizedItem.productId && cartItem.supplierId === normalizedItem.supplierId)
   
   let nextCart
-  if (existingItem) {
+  if (existingIndex >= 0) {
+    const existingItem = cart[existingIndex]
     const nextBoxes = existingItem.boxes + (normalizedItem.boxes || 1)
-    nextCart = cart.map((cartItem) => cartItem === existingItem ? normalizeCartItem({ ...cartItem, boxes: nextBoxes }) : cartItem)
+    nextCart = cart.map((cartItem, idx) => idx === existingIndex ? normalizeCartItem({ ...cartItem, boxes: nextBoxes }) : cartItem)
   } else {
     nextCart = [...cart, normalizedItem]
   }
@@ -78,12 +68,16 @@ export function getCart() {
 }
 
 export function updateCartItem(productId, supplierId, boxesOrQuantity) {
+  const num = Number(boxesOrQuantity)
+  if (num <= 0) {
+    return removeFromCart(productId, supplierId)
+  }
   return writeCart(readCart().map((item) => {
     if (item.productId !== productId || item.supplierId !== supplierId) return item
     const unitsPerBox = Math.max(1, Number(item.unitsPerBox || 1))
-    const boxes = Number.isInteger(Number(boxesOrQuantity))
-      ? Number(boxesOrQuantity)
-      : Math.ceil(Number(boxesOrQuantity || 1) / unitsPerBox)
+    const boxes = Number.isInteger(num)
+      ? num
+      : Math.ceil(num / unitsPerBox)
     return normalizeCartItem({ ...item, boxes })
   }))
 }
@@ -95,3 +89,4 @@ export function removeFromCart(productId, supplierId) {
 export function clearCart() {
   return writeCart([])
 }
+

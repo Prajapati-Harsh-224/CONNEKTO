@@ -1,6 +1,6 @@
 import { Fragment, useEffect, useState } from 'react'
 import { NavLink, useParams } from 'react-router-dom'
-import { FiHome, FiTruck, FiShoppingCart, FiFileText, FiPieChart, FiUsers, FiBox, FiMapPin } from 'react-icons/fi'
+import { FiHome, FiTruck, FiShoppingCart, FiFileText, FiPieChart, FiUsers, FiBox, FiMapPin, FiShoppingBag } from 'react-icons/fi'
 import { getRoleNavigation } from './navigation.js'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { getCart } from '../utils/cartStorage.js'
@@ -13,6 +13,7 @@ function NavIcon({ section }) {
     orders: <FiFileText style={{ marginRight: '8px' }} />,
     analytics: <FiPieChart style={{ marginRight: '8px' }} />,
     products: <FiBox style={{ marginRight: '8px' }} />,
+    'shop-owners': <FiShoppingBag style={{ marginRight: '8px' }} />,
     customers: <FiUsers style={{ marginRight: '8px' }} />,
     'service-areas': <FiMapPin style={{ marginRight: '8px' }} />,
   }
@@ -41,7 +42,7 @@ export default function Sidebar({ role: routeRole }) {
   }, [])
 
   return (
-    <aside className="hidden md:flex flex-col w-56 lg:w-64 border-r border-slate-200/70 bg-white sticky top-16 h-[calc(100vh-4rem)] overflow-y-auto p-4 space-y-1 shrink-0 self-start z-30" aria-label={t('workspace')}>
+    <aside className="hidden md:flex flex-col w-56 lg:w-64 border-r border-slate-200/70 bg-white fixed top-16 left-0 bottom-0 h-[calc(100vh-4rem)] overflow-y-auto p-4 space-y-1 shrink-0 z-30 select-none" aria-label={t('workspace')}>
       <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 py-2">{t('workspace')}</div>
       {items.map((item) => {
         const badge = item.section === 'cart' ? String(cartCount || 0) : item.badge
@@ -73,18 +74,7 @@ export default function Sidebar({ role: routeRole }) {
           </Fragment>
         )
       })}
-      <div className="mt-auto pt-6 px-2 pb-2 flex items-start gap-3 border-t border-slate-100/80">
-        <div className="w-8 h-8 rounded-lg bg-[#eaf5ef] text-[#1b6442] flex items-center justify-center shrink-0">
-          <svg className="w-4 h-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M11 20A7 7 0 0 1 9.8 6.1C15.5 5 17 4.48 19 2c1 2 2 4.18 2 8 0 5.5-4.78 10-10 10Z"/>
-            <path d="M2 21c0-3 1.85-5.36 5.08-6C9.5 14.52 12 13 13 12"/>
-          </svg>
-        </div>
-        <div>
-          <div className="text-xs font-bold text-slate-800 leading-tight">{t('supportingLocalBusinesses') || 'Supporting Local Businesses'}</div>
-          <div className="text-[11px] text-slate-400 mt-1 leading-snug">{t('handmadeTodayBetterTomorrow') || 'Handmade today for a better tomorrow.'}</div>
-        </div>
-      </div>
+      {/* End of navigation items */}
     </aside>
   )
 }

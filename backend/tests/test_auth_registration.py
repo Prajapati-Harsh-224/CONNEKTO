@@ -273,6 +273,7 @@ def test_role_enforcement_only_selected_role_can_login():
     })
     assert res_owner_mismatch.status_code == 403
     assert res_owner_mismatch.json()["error"]["code"] == "ROLE_MISMATCH"
+    assert res_owner_mismatch.json()["error"]["details"]["alertMessage"] == "you are a supplier change role and then sign in"
 
     # 4. When GRUH_UDYOG role is selected, GRUH_UDYOG can log in and gets gruh-udyog dashboard
     res_gruh_check = client.post("/api/auth/check-identifier", json={
@@ -282,6 +283,16 @@ def test_role_enforcement_only_selected_role_can_login():
     assert res_gruh_check.status_code == 200
     assert res_gruh_check.json()["data"]["role"] == "GRUH_UDYOG"
     assert res_gruh_check.json()["data"]["dashboardPath"] == "/dashboard/gruh-udyog"
+
+    # 5. When GRUH_UDYOG attempts to sign in as SUPPLIER or SHOP_OWNER
+    res_gruh_mismatch = client.post("/api/auth/login", json={
+        "emailOrPhone": "gruhudyog@example.com",
+        "password": "Password123!",
+        "role": "SUPPLIER"
+    })
+    assert res_gruh_mismatch.status_code == 403
+    assert res_gruh_mismatch.json()["error"]["code"] == "ROLE_MISMATCH"
+    assert res_gruh_mismatch.json()["error"]["details"]["alertMessage"] == "you are a Gruh Udhyog change role and then sign in"
 
 
 if __name__ == "__main__":

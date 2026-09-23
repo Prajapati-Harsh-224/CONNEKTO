@@ -7,14 +7,13 @@ import { useLocale } from '../context/LocaleContext.jsx'
 import { getSupplierProducts } from '../services/catalogService.js'
 import { addToCart, getCart, updateCartItem } from '../utils/cartStorage.js'
 
-const categoryOrder = ['All Products', 'Staples', 'Cooking Essentials', 'Beverages', 'Snacks & Biscuits', 'Personal Care', 'Cleaning & Household', 'Packaged Foods', 'Dairy & Bakery', 'More']
 
 function getInitials(name = '') {
   return name.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'S'
 }
 
 function formatPrice(value) {
-  return `Rs ${Number(value).toLocaleString('en-IN')}`
+  return `Rs\u00A0${Number(value).toLocaleString('en-IN')}`
 }
 
 function SearchIcon() {
@@ -26,10 +25,9 @@ function SupplierCatalogCard({ product, supplier, favorite, onFavorite, onAdd, o
   const unitsPerBox = Number(product.unitsPerBox || product.minimumQuantity || 1)
   const unitPrice = Number(product.price || 0)
   const boxPrice = unitPrice * unitsPerBox
-  const quantityLabel = `${t('packetSingular')}`
 
   const availableStock = Number(product.availableStock ?? 0)
-  const isAvailable = availableStock > 0
+  const isAvailable = product.isActive !== false && (product.availableStock == null || availableStock > 0)
 
   const cartBoxes = cartItem ? Number(cartItem.boxes || Math.max(1, Math.round(Number(cartItem.quantity || unitsPerBox) / unitsPerBox))) : 0
 
@@ -69,11 +67,13 @@ function SupplierCatalogCard({ product, supplier, favorite, onFavorite, onAdd, o
           <span className="text-xs text-slate-500 font-medium block truncate">{product.packSize}</span>
 
           <div className="py-2 my-2 border-y border-slate-100 space-y-0.5">
-            <div className="text-base sm:text-lg font-black text-slate-900">
+            <div className="text-base sm:text-lg font-black text-slate-900 whitespace-nowrap">
               {formatPrice(unitPrice)} <small className="text-xs text-slate-400 font-normal">/ {t('packetSingular')}</small>
             </div>
             <div className="text-xs text-emerald-700 font-semibold truncate">
-              1 {t('boxSingular')} = {unitsPerBox} {t('packetPlural')} ({formatPrice(boxPrice)}/{t('boxSingular')})
+              {unitsPerBox > 1
+                ? `1 ${t('boxSingular')} = ${unitsPerBox} ${t('packetPlural')} (${formatPrice(boxPrice)}/${t('boxSingular')})`
+                : `${formatPrice(boxPrice)} / ${t('unit') || 'unit'}`}
             </div>
           </div>
         </div>
@@ -87,8 +87,7 @@ function SupplierCatalogCard({ product, supplier, favorite, onFavorite, onAdd, o
         ) : cartBoxes > 0 ? (
           <div className="flex items-center justify-between gap-2 p-1 rounded-xl bg-orange-50 border border-brand-orange/30">
             <button
-              className="flex items-center justify-center w-8 h-8 rounded-lg bg-white text-brand-orange font-bold text-base shadow-xs hover:bg-orange-100 transition-colors disabled:opacity-40 cursor-pointer"
-              disabled={cartBoxes <= 1}
+              className="flex items-center justify-center w-8 h-8 rounded-lg bg-white text-brand-orange font-bold text-base shadow-xs hover:bg-orange-100 transition-colors cursor-pointer"
               type="button"
               onClick={() => onDecrement(product)}
               aria-label={`Decrease quantity of ${product.name}`}
@@ -111,7 +110,7 @@ function SupplierCatalogCard({ product, supplier, favorite, onFavorite, onAdd, o
             type="button" 
             onClick={() => onAdd(product)}
           >
-            {t('addOneBox', { packets: unitsPerBox })}
+            + {t('addToCart')}
           </button>
         )}
       </div>
@@ -297,7 +296,7 @@ function SupplierReviewsSection({ supplier }) {
 export default function SupplierCatalogPage() {
   const { supplierId } = useParams()
   const { t } = useLocale()
-  const allProductsLabel = t('allProducts')
+  const allCategoriesLabel = t('allCategories')
   const allBrandsLabel = t('allBrands')
   const [activeTab, setActiveTab] = useState('products')
   const [supplier, setSupplier] = useState(null)
@@ -306,7 +305,7 @@ export default function SupplierCatalogPage() {
   const [error, setError] = useState('')
   const [notFound, setNotFound] = useState(false)
   const [query, setQuery] = useState('')
-  const [category, setCategory] = useState(allProductsLabel)
+  const [category, setCategory] = useState(allCategoriesLabel)
   const [brand, setBrand] = useState(allBrandsLabel)
   const [sortBy, setSortBy] = useState('popular')
   const [favorites, setFavorites] = useState({})
@@ -351,13 +350,19 @@ export default function SupplierCatalogPage() {
     }
   }, [supplierId])
 
-  const categories = useMemo(() => [t('allCategories'), ...new Set(products.map((product) => product.category))], [products, t])
-  const brands = useMemo(() => [allBrandsLabel, ...new Set(products.map((product) => product.brand))], [products, allBrandsLabel])
+  const categories = useMemo(() => [
+    allCategoriesLabel,
+    ...new Set(products.map((product) => product.category).filter(Boolean))
+  ], [products, allCategoriesLabel])
+  const brands = useMemo(() => [
+    allBrandsLabel,
+    ...new Set(products.map((product) => product.brand).filter(Boolean))
+  ], [products, allBrandsLabel])
   const visibleProducts = useMemo(() => {
     const normalizedQuery = query.trim().toLowerCase()
     return products.filter((product) => {
       const matchesQuery = !normalizedQuery || `${product.name} ${product.brand} ${product.category}`.toLowerCase().includes(normalizedQuery)
-      const matchesCategory = category === allProductsLabel || category === t('allCategories') || product.category === category
+      const matchesCategory = category === allCategoriesLabel || category === 'All Categories' || category === 'All Products' || category === t('allProducts') || product.category === category
       const matchesBrand = brand === allBrandsLabel || product.brand === brand
       return matchesQuery && matchesCategory && matchesBrand
     }).sort((first, second) => {
@@ -366,7 +371,7 @@ export default function SupplierCatalogPage() {
       if (sortBy === 'name') return first.name.localeCompare(second.name)
       return products.indexOf(first) - products.indexOf(second)
     })
-  }, [brand, category, products, query, sortBy])
+  }, [allBrandsLabel, allCategoriesLabel, brand, category, products, query, sortBy, t])
 
   function notifyCartUpdated() {
     window.dispatchEvent(new Event('connecto-cart-updated'))
@@ -417,6 +422,11 @@ export default function SupplierCatalogPage() {
 
     const currentBoxes = Number(cartItem.boxes || 1)
     if (currentBoxes <= 1) {
+      removeFromCart(product.id, supplier.id)
+      notifyCartUpdated()
+      const msg = `${product.name} removed from cart`
+      setCartMessage(msg)
+      setTimeout(() => setCartMessage(''), 2500)
       return
     }
     const nextBoxes = currentBoxes - 1
@@ -513,8 +523,7 @@ export default function SupplierCatalogPage() {
               value={category} 
               onChange={(event) => setCategory(event.target.value)}
             >
-              <option value="All Products">{t('allCategories')}</option>
-              {categories.filter((item) => item !== 'All Categories').map((item) => <option key={item}>{item}</option>)}
+              {categories.map((item) => <option key={item} value={item}>{item}</option>)}
             </select>
 
             <select 
@@ -537,62 +546,40 @@ export default function SupplierCatalogPage() {
             </select>
           </div>
 
-          <div className="grid grid-cols-1 lg:grid-cols-[220px_1fr] gap-6 items-start">
-            <aside className="bg-white rounded-2xl border border-slate-200/80 p-3 shadow-xs space-y-1 lg:sticky lg:top-20 self-start">
-              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 py-2">{t('categoriesLabel')}</h2>
-              <div className="flex flex-row lg:flex-col gap-1 overflow-x-auto lg:overflow-visible pb-2 lg:pb-0">
-                {categoryOrder.map((item) => (
-                  <button 
-                    className={`w-full text-left px-3 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all cursor-pointer truncate shrink-0 lg:shrink ${
-                      (category === item || (item === 'All Products' && category === 'All Categories'))
-                        ? 'bg-orange-50 text-brand-orange font-bold border border-orange-200/60' 
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                    }`} 
-                    key={item} 
-                    type="button" 
-                    onClick={() => setCategory(item)}
-                  >
-                    {item}
-                  </button>
-                ))}
-              </div>
-            </aside>
-
-            <div className="space-y-4">
-              <div className="flex items-center justify-between text-xs sm:text-sm font-semibold text-slate-500 px-1">
-                <strong className="text-slate-900">{t('productsCount', { count: visibleProducts.length })}</strong>
-                {cartMessage && (
-                  <span className="text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/60 text-xs" role="status">
-                    {cartMessage}
-                  </span>
-                )}
-              </div>
-
-              {visibleProducts.length ? (
-                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-5">
-                  {visibleProducts.map((product) => {
-                    const cartItem = cart.find((item) => item.productId === product.id && item.supplierId === supplier.id)
-                    return (
-                      <SupplierCatalogCard 
-                        key={product.id} 
-                        cartItem={cartItem} 
-                        favorite={Boolean(favorites[product.id])} 
-                        onAdd={handleAdd} 
-                        onDecrement={handleDecrement} 
-                        onFavorite={(id) => setFavorites((current) => ({ ...current, [id]: !current[id] }))} 
-                        onIncrement={handleIncrement} 
-                        product={product} 
-                        supplier={supplier} 
-                      />
-                    )
-                  })}
-                </div>
-              ) : (
-                <div className="flex items-center justify-center p-12 bg-white rounded-2xl border border-slate-200/80 shadow-xs text-center text-slate-500 text-sm font-medium">
-                  {t('noProductsMatchFilters')}
-                </div>
+          <div className="space-y-4">
+            <div className="flex items-center justify-between text-xs sm:text-sm font-semibold text-slate-500 px-1">
+              <strong className="text-slate-900">{t('productsCount', { count: visibleProducts.length })}</strong>
+              {cartMessage && (
+                <span className="text-emerald-600 font-bold bg-emerald-50 px-2.5 py-1 rounded-lg border border-emerald-200/60 text-xs" role="status">
+                  {cartMessage}
+                </span>
               )}
             </div>
+
+            {visibleProducts.length ? (
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-5">
+                {visibleProducts.map((product) => {
+                  const cartItem = cart.find((item) => item.productId === product.id && item.supplierId === supplier.id)
+                  return (
+                    <SupplierCatalogCard 
+                      key={product.id} 
+                      cartItem={cartItem} 
+                      favorite={Boolean(favorites[product.id])} 
+                      onAdd={handleAdd} 
+                      onDecrement={handleDecrement} 
+                      onFavorite={(id) => setFavorites((current) => ({ ...current, [id]: !current[id] }))} 
+                      onIncrement={handleIncrement} 
+                      product={product} 
+                      supplier={supplier} 
+                    />
+                  )
+                })}
+              </div>
+            ) : (
+              <div className="flex items-center justify-center p-12 bg-white rounded-2xl border border-slate-200/80 shadow-xs text-center text-slate-500 text-sm font-medium">
+                {t('noProductsMatchFilters')}
+              </div>
+            )}
           </div>
         </div>
       ) : (

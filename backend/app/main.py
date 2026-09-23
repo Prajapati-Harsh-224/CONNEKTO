@@ -456,6 +456,17 @@ def register_gruh_udyog(payload: GruhUdyogRegisterRequest, response: Response, d
         service_areas=payload.serviceAreas
     )
 
+def get_role_mismatch_alert(actual_role: str) -> str:
+    role = (actual_role or "").upper()
+    if role == "SHOP_OWNER":
+        return "you are a shopowner change role and then sign in"
+    elif role == "SUPPLIER":
+        return "you are a supplier change role and then sign in"
+    elif role == "GRUH_UDYOG":
+        return "you are a Gruh Udhyog change role and then sign in"
+    return "change role and then sign in"
+
+
 @app.post("/api/auth/check-identifier")
 def check_identifier(payload: CheckIdentifierRequest, response: Response, db: Session = Depends(get_db)):
     raw_input = payload.emailOrPhone.strip()
@@ -493,11 +504,12 @@ def check_identifier(payload: CheckIdentifierRequest, response: Response, db: Se
                 "GRUH_UDYOG": "Gruh Udyog"
             }
             actual_label = role_display.get(user.role, user.role.replace("_", " ").title())
+            alert_msg = get_role_mismatch_alert(user.role)
             return error(
-                f"This account is registered as a {actual_label}. Please select the {actual_label} role to sign in.",
+                f"{alert_msg}. This account is registered as a {actual_label}.",
                 "ROLE_MISMATCH",
                 403,
-                {"actualRole": user.role, "expectedRole": expected_role}
+                {"actualRole": user.role, "expectedRole": expected_role, "alertMessage": alert_msg}
             )
 
     set_session(response, db, user)
@@ -549,11 +561,12 @@ def login(payload: LoginRequest, response: Response, db: Session = Depends(get_d
                 "GRUH_UDYOG": "Gruh Udyog"
             }
             actual_label = role_display.get(user.role, user.role.replace("_", " ").title())
+            alert_msg = get_role_mismatch_alert(user.role)
             return error(
-                f"This account is registered as a {actual_label}. Please select the {actual_label} role to sign in.",
+                f"{alert_msg}. This account is registered as a {actual_label}.",
                 "ROLE_MISMATCH",
                 403,
-                {"actualRole": user.role, "expectedRole": expected_role}
+                {"actualRole": user.role, "expectedRole": expected_role, "alertMessage": alert_msg}
             )
 
     set_session(response, db, user)
@@ -768,6 +781,88 @@ def update_supplier_order(order_id: str, payload: StatusRequest, user: User = De
     if payload.status not in TRANSITIONS.get(order.status, set()): return error(f"Cannot move an order from {order.status} to {payload.status}.", "INVALID_STATUS_TRANSITION", 400)
     order.status = payload.status; db.commit(); db.refresh(order)
     return envelope({"order": order_json(order)}, "Order status updated")
+
+
+@app.get("/api/supplier/shop-owners")
+def supplier_shop_owners(user: User = Depends(require_user), db: Session = Depends(get_db)):
+    if user.role not in {"SUPPLIER", "GRUH_UDYOG"}:
+        return role_error("Suppliers", user)
+    supplier = owned_supplier(user, db)
+    if not supplier:
+        return envelope({"shopOwners": [], "serviceAreas": []}, "Shop owners returned")
+
+    # Collect supplier's service areas
+    service_areas = [sa.area for sa in supplier.service_areas]
+    service_area_map = {sa.area_key: sa.area for sa in supplier.service_areas}
+    if not service_area_map and supplier.service_areas_raw:
+        for raw in supplier.service_areas_raw.split(","):
+            raw_clean = raw.strip()
+            if raw_clean:
+                service_area_map[normalize_area_key(raw_clean)] = raw_clean
+                if raw_clean not in service_areas:
+                    service_areas.append(raw_clean)
+
+    # Fetch all shop owners with their shops
+    shop_owners = db.scalars(
+        select(User)
+        .where(User.role == "SHOP_OWNER")
+        .options(joinedload(User.shop))
+    ).unique().all()
+
+    # Pre-fetch orders placed with this supplier
+    supplier_orders = db.scalars(
+        select(SupplierOrder)
+        .where(SupplierOrder.supplier_id == supplier.id)
+    ).all()
+    orders_by_owner: dict[str, list[SupplierOrder]] = {}
+    for ord in supplier_orders:
+        orders_by_owner.setdefault(ord.shop_owner_id, []).append(ord)
+
+    matched_shops = []
+    for owner in shop_owners:
+        shop = owner.shop
+        shop_area_str = (shop.area if shop and shop.area else owner.area) or ""
+        clean_shop_area = normalize_area_key(shop_area_str)
+        if not clean_shop_area:
+            continue
+
+        matched_area_label = None
+        for sa_key, sa_label in service_area_map.items():
+            if sa_key == clean_shop_area or sa_key in clean_shop_area or clean_shop_area in sa_key:
+                matched_area_label = sa_label
+                break
+
+        if matched_area_label:
+            owner_orders = orders_by_owner.get(owner.id, [])
+            total_orders = len(owner_orders)
+            total_spent = sum(float(o.subtotal) for o in owner_orders)
+            last_order_date = max((o.created_at.isoformat() for o in owner_orders), default=None)
+
+            matched_shops.append({
+                "id": owner.id,
+                "shopId": shop.id if shop else owner.id,
+                "shopName": (shop.name if shop and shop.name else f"{owner.name}'s Shop").strip(),
+                "ownerName": owner.name.strip(),
+                "email": owner.email or "",
+                "phone": (owner.phone or "").strip(),
+                "area": shop_area_str.strip(),
+                "address": (shop.address if shop and shop.address else shop_area_str).strip(),
+                "matchingArea": matched_area_label,
+                "totalOrders": total_orders,
+                "totalSpent": total_spent,
+                "lastOrder": last_order_date,
+                "status": "Existing Customer" if total_orders > 0 else "Potential Retailer",
+                "createdAt": owner.created_at.isoformat() if owner.created_at else ""
+            })
+
+    matched_shops.sort(key=lambda s: (-s["totalOrders"], s["shopName"].lower()))
+
+    return envelope({
+        "shopOwners": matched_shops,
+        "serviceAreas": service_areas,
+        "supplierName": supplier.name,
+        "supplierId": supplier.id,
+    }, "Shop owners in matching areas returned")
 
 
 @app.get("/api/gruh-udyog/dashboard")

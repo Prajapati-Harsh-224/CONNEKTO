@@ -17,6 +17,16 @@ const cardIcons = {
   'Monthly spending': <FiCreditCard size={20} />,
 }
 
+function formatDashboardOrderId(orderId = '') {
+  const value = String(orderId || '').trim()
+  if (!value) return '—'
+
+  const compactMatch = value.match(/(?:^|[-_])([A-Fa-f0-9]{8})(?:[-_].*)?$/)
+  const compactId = compactMatch ? compactMatch[1].toUpperCase() : value.replace(/[^A-Za-z0-9]/g, '').slice(0, 8).toUpperCase()
+
+  return compactId ? `ORD-${compactId}` : value
+}
+
 export default function ShopOwnerDashboardPage() {
   const { user } = useAuth()
   const { t } = useLocale()
@@ -82,7 +92,7 @@ export default function ShopOwnerDashboardPage() {
   if (isLoading) return <LoadingState message={t('loadingWorkspace')} />
 
   return (
-    <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
+    <section className="space-y-6 sm:space-y-8 w-full min-w-0">
       <header className="pb-2 border-b border-slate-100">
         <div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">
@@ -92,7 +102,7 @@ export default function ShopOwnerDashboardPage() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 w-full min-w-0">
         {summaryCards.map((card) => (
           <MetricCard
             key={card.label}
@@ -106,66 +116,80 @@ export default function ShopOwnerDashboardPage() {
         ))}
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1.8fr_1.2fr] gap-6 items-start">
-        <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4">
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1.3fr)] gap-6 items-start w-full min-w-0">
+        <section className="min-w-0 bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4">
           <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-100">
-            <div className="flex items-center gap-3">
-              <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-orange-50 text-brand-orange text-lg">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-orange-50 text-brand-orange text-lg shrink-0">
                 <FiList />
               </span>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900">{t('recentOrders')}</h2>
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 truncate">{t('recentOrders')}</h2>
             </div>
-            <Link className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-orange hover:text-brand-orange-dark transition-colors" to="/dashboard/shop-owner/orders">
+            <Link className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-orange hover:text-brand-orange-dark transition-colors shrink-0" to="/dashboard/shop-owner/orders">
               {t('viewAll')} <FiArrowRight />
             </Link>
           </div>
 
           {recentOrders.length ? (
-            <div className="overflow-x-auto -mx-5 sm:-mx-6 px-5 sm:px-6">
-              <div className="min-w-[540px]">
-                <div className="grid grid-cols-[1fr_1.8fr_1.2fr_1.2fr_1.2fr_auto] gap-3 py-2.5 px-3 bg-slate-50 rounded-xl text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  <span>#</span>
-                  <span>{t('supplier')}</span>
-                  <span>{t('amount')}</span>
-                  <span>{t('status')}</span>
-                  <span>{t('date')}</span>
-                  <span />
-                </div>
+            <div className="-mx-5 sm:-mx-6 px-5 sm:px-6 overflow-x-hidden">
+              <table className="w-full text-left border-separate border-spacing-0">
+                <thead>
+                  <tr className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    <th className="py-2.5 px-3 bg-slate-50 rounded-l-xl font-bold w-[38%]">{t('supplier')}</th>
+                    <th className="py-2.5 px-3 bg-slate-50 font-bold w-[14%]">{t('amount')}</th>
+                    <th className="py-2.5 px-3 bg-slate-50 font-bold w-[24%]">{t('status')}</th>
+                    <th className="py-2.5 px-4 bg-slate-50 font-bold w-[18%]">{t('date')}</th>
+                    <th className="py-2.5 px-3 bg-slate-50 rounded-r-xl text-right font-bold w-[6%]">
+                      <span className="sr-only">{t('action') || 'Action'}</span>
+                    </th>
+                  </tr>
+                </thead>
 
-                <div className="divide-y divide-slate-100">
+                <tbody className="divide-y divide-slate-100">
                   {recentOrders.map((order) => (
-                    <div className="grid grid-cols-[1fr_1.8fr_1.2fr_1.2fr_1.2fr_auto] gap-3 items-center py-3 px-3 hover:bg-slate-50/60 transition-colors" key={order.id}>
-                      <span className="text-xs font-mono font-bold text-slate-700 truncate">{order.id}</span>
-                      <span className="text-sm font-semibold text-slate-900 truncate">{order.supplier}</span>
-                      <span className="text-xs font-bold text-slate-900">{order.amount}</span>
-                      <span><StatusBadge status={order.status} /></span>
-                      <span className="text-xs text-slate-500 whitespace-nowrap">{order.date}</span>
-                      <Link 
-                        className="flex items-center justify-center w-7 h-7 rounded-lg border border-slate-200 hover:border-brand-orange hover:bg-orange-50 hover:text-brand-orange text-slate-400 transition-colors" 
-                        to={`/dashboard/shop-owner/orders/${encodeURIComponent(order.id)}`} 
-                        aria-label={`View ${order.id}`}
-                      >
-                        <FiChevronRight size={16} />
-                      </Link>
-                    </div>
+                    <tr key={order.id} className="hover:bg-slate-50/60 transition-colors">
+                      <td className="py-3 px-3 border-b border-slate-100">
+                        <span className="text-sm font-semibold text-slate-900 whitespace-nowrap" title={order.supplier}>
+                          {order.supplier}
+                        </span>
+                      </td>
+                      <td className="py-3 px-3 text-xs font-bold text-slate-900 tabular-nums whitespace-nowrap border-b border-slate-100">
+                        {order.amount}
+                      </td>
+                      <td className="py-3 px-3 whitespace-nowrap border-b border-slate-100">
+                        <StatusBadge status={order.status} />
+                      </td>
+                      <td className="py-3 px-4 text-xs text-slate-500 whitespace-nowrap border-b border-slate-100">
+                        {order.date}
+                      </td>
+                      <td className="py-3 px-3 text-right whitespace-nowrap border-b border-slate-100">
+                        <Link 
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-slate-200 hover:border-brand-orange hover:bg-orange-50 hover:text-brand-orange text-slate-400 transition-colors" 
+                          to={`/dashboard/shop-owner/orders/${encodeURIComponent(order.id)}`} 
+                          aria-label={`View ${order.id}`}
+                        >
+                          <FiChevronRight size={16} />
+                        </Link>
+                      </td>
+                    </tr>
                   ))}
-                </div>
-              </div>
+                </tbody>
+              </table>
             </div>
           ) : (
             <EmptyState title={t('noRecentOrders')} message={t('noRecentOrdersMessage')} />
           )}
         </section>
 
-        <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4">
+        <section className="min-w-0 bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4">
           <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-100">
-            <div className="flex items-center gap-3">
-              <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-orange-50 text-brand-orange text-lg">
+            <div className="flex items-center gap-3 min-w-0">
+              <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-orange-50 text-brand-orange text-lg shrink-0">
                 <FiTruck />
               </span>
-              <h2 className="text-base sm:text-lg font-bold text-slate-900">{t('todaysDeliveries')}</h2>
+              <h2 className="text-base sm:text-lg font-bold text-slate-900 truncate">{t('todaysDeliveries')}</h2>
             </div>
-            <Link className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-orange hover:text-brand-orange-dark transition-colors" to="/dashboard/shop-owner/orders">
+            <Link className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-orange hover:text-brand-orange-dark transition-colors shrink-0" to="/dashboard/shop-owner/orders">
               {t('viewAll')} <FiArrowRight />
             </Link>
           </div>
@@ -179,12 +203,12 @@ export default function ShopOwnerDashboardPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <strong className="text-sm font-semibold text-slate-900 truncate">{delivery.supplier}</strong>
-                      <StatusBadge status={delivery.status} />
+                      <strong className="text-sm font-semibold text-slate-900 whitespace-nowrap" title={delivery.supplier}>{delivery.supplier}</strong>
+                      <span className="shrink-0"><StatusBadge status={delivery.status} /></span>
                     </div>
-                    <div className="flex items-center justify-between text-xs text-slate-400 mt-1 font-mono">
-                      <span>{delivery.orderId}</span>
-                      <span>{delivery.time}</span>
+                    <div className="flex items-center justify-between gap-2 text-xs text-slate-400 mt-1 font-mono">
+                      <span className="truncate" title={delivery.orderId}>{formatDashboardOrderId(delivery.orderId)}</span>
+                      <span className="shrink-0">{delivery.time}</span>
                     </div>
                   </div>
                   <Link 
@@ -203,14 +227,14 @@ export default function ShopOwnerDashboardPage() {
         </section>
       </div>
 
-      <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 border border-orange-200/70 shadow-xs">
-        <div className="flex items-start sm:items-center gap-3.5">
+      <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 border border-orange-200/70 shadow-xs w-full min-w-0">
+        <div className="flex items-start sm:items-center gap-3.5 min-w-0">
           <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-brand-orange text-white text-xl shrink-0 shadow-xs" aria-hidden="true">
             <HiSparkles />
           </span>
-          <div>
-            <strong className="text-sm sm:text-base font-extrabold text-slate-900">{t('keepBusinessStocked')}</strong>
-            <p className="text-xs sm:text-sm text-slate-600 mt-0.5">{t('spendingInsight')}</p>
+          <div className="min-w-0">
+            <strong className="text-sm sm:text-base font-extrabold text-slate-900 block">{t('keepBusinessStocked')}</strong>
+            <p className="text-xs sm:text-sm text-slate-600 mt-0.5 leading-relaxed">{t('spendingInsight')}</p>
           </div>
         </div>
         <Link 

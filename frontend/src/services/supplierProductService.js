@@ -74,6 +74,17 @@ export async function getSupplierProducts() {
   }
 }
 
+export async function getSupplierProduct(productId) {
+  try {
+    return await apiRequest(`/supplier/products/${encodeURIComponent(productId)}`)
+  } catch (error) {
+    const products = readLocalProducts()
+    const found = products.find((item) => item.id === productId)
+    if (found) return { data: { product: found } }
+    throw new Error('Product not found')
+  }
+}
+
 export async function createSupplierProduct(product) {
   try {
     return await apiRequest('/supplier/products', { body: product, method: 'POST' })

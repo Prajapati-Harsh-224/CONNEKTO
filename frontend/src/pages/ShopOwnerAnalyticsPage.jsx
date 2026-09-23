@@ -9,7 +9,7 @@ import { useLocale } from '../context/LocaleContext.jsx'
 import { getShopAnalytics } from '../services/shopAnalyticsService.js'
 import { getOrders } from '../services/orderService.js'
 
-const formatPrice = (value) => `Rs ${Number(value || 0).toLocaleString('en-IN')}`
+const formatPrice = (value) => `Rs\u00A0${Number(value || 0).toLocaleString('en-IN')}`
 const monthLabel = (date) => date.toLocaleDateString('en-US', { month: 'short' })
 
 function initials(name = '') {
@@ -38,12 +38,12 @@ function deriveAnalytics(orders, period) {
   const productMap = new Map()
   inRange.forEach((order) => {
     supplierMap.set(order.supplierName, (supplierMap.get(order.supplierName) || 0) + Number(order.subtotal || 0))
-    ;(order.items || []).forEach((item) => {
-      const name = productName(item)
-      const existing = productMap.get(name) || { name, quantity: 0, packSize: item.packSize || item.packSizeSnapshot || '', category: item.category || 'Products', imageUrl: item.imageUrl || item.productImageUrlSnapshot || '', imageLabel: name.slice(0, 1) }
-      existing.quantity += Number(item.quantity || 0)
-      productMap.set(name, existing)
-    })
+      ; (order.items || []).forEach((item) => {
+        const name = productName(item)
+        const existing = productMap.get(name) || { name, quantity: 0, packSize: item.packSize || item.packSizeSnapshot || '', category: item.category || 'Products', imageUrl: item.imageUrl || item.productImageUrlSnapshot || '', imageLabel: name.slice(0, 1) }
+        existing.quantity += Number(item.quantity || 0)
+        productMap.set(name, existing)
+      })
   })
   const supplierSpending = [...supplierMap.entries()].map(([name, value]) => ({ name, value })).sort((a, b) => b.value - a.value).slice(0, 5)
   return { ordersOverTime: monthBuckets, supplierSpending, topProducts: [...productMap.values()].sort((a, b) => b.quantity - a.quantity).slice(0, 5), totalOrderValue: inRange.reduce((sum, order) => sum + Number(order.subtotal || 0), 0), isDemoData: !orders.length }
@@ -319,7 +319,7 @@ export default function ShopOwnerAnalyticsPage() {
   if (isLoading) return <LoadingState message={t('loadingAnalytics')} />
   if (error) {
     return (
-      <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-4">
+      <section className="space-y-4 w-full min-w-0">
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
           <span>{t('shopOwner')}</span>
           <span aria-hidden="true">›</span>
@@ -338,7 +338,7 @@ export default function ShopOwnerAnalyticsPage() {
   const maxSupplierValue = Math.max(...data.supplierSpending.map((item) => item.value), 1)
 
   return (
-    <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
+    <section className="space-y-6 sm:space-y-8 w-full min-w-0">
       <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
         <span>{t('shopOwner')}</span>
         <span aria-hidden="true">›</span>
@@ -352,9 +352,9 @@ export default function ShopOwnerAnalyticsPage() {
         </div>
         <label className="relative inline-flex items-center bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-xs cursor-pointer focus-within:ring-2 focus-within:ring-brand-orange/20 focus-within:border-brand-orange">
           <span className="text-slate-400 mr-2 text-sm" aria-hidden="true"><FiCalendar /></span>
-          <select 
-            className="bg-transparent text-xs sm:text-sm font-semibold text-slate-700 focus:outline-hidden pr-6 cursor-pointer" 
-            value={period} 
+          <select
+            className="bg-transparent text-xs sm:text-sm font-semibold text-slate-700 focus:outline-hidden pr-6 cursor-pointer"
+            value={period}
             onChange={(event) => setPeriod(event.target.value)}
           >
             <option>This Month</option>
@@ -377,9 +377,9 @@ export default function ShopOwnerAnalyticsPage() {
                 <p className="text-xs text-slate-400">{t('spendingTrendSubtitle')}</p>
               </div>
             </div>
-            <select 
+            <select
               className="bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1 text-xs text-slate-600 font-semibold focus:outline-hidden"
-              value={period} 
+              value={period}
               onChange={(event) => setPeriod(event.target.value)}
             >
               <option>This Month</option>

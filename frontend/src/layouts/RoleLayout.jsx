@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, Outlet, useParams } from 'react-router-dom'
+import { useState, useRef, useEffect } from 'react'
+import { Link, Outlet, useParams, useLocation } from 'react-router-dom'
 import { FiSearch, FiGlobe, FiBell } from 'react-icons/fi'
 import MobileNavigation from '../components/MobileNavigation.jsx'
 import Sidebar from '../components/Sidebar.jsx'
@@ -15,6 +15,15 @@ export default function RoleLayout({ role: routeRole }) {
   const { t, messages } = useLocale()
   const [isNotifOpen, setIsNotifOpen] = useState(false)
   const [unreadCount, setUnreadCount] = useState(0)
+  const location = useLocation()
+  const mainRef = useRef(null)
+
+  useEffect(() => {
+    window.scrollTo(0, 0)
+    if (mainRef.current) {
+      mainRef.current.scrollTo(0, 0)
+    }
+  }, [location.pathname])
 
   const roleLabel = role === 'supplier' ? t('supplier') : role === 'gruh-udyog' ? t('gruhUdyog') : t('shopOwner')
   const displayName = user?.name || 'Shop Owner'
@@ -22,7 +31,7 @@ export default function RoleLayout({ role: routeRole }) {
 
   return (
     <div className="min-h-screen flex flex-col bg-[#f4f6f9]">
-      <header className="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-slate-100 h-16 px-4 sm:px-6 flex items-center justify-between gap-4">
+      <header className="fixed top-0 left-0 right-0 h-16 bg-white/95 backdrop-blur-md border-b border-slate-100 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 z-40">
         <div className="flex items-center gap-4">
           <Link className="flex items-center gap-2.5 shrink-0" to="/" aria-label={t('connectoHome')}>
             <span className="w-8 h-8 rounded-full bg-[#f06535] text-white flex items-center justify-center font-bold text-base shadow-sm shrink-0">
@@ -80,10 +89,12 @@ export default function RoleLayout({ role: routeRole }) {
         </div>
       </header>
 
-      <div className="flex flex-1 w-full relative">
+      <div className="flex-1 w-full min-w-0 pt-16 md:pl-56 lg:pl-64">
         <Sidebar role={role} />
-        <main className="flex-1 min-w-0 px-3 sm:px-6 lg:px-8 py-5 max-w-7xl mx-auto w-full pb-20 md:pb-8">
-          <Outlet />
+        <main ref={mainRef} className="w-full min-w-0 px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-8">
+          <div className="max-w-7xl mx-auto w-full">
+            <Outlet />
+          </div>
         </main>
       </div>
       <MobileNavigation role={role} />

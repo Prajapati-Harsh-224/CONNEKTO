@@ -6,6 +6,7 @@ export const roleNavigation = {
     { key: 'home', section: 'home' },
     { key: 'orders', section: 'orders' },
     { key: 'products', section: 'products' },
+    { key: 'shopOwners', section: 'shop-owners' },
     { key: 'customers', section: 'customers' },
   ],
   'gruh-udyog': [

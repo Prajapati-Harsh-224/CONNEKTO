@@ -12,7 +12,7 @@ function priceValue(value) {
 }
 
 function formatPrice(value) {
-  return `Rs ${value.toLocaleString('en-IN')}`
+  return `Rs\u00A0${Number(value || 0).toLocaleString('en-IN')}`
 }
 
 function getInitials(name = '') {
@@ -397,7 +397,9 @@ export default function CheckoutPage() {
                               <strong className="text-sm sm:text-base font-bold text-slate-900 truncate">{item.name}</strong>
                               <span className="text-xs text-slate-400 font-medium">{item.packSize} • {item.brand}</span>
                               <div className="text-xs text-emerald-700 font-semibold mt-1">
-                                1 {t('box')} = {unitsPerBox} {t('packetsShort')} ({formatPrice(boxPrice)}/{t('box')})
+                                {unitsPerBox > 1
+                                  ? `1 ${t('box')} = ${unitsPerBox} ${t('packetsShort')} (${formatPrice(boxPrice)}/${t('box')})`
+                                  : `${formatPrice(boxPrice)} / ${t('unit') || 'unit'}`}
                               </div>
                             </div>
                           </div>

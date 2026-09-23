@@ -35,6 +35,20 @@ function getRoleDashboardPath(role) {
   return '/dashboard/shop-owner'
 }
 
+function getRoleMismatchAlertMessage(actualRole) {
+  const normalized = (actualRole || '').toUpperCase()
+  if (normalized === 'SHOP_OWNER') {
+    return 'you are a shopowner change role and then sign in'
+  }
+  if (normalized === 'SUPPLIER') {
+    return 'you are a supplier change role and then sign in'
+  }
+  if (normalized === 'GRUH_UDYOG') {
+    return 'you are a Gruh Udhyog change role and then sign in'
+  }
+  return 'you are registered with a different role. change role and then sign in'
+}
+
 export default function LoginPage() {
   const [searchParams] = useSearchParams()
   const roleFromUrl = searchParams.get('role')
@@ -50,6 +64,7 @@ export default function LoginPage() {
   const [requestError, setRequestError] = useState('')
   const [successMessage, setSuccessMessage] = useState('')
   const [isSubmitting, setIsSubmitting] = useState(false)
+  const [roleMismatchAlert, setRoleMismatchAlert] = useState(null)
 
   // Auth state tracking for Identifier-First flow
   const [formStep, setFormStep] = useState(1)
@@ -81,12 +96,38 @@ export default function LoginPage() {
     selectedRole
   )
 
+  function handleRoleMismatch(error) {
+    const details = error?.details || {}
+    let actualRole = details.actualRole
+    if (!actualRole) {
+      const raw = (error?.message || '').toLowerCase()
+      if (raw.includes('shop owner') || raw.includes('shopowner')) actualRole = 'SHOP_OWNER'
+      else if (raw.includes('supplier')) actualRole = 'SUPPLIER'
+      else if (raw.includes('gruh')) actualRole = 'GRUH_UDYOG'
+    }
+
+    const alertText = details.alertMessage || getRoleMismatchAlertMessage(actualRole)
+    setRoleMismatchAlert({
+      message: alertText,
+      actualRole: actualRole || 'SHOP_OWNER',
+    })
+    setRequestError(alertText)
+    setTimeout(() => {
+      try {
+        window.alert(alertText)
+      } catch {
+        // Safe fallback in case window.alert is suppressed
+      }
+    }, 50)
+  }
+
   function updateField(event) {
     const { name, value } = event.target
     setForm((currentForm) => ({ ...currentForm, [name]: value }))
     setErrors((currentErrors) => ({ ...currentErrors, [name]: '', role: '', consent: '' }))
     setRequestError('')
     setSuccessMessage('')
+    setRoleMismatchAlert(null)
   }
 
   function updateConsent(event) {
@@ -99,6 +140,7 @@ export default function LoginPage() {
     setAuthStatus('INITIAL')
     setErrors({})
     setRequestError('')
+    setRoleMismatchAlert(null)
   }
 
   async function handleIdentifierCheckOrSignIn(event) {
@@ -135,7 +177,15 @@ export default function LoginPage() {
           return
         }
       } catch (error) {
-        setRequestError(error.message || 'Unable to verify account details.')
+        if (
+          error.code === 'ROLE_MISMATCH' ||
+          error.status === 403 ||
+          (error.message && (error.message.toLowerCase().includes('change role') || error.message.toLowerCase().includes('registered as')))
+        ) {
+          handleRoleMismatch(error)
+        } else {
+          setRequestError(error.message || 'Unable to verify account details.')
+        }
       } finally {
         setIsSubmitting(false)
       }
@@ -157,6 +207,15 @@ export default function LoginPage() {
       return
     } catch (error) {
       const msg = error.message || ''
+      if (
+        error.code === 'ROLE_MISMATCH' ||
+        error.status === 403 ||
+        msg.toLowerCase().includes('change role') ||
+        msg.toLowerCase().includes('registered as')
+      ) {
+        handleRoleMismatch(error)
+        return
+      }
       if (
         msg.toLowerCase().includes("couldn't find") ||
         msg.toLowerCase().includes('register') ||
@@ -413,12 +472,12 @@ export default function LoginPage() {
           {requestError && (
             <div className="p-3.5 rounded-xl text-xs font-medium text-rose-700 bg-rose-50 border border-rose-200 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2" role="alert">
               <span>{requestError}</span>
-              {requestError.toLowerCase().includes('registered as') && (
+              {(requestError.toLowerCase().includes('registered as') || requestError.toLowerCase().includes('change role')) && (
                 <Link
                   className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-[#f06535] hover:bg-[#e05424] text-white font-semibold text-xs shrink-0 transition-colors shadow-xs"
-                  to="/role-selection"
+                  to={`/role-selection`}
                 >
-                  <span>Select Role</span>
+                  <span>Change Role</span>
                   <span aria-hidden="true" className="ml-1">→</span>
                 </Link>
               )}
@@ -441,6 +500,58 @@ export default function LoginPage() {
           </button>
         </form>
       </div>
+
+      {/* Role Mismatch Alert Box Modal */}
+      {roleMismatchAlert && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-xs animate-in fade-in duration-200"
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="role-alert-modal-title"
+        >
+          <div className="w-full max-w-md bg-white rounded-2xl shadow-2xl border border-amber-200 p-6 space-y-4">
+            <div className="flex items-center gap-3">
+              <div className="w-11 h-11 rounded-2xl bg-amber-100 text-amber-700 flex items-center justify-center font-bold text-xl shrink-0">
+                ⚠️
+              </div>
+              <div>
+                <h3 id="role-alert-modal-title" className="text-base font-bold text-slate-900">
+                  Role Mismatch Alert
+                </h3>
+                <p className="text-xs text-slate-500">
+                  Account registered with a different role
+                </p>
+              </div>
+            </div>
+
+            <div className="p-4 rounded-xl bg-amber-50 border border-amber-200 text-amber-950 text-sm font-semibold leading-relaxed">
+              "{roleMismatchAlert.message}"
+            </div>
+
+            <div className="flex items-center gap-2.5 pt-2">
+              <button
+                type="button"
+                className="flex-1 py-2.5 px-4 rounded-xl bg-[#f06535] hover:bg-[#e05424] text-white text-xs sm:text-sm font-bold shadow-md shadow-orange-500/20 transition-all cursor-pointer text-center inline-flex items-center justify-center"
+                onClick={() => {
+                  const targetRole = roleMismatchAlert.actualRole || 'SHOP_OWNER'
+                  saveSelectedRole(targetRole)
+                  setRoleMismatchAlert(null)
+                  navigate(`/login?role=${targetRole}`)
+                }}
+              >
+                Change Role to {roleMismatchAlert.actualRole === 'SHOP_OWNER' ? 'Shop Owner' : roleMismatchAlert.actualRole === 'SUPPLIER' ? 'Supplier' : 'Gruh Udhyog'} →
+              </button>
+              <button
+                type="button"
+                className="py-2.5 px-4 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 text-xs sm:text-sm font-bold transition-all cursor-pointer"
+                onClick={() => setRoleMismatchAlert(null)}
+              >
+                OK
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }

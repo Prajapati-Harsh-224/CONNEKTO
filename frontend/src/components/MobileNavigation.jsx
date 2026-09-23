@@ -1,5 +1,5 @@
 import { NavLink, useParams } from 'react-router-dom'
-import { FiHome, FiTruck, FiShoppingCart, FiFileText, FiPieChart, FiUsers, FiBox, FiMapPin } from 'react-icons/fi'
+import { FiHome, FiTruck, FiShoppingCart, FiFileText, FiPieChart, FiUsers, FiBox, FiMapPin, FiShoppingBag } from 'react-icons/fi'
 import { getRoleNavigation } from './navigation.js'
 import { useLocale } from '../context/LocaleContext.jsx'
 
@@ -11,6 +11,7 @@ function NavIcon({ section }) {
     orders: <FiFileText />,
     analytics: <FiPieChart />,
     products: <FiBox />,
+    'shop-owners': <FiShoppingBag />,
     customers: <FiUsers />,
     'service-areas': <FiMapPin />,
   }

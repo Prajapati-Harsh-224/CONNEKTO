@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   TbPackage,
@@ -9,6 +9,9 @@ import {
   TbMilk,
   TbCookie,
   TbBuildingFactory2,
+  TbLayoutGrid,
+  TbPencil,
+  TbTag,
 } from 'react-icons/tb'
 import LoadingState from '../components/LoadingState.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
@@ -25,17 +28,43 @@ const categoryDescriptions = {
   'Local Manufacturers': 'Locally produced goods and regional speciality products.',
 }
 
+function normalizeCategory(str) {
+  if (!str) return ''
+  const trimmed = str.trim()
+  const lower = trimmed.toLowerCase()
+  if (lower === 'fmgc' || lower === 'fmcg') return 'FMCG'
+  if (lower === 'baverages' || lower === 'beverages') return 'Beverages'
+  if (lower === 'grocery' || lower === 'staples') return 'Grocery & Staples'
+  if (lower === 'personal care') return 'Personal Care'
+  if (lower === 'cleaning' || lower === 'household') return 'Cleaning & Household'
+  if (lower === 'dairy' || lower === 'bakery') return 'Dairy & Bakery'
+  if (lower === 'snacks') return 'Snacks & Packaged Foods'
+  return trimmed
+}
+
 function normalizeSupplier(supplier = {}) {
-  const category = supplier.category || supplier.categoryLabel || 'FMCG'
+  const rawCategory = supplier.category || supplier.categoryLabel || 'FMCG'
   const serviceAreas = Array.isArray(supplier.serviceAreas) ? supplier.serviceAreas : []
+
+  // Split multiple comma-separated categories if present (e.g. 'FMCG, Grocery & Staples, Beverages, Personal Care')
+  const categoryList = rawCategory
+    .split(',')
+    .map(normalizeCategory)
+    .filter(Boolean)
+
+  const rawTags = Array.isArray(supplier.tags) ? supplier.tags : []
+  const tagList = rawTags.map(normalizeCategory).filter(Boolean)
+
+  const allCategories = Array.from(new Set([...categoryList, ...tagList]))
 
   return {
     ...supplier,
     id: supplier.id,
     name: supplier.name,
-    type: supplier.type || category,
-    category,
-    categoryLabel: supplier.categoryLabel || category,
+    type: supplier.type || rawCategory,
+    category: rawCategory,
+    categoryLabel: supplier.categoryLabel || rawCategory,
+    allCategories: allCategories.length ? allCategories : [normalizeCategory(rawCategory)],
     description: supplier.description || '',
     location: supplier.location || '',
     serviceAreas,
@@ -46,14 +75,15 @@ function normalizeSupplier(supplier = {}) {
     isVerified: Boolean(supplier.isVerified),
     rating: supplier.rating == null ? null : Number(supplier.rating),
     reviewCount: Number(supplier.reviewCount ?? 0),
-    tags: Array.isArray(supplier.tags) && supplier.tags.length ? supplier.tags : [category],
+    tags: allCategories.length ? allCategories : [rawCategory],
   }
 }
 
 // ---------------------------------------------------------------------------
-// Category definitions
+// Base Category definitions
 // ---------------------------------------------------------------------------
-const categoryCatalog = [
+const baseCategoryCatalog = [
+  { id: 'all', key: 'allCategories', label: 'All Categories', icon: 'all' },
   { id: 'FMCG', key: 'categoryFmcg', descKey: 'categoryFmcgDesc', icon: 'fmcg' },
   { id: 'Grocery & Staples', key: 'categoryGrocery', descKey: 'categoryGroceryDesc', icon: 'grocery' },
   { id: 'Beverages', key: 'categoryBeverages', descKey: 'categoryBeveragesDesc', icon: 'beverage' },
@@ -62,14 +92,17 @@ const categoryCatalog = [
   { id: 'Dairy & Bakery', key: 'categoryDairy', descKey: 'categoryDairyDesc', icon: 'dairy' },
   { id: 'Snacks & Packaged Foods', key: 'categorySnacks', descKey: 'categorySnacksDesc', icon: 'snacks' },
   { id: 'Local Manufacturers', key: 'categoryLocal', descKey: 'categoryLocalDesc', icon: 'local' },
+  { id: 'Stationary', label: 'Stationary', icon: 'stationary' },
 ]
 
 // ---------------------------------------------------------------------------
 // Category SVG icons
 // ---------------------------------------------------------------------------
 const CategoryIcon = ({ type }) => {
-  const iconProps = { size: 20, strokeWidth: 1.8, 'aria-hidden': true }
+  const iconProps = { size: 24, strokeWidth: 1.8, 'aria-hidden': true }
   switch (type) {
+    case 'all':
+      return <TbLayoutGrid {...iconProps} />
     case 'fmcg':
       return <TbPackage {...iconProps} />
     case 'grocery':
@@ -86,13 +119,16 @@ const CategoryIcon = ({ type }) => {
       return <TbCookie {...iconProps} />
     case 'local':
       return <TbBuildingFactory2 {...iconProps} />
+    case 'stationary':
+      return <TbPencil {...iconProps} />
     default:
-      return null
+      return <TbTag {...iconProps} />
   }
 }
 
 // Category icon accent colors (background tint / icon color)
 const categoryColors = {
+  all: { bg: '#f1f5f9', color: '#475569' },
   fmcg: { bg: '#e8f5e9', color: '#2E7D32' },
   grocery: { bg: '#fff8e1', color: '#F57F17' },
   beverage: { bg: '#e3f2fd', color: '#1565C0' },
@@ -101,6 +137,8 @@ const categoryColors = {
   dairy: { bg: '#f3e5f5', color: '#6A1B9A' },
   snacks: { bg: '#fff3e0', color: '#E65100' },
   local: { bg: '#e0f2f1', color: '#00695C' },
+  stationary: { bg: '#ede7f6', color: '#512DA8' },
+  tag: { bg: '#f8fafc', color: '#64748b' },
 }
 
 // ---------------------------------------------------------------------------
@@ -225,7 +263,7 @@ function SupplierCard({ supplier, isFavorite, onToggleFavorite }) {
         </p>
 
         <div className="flex flex-wrap gap-1.5 pt-1">
-          {(supplier.tags || []).slice(0, 3).map((tag) => (
+          {(supplier.tags || []).map((tag) => (
             <span key={tag} className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold">
               {tag}
             </span>
@@ -257,6 +295,14 @@ export default function SupplierListPage() {
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [suppliers, setSuppliers] = useState([])
+  const categoryScrollRef = useRef(null)
+
+  const scrollCategories = (direction) => {
+    if (categoryScrollRef.current) {
+      const offset = direction === 'left' ? -300 : 300
+      categoryScrollRef.current.scrollBy({ left: offset, behavior: 'smooth' })
+    }
+  }
 
   useEffect(() => {
     let isMounted = true
@@ -292,12 +338,47 @@ export default function SupplierListPage() {
     setFavorites((prev) => ({ ...prev, [id]: !prev[id] }))
   }, [])
 
+  const categoryCatalog = useMemo(() => {
+    const list = baseCategoryCatalog.map((item) => ({
+      ...item,
+      label: item.id === 'all' ? (t('allCategories') || item.label) : (item.key ? t(item.key) : item.label || item.id)
+    }))
+
+    const existingIds = new Set(list.map((c) => c.id.toLowerCase()))
+
+    suppliers.forEach((s) => {
+      (s.allCategories || []).forEach((cat) => {
+        if (cat && !existingIds.has(cat.toLowerCase())) {
+          existingIds.add(cat.toLowerCase())
+          list.push({
+            id: cat,
+            label: cat,
+            icon: cat.toLowerCase().includes('food') ? 'snacks' : 'tag'
+          })
+        }
+      })
+    })
+
+    return list
+  }, [suppliers, t])
+
   const filteredSuppliers = useMemo(() => {
     const q = searchTerm.trim().toLowerCase()
     return [...suppliers]
       .filter((s) => {
-        if (selectedCategory !== 'all' && s.category !== selectedCategory) return false
-        if (q && ![s.name, s.type, s.category, s.location, s.description, ...(s.tags || [])].some((v) => String(v).toLowerCase().includes(q))) return false
+        if (selectedCategory !== 'all') {
+          const target = selectedCategory.toLowerCase().trim()
+          const supplierCats = (s.allCategories || [s.category]).map((c) => String(c).toLowerCase().trim())
+          const matchesCategory = supplierCats.some((c) => 
+            c === target || 
+            c.includes(target) || 
+            target.includes(c) ||
+            (target.includes('snack') && c.includes('snack')) ||
+            (target.includes('grocery') && (c.includes('grocery') || c.includes('staple')))
+          )
+          if (!matchesCategory) return false
+        }
+        if (q && ![s.name, s.type, s.category, s.location, s.description, ...(s.tags || []), ...(s.allCategories || [])].some((v) => String(v).toLowerCase().includes(q))) return false
         return true
       })
       .sort((a, b) => (b.rating || 0) * Math.log((b.reviewCount || 1) + 1) - (a.rating || 0) * Math.log((a.reviewCount || 1) + 1))
@@ -306,8 +387,9 @@ export default function SupplierListPage() {
   const activeCategoryLabel = useMemo(() => {
     if (selectedCategory === 'all') return t('allSuppliers')
     const cat = categoryCatalog.find((c) => c.id === selectedCategory)
-    return t('suppliersInCategory', { category: t(cat?.key || 'categoryFmcg') })
-  }, [selectedCategory, t])
+    const label = cat?.label || (cat?.key ? t(cat.key) : selectedCategory)
+    return t('suppliersInCategory', { category: label })
+  }, [categoryCatalog, selectedCategory, t])
 
   if (isLoading) return <LoadingState message={t('loadingWorkspace')} />
 
@@ -334,33 +416,65 @@ export default function SupplierListPage() {
         </div>
       </div>
 
-      {/* ── Category carousel / selector ── */}
+      {/* ── Category selector (single row of square cards) ── */}
       <div className="space-y-3">
-        <span className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('shopByCategory')}</span>
-        <div className="flex gap-3 overflow-x-auto pb-2" role="list">
+        <div className="flex items-center justify-between">
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('shopByCategory')}</span>
+          <div className="flex items-center gap-1.5">
+            <button
+              type="button"
+              onClick={() => scrollCategories('left')}
+              className="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer shadow-2xs"
+              aria-label="Scroll left"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16" aria-hidden="true">
+                <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+              </svg>
+            </button>
+            <button
+              type="button"
+              onClick={() => scrollCategories('right')}
+              className="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer shadow-2xs"
+              aria-label="Scroll right"
+            >
+              <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16" aria-hidden="true">
+                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+              </svg>
+            </button>
+          </div>
+        </div>
+
+        <div 
+          ref={categoryScrollRef}
+          className="flex flex-nowrap gap-3 overflow-x-auto pb-3 pt-1 scroll-smooth"
+          style={{ scrollbarWidth: 'thin' }}
+          role="list"
+        >
           {categoryCatalog.map((cat) => {
             const isActive = selectedCategory === cat.id
-            const colors = categoryColors[cat.icon] || categoryColors.fmcg
+            const colors = categoryColors[cat.icon] || categoryColors.tag
             return (
               <button
                 key={cat.id}
                 type="button"
                 role="listitem"
-                className={`flex flex-col items-center p-3 rounded-2xl border transition-all text-center cursor-pointer min-w-[120px] shrink-0 ${
+                className={`aspect-square w-[130px] sm:w-[140px] shrink-0 flex flex-col items-center justify-center p-3 rounded-2xl border transition-all text-center cursor-pointer shadow-2xs hover:shadow-xs ${
                   isActive 
                     ? 'bg-orange-50 border-orange-300 ring-2 ring-orange-200' 
-                    : 'bg-white border-slate-200/80 hover:border-slate-300 hover:shadow-xs'
+                    : 'bg-white border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/50'
                 }`}
-                onClick={() => setSelectedCategory(isActive ? 'all' : cat.id)}
+                onClick={() => setSelectedCategory(isActive && cat.id !== 'all' ? 'all' : cat.id)}
                 aria-pressed={isActive}
               >
                 <span
-                  className="flex items-center justify-center w-10 h-10 rounded-xl mb-2 text-lg"
+                  className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-2xl mb-2 text-xl shrink-0 shadow-2xs"
                   style={{ background: colors.bg, color: colors.color }}
                 >
                   <CategoryIcon type={cat.icon} />
                 </span>
-                <span className="text-xs font-bold text-slate-800 line-clamp-1">{t(cat.key)}</span>
+                <span className="text-xs font-bold text-slate-800 leading-snug text-center break-words max-w-full px-1">
+                  {cat.label}
+                </span>
               </button>
             )
           })}

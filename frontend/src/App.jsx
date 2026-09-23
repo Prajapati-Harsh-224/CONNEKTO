@@ -21,6 +21,8 @@ import SupplierDashboardPage from './pages/SupplierDashboardPage.jsx'
 import SupplierIncomingOrdersPage from './pages/SupplierIncomingOrdersPage.jsx'
 import SupplierIncomingOrderDetailPage from './pages/SupplierIncomingOrderDetailPage.jsx'
 import SupplierProductManagementPage from './pages/SupplierProductManagementPage.jsx'
+import SupplierEditProductPage from './pages/SupplierEditProductPage.jsx'
+import SupplierShopOwnersPage from './pages/SupplierShopOwnersPage.jsx'
 import SupplierAnalyticsPage from './pages/SupplierAnalyticsPage.jsx'
 import SupplierCustomersPage from './pages/SupplierCustomersPage.jsx'
 import ShopOwnerAnalyticsPage from './pages/ShopOwnerAnalyticsPage.jsx'
@@ -76,6 +78,9 @@ export default function App() {
             <Route path="incoming-orders" element={<Navigate replace to="/dashboard/supplier/orders" />} />
             <Route path="incoming-orders/:orderId" element={<SupplierIncomingOrderDetailPage />} />
             <Route path="products" element={<SupplierProductManagementPage />} />
+            <Route path="products/new" element={<SupplierEditProductPage />} />
+            <Route path="products/:productId/edit" element={<SupplierEditProductPage />} />
+            <Route path="shop-owners" element={<SupplierShopOwnersPage />} />
             <Route path="customers" element={<SupplierCustomersPage />} />
             <Route path="analytics" element={<SupplierAnalyticsPage />} />
             <Route path="profile" element={<ProfilePage role="supplier" />} />

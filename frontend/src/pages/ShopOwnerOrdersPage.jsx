@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { FiCheckCircle, FiClock, FiPackage, FiXCircle } from 'react-icons/fi'
+import { FiCheckCircle, FiClock, FiPackage, FiTruck, FiXCircle } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
 import EmptyState from '../components/EmptyState.jsx'
 import LoadingState from '../components/LoadingState.jsx'
@@ -21,7 +21,7 @@ function priceValue(value) {
 }
 
 function formatPrice(value) {
-  return `Rs ${Number(value).toLocaleString('en-IN')}`
+  return `Rs\u00A0${Number(value).toLocaleString('en-IN')}`
 }
 
 function getInitials(name = '') {
@@ -38,6 +38,16 @@ function statusGroup(status) {
 function displayStatus(status = '') {
   if (status === 'REQUESTED') return 'Request Sent'
   return status.replaceAll('_', ' ')
+}
+
+function formatOrderId(orderId) {
+  const value = String(orderId || '').trim()
+  if (!value) return '#ORD-000000'
+  if (value.startsWith('#')) return value
+  const hexMatch = value.match(/[A-Fa-f0-9]{8}/)
+  if (hexMatch) return `#${hexMatch[0].toUpperCase()}`
+  const clean = value.replace(/^SUPPLIER[-_]?/i, '').replace(/[^A-Za-z0-9]/g, '')
+  return `#${(clean.slice(0, 8) || value.slice(0, 8)).toUpperCase()}`
 }
 
 function displayOrderId(orderId, maxLength = 25) {
@@ -64,7 +74,8 @@ function formatOrderDate(value) {
   yesterday.setDate(today.getDate() - 1)
   if (date.toDateString() === today.toDateString()) return `Today, ${date.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' })}`
   if (date.toDateString() === yesterday.toDateString()) return `Yesterday, ${date.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' })}`
-  return date.toLocaleDateString('en-IN', { day: 'numeric', month: 'short', year: 'numeric' })
+  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
+  return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`
 }
 
 function getSupplierDetails(order) {
@@ -124,16 +135,17 @@ export default function ShopOwnerOrdersPage() {
   const selectedSupplier = selectedOrder ? getSupplierDetails(selectedOrder) : null
   const selectedItems = selectedOrder?.items || []
   const stats = [
-    { key: 'total', label: t('ordersTotalOrders'), value: counts.all, description: t('ordersAllTime'), icon: FiPackage },
-    { key: 'pending', label: t('pending'), value: counts.pending, description: t('ordersAwaitingConfirmation'), icon: FiClock },
-    { key: 'delivered', label: t('delivered'), value: counts.delivered, description: t('ordersCompleted'), icon: FiCheckCircle },
-    { key: 'cancelled', label: t('cancelled'), value: counts.cancelled, description: t('ordersCancelled'), icon: FiXCircle },
+    { key: 'total', label: t('ordersTotalOrders'), value: counts.all, description: t('ordersAllTime'), icon: FiPackage, tabValue: 'All' },
+    { key: 'pending', label: t('pending'), value: counts.pending, description: t('ordersAwaitingConfirmation'), icon: FiClock, tabValue: 'Pending' },
+    { key: 'progress', label: t('ordersInProgress') || 'In Progress', value: counts.progress, description: 'Active fulfillment', icon: FiTruck, tabValue: 'In Progress' },
+    { key: 'delivered', label: t('delivered'), value: counts.delivered, description: t('ordersCompleted'), icon: FiCheckCircle, tabValue: 'Delivered' },
+    { key: 'cancelled', label: t('cancelled'), value: counts.cancelled, description: t('ordersCancelled'), icon: FiXCircle, tabValue: 'Cancelled' },
   ]
 
   if (isLoading) return <LoadingState message={t('loadingOrders')} />
   if (error) {
     return (
-      <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-4">
+      <section className="space-y-4 w-full min-w-0">
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
           <span>{t('shopOwner')}</span>
           <span aria-hidden="true">›</span>
@@ -155,12 +167,13 @@ export default function ShopOwnerOrdersPage() {
   const statTones = {
     total: 'bg-blue-50 text-blue-600 border-blue-100',
     pending: 'bg-amber-50 text-amber-600 border-amber-100',
+    progress: 'bg-purple-50 text-purple-600 border-purple-100',
     delivered: 'bg-emerald-50 text-emerald-600 border-emerald-100',
     cancelled: 'bg-rose-50 text-rose-600 border-rose-100',
   }
 
   return (
-    <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
+    <section className="space-y-6 sm:space-y-8 w-full min-w-0">
       <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
         <span>{t('shopOwner')}</span>
         <span aria-hidden="true">›</span>
@@ -172,19 +185,34 @@ export default function ShopOwnerOrdersPage() {
         <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('ordersSubtitle')}</p>
       </div>
 
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
+      <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-2.5 sm:gap-3">
         {stats.map((stat) => {
           const Icon = stat.icon
           const tone = statTones[stat.key] || statTones.total
+          const isFilterActive = activeTab === stat.tabValue
           return (
-            <article className="flex items-center gap-3.5 p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs" key={stat.key}>
-              <span className={`flex items-center justify-center w-10 h-10 sm:w-11 sm:h-11 rounded-xl border text-lg shrink-0 ${tone}`} aria-hidden="true">
+            <article
+              aria-pressed={isFilterActive}
+              className={`flex items-center gap-2.5 sm:gap-3 p-3 sm:p-3.5 rounded-2xl bg-white border shadow-xs transition-all cursor-pointer select-none ${
+                isFilterActive
+                  ? 'border-brand-orange ring-2 ring-brand-orange/20 shadow-sm'
+                  : 'border-slate-200/80 hover:border-slate-300 hover:shadow-sm'
+              }`}
+              key={stat.key}
+              onClick={() => setActiveTab(stat.tabValue)}
+              onKeyDown={(event) => {
+                if (event.key === 'Enter' || event.key === ' ') setActiveTab(stat.tabValue)
+              }}
+              role="button"
+              tabIndex="0"
+            >
+              <span className={`flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-xl border text-base sm:text-lg shrink-0 ${tone}`} aria-hidden="true">
                 <Icon />
               </span>
               <div className="flex flex-col min-w-0">
-                <span className="text-[11px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">{stat.label}</span>
-                <strong className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight leading-tight">{stat.value}</strong>
-                <small className="text-[11px] text-slate-400 font-medium truncate hidden sm:inline">{stat.description}</small>
+                <span className="text-[10px] sm:text-[11px] font-semibold text-slate-500 uppercase tracking-wider truncate">{stat.label}</span>
+                <strong className="text-lg sm:text-xl font-black text-slate-900 tracking-tight leading-tight">{stat.value}</strong>
+                <small className="text-[10px] sm:text-[11px] text-slate-400 font-medium truncate hidden md:inline">{stat.description}</small>
               </div>
             </article>
           )
@@ -193,10 +221,10 @@ export default function ShopOwnerOrdersPage() {
 
       <div className="flex items-center gap-1.5 overflow-x-auto pb-2 border-b border-slate-200/80" role="tablist">
         {tabs.map((tab) => {
-          const count = tab.value === 'All' ? counts.all : tab.value === 'Pending' ? counts.pending : tab.value === 'In Progress' ? counts.progress : tab.value === 'Delivered' ? counts.delivered : counts.cancelled
           const isActive = activeTab === tab.value
           return (
             <button
+              aria-selected={isActive}
               className={`px-4 py-2 rounded-xl text-xs sm:text-sm font-semibold transition-all whitespace-nowrap cursor-pointer shrink-0 ${
                 isActive 
                   ? 'bg-slate-900 text-white shadow-xs' 
@@ -207,16 +235,16 @@ export default function ShopOwnerOrdersPage() {
               role="tab"
               type="button"
             >
-              {t(tab.key)} {tab.value !== 'All' && <span className="opacity-75">({count})</span>}
+              {t(tab.key)}
             </button>
           )
         })}
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 items-start">
-        <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 sm:p-5 space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
-            <label className="relative flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 sm:col-span-2 md:col-span-1 focus-within:ring-2 focus-within:ring-brand-orange/20 focus-within:border-brand-orange transition-all">
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_250px] 2xl:grid-cols-[minmax(0,1fr)_280px] gap-3.5 lg:gap-4 items-start w-full min-w-0">
+        <div className="min-w-0 bg-white rounded-2xl border border-slate-200/80 shadow-xs p-3 sm:p-3.5 md:p-4 space-y-3.5">
+          <div className="flex flex-col sm:flex-row items-center gap-2.5 flex-wrap">
+            <label className="relative flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 flex-1 min-w-[220px] w-full sm:w-auto focus-within:ring-2 focus-within:ring-brand-orange/20 focus-within:border-brand-orange transition-all">
               <span className="text-slate-400 mr-2 text-sm" aria-hidden="true">⌕</span>
               <input
                 className="w-full bg-transparent text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden"
@@ -227,56 +255,61 @@ export default function ShopOwnerOrdersPage() {
               />
             </label>
 
-            <select
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-700 font-medium focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange transition-all cursor-pointer"
-              onChange={(event) => setSupplierFilter(event.target.value)}
-              value={supplierFilter}
-            >
-              {suppliers.map((supplier) => (
-                <option key={supplier}>{supplier}</option>
-              ))}
-            </select>
+            <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
+              <select
+                className="flex-1 sm:flex-initial bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-700 font-medium focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange transition-all cursor-pointer"
+                onChange={(event) => setSupplierFilter(event.target.value)}
+                value={supplierFilter}
+              >
+                {suppliers.map((supplier) => (
+                  <option key={supplier}>{supplier}</option>
+                ))}
+              </select>
 
-            <select
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-700 font-medium focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange transition-all cursor-pointer"
-              onChange={(event) => setTimeFilter(event.target.value)}
-              value={timeFilter}
-            >
-              <option value="All Time">{t('allTime')}</option>
-              <option value="Last 30 days">{t('last30Days')}</option>
-              <option value="Last 90 days">{t('last90Days')}</option>
-            </select>
+              <select
+                className="flex-1 sm:flex-initial bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-700 font-medium focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange transition-all cursor-pointer"
+                onChange={(event) => setTimeFilter(event.target.value)}
+                value={timeFilter}
+              >
+                <option value="All Time">{t('allTime')}</option>
+                <option value="Last 30 days">{t('last30Days')}</option>
+                <option value="Last 90 days">{t('last90Days')}</option>
+              </select>
 
-            <select
-              className="bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-700 font-medium focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange transition-all cursor-pointer"
-              onChange={(event) => setSortBy(event.target.value)}
-              value={sortBy}
-            >
-              <option value="newest">{t('sortNewest')}</option>
-              <option value="oldest">{t('sortOldest')}</option>
-            </select>
+              <select
+                className="flex-1 sm:flex-initial bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 text-xs sm:text-sm text-slate-700 font-medium focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange transition-all cursor-pointer"
+                onChange={(event) => setSortBy(event.target.value)}
+                value={sortBy}
+              >
+                <option value="newest">{t('sortNewest')}</option>
+                <option value="oldest">{t('sortOldest')}</option>
+              </select>
+            </div>
           </div>
 
           {visibleOrders.length ? (
-            <div className="overflow-x-auto -mx-4 sm:-mx-5 px-4 sm:px-5">
-              <div className="min-w-[680px]">
-                <div className="grid grid-cols-[1.5fr_1.8fr_1fr_1.2fr_1.3fr_1.4fr] gap-3 py-2.5 px-3 bg-slate-50 rounded-xl text-xs font-bold text-slate-400 uppercase tracking-wider">
-                  <span>{t('ordersColumnOrder')}</span>
-                  <span>{t('ordersColumnSupplier')}</span>
-                  <span>{t('ordersColumnItems')}</span>
-                  <span>{t('ordersColumnAmount')}</span>
-                  <span>{t('ordersColumnStatus')}</span>
-                  <span>{t('ordersColumnDate')}</span>
-                </div>
+            <div className="overflow-hidden">
+              <table className="w-full text-left border-separate border-spacing-0">
+                <thead>
+                  <tr className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                    <th className="py-2 px-1.5 sm:px-2 bg-slate-50 rounded-l-xl font-bold w-[17%]">{t('ordersColumnOrder')}</th>
+                    <th className="py-2 px-1.5 sm:px-2 bg-slate-50 font-bold w-[23%]">{t('ordersColumnSupplier')}</th>
+                    <th className="py-2 px-1.5 sm:px-2 bg-slate-50 font-bold w-[10%]">{t('ordersColumnItems')}</th>
+                    <th className="py-2 px-1.5 sm:px-2 bg-slate-50 font-bold w-[12%]">{t('ordersColumnAmount')}</th>
+                    <th className="py-2 px-1.5 sm:px-2 bg-slate-50 font-bold w-[19%]">{t('ordersColumnStatus')}</th>
+                    <th className="py-2 px-1.5 sm:px-2 bg-slate-50 rounded-r-xl font-bold w-[19%]">{t('ordersColumnDate')}</th>
+                  </tr>
+                </thead>
 
-                <div className="divide-y divide-slate-100 mt-1">
+                <tbody className="divide-y divide-slate-100">
                   {visibleOrders.map((order) => {
                     const items = order.items || []
                     const isSelected = selectedOrder?.id === order.id
                     return (
-                      <article
-                        className={`grid grid-cols-[1.5fr_1.8fr_1fr_1.2fr_1.3fr_1.4fr] gap-3 items-center py-3 px-3 rounded-xl transition-all cursor-pointer ${
-                          isSelected ? 'bg-orange-50/60 ring-1 ring-brand-orange/40 font-medium' : 'hover:bg-slate-50'
+                      <tr
+                        aria-selected={isSelected}
+                        className={`transition-all cursor-pointer ${
+                          isSelected ? 'bg-orange-50/90 font-semibold' : 'hover:bg-slate-50/70'
                         }`}
                         key={order.id}
                         onClick={() => setSelectedOrderId(order.id)}
@@ -286,47 +319,59 @@ export default function ShopOwnerOrdersPage() {
                         role="button"
                         tabIndex="0"
                       >
-                        <div className="flex items-center gap-2 min-w-0">
-                          <div className="flex -space-x-2 shrink-0">
-                            {items.slice(0, 2).map((item) => (
-                              <ProductImage
-                                key={item.productId}
-                                alt=""
-                                aria-hidden="true"
-                                className="w-7 h-7 rounded-lg border border-white object-cover shadow-xs"
-                                fallbackText={productName(item).slice(0, 1)}
-                                src={item.imageUrl || item.imageLabel || ''}
-                              />
-                            ))}
+                        <td className={`py-2.5 px-1.5 sm:px-2 border-b border-slate-100 ${isSelected ? 'border-l-4 border-l-brand-orange rounded-l-md' : 'border-l-4 border-l-transparent'}`}>
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <div className="shrink-0">
+                              {items[0] ? (
+                                <ProductImage
+                                  key={items[0].productId}
+                                  alt=""
+                                  aria-hidden="true"
+                                  className="w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-md border border-white object-cover shadow-2xs"
+                                  fallbackText={productName(items[0]).slice(0, 1)}
+                                  src={items[0].imageUrl || items[0].imageLabel || ''}
+                                />
+                              ) : (
+                                <span className="flex items-center justify-center w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-md bg-slate-100 text-xs font-bold text-slate-400">#</span>
+                              )}
+                            </div>
+                            <span className="text-xs font-mono font-bold text-slate-900 whitespace-nowrap shrink-0" title={`#${order.id}`}>
+                              {formatOrderId(order.id)}
+                            </span>
                           </div>
-                          <span className="text-xs font-mono font-bold text-slate-900 truncate" title={`#${order.id}`}>
-                            #{displayOrderId(order.id, 12)}
-                          </span>
-                        </div>
+                        </td>
 
-                        <div className="flex items-center gap-2 min-w-0">
-                          <span className="flex items-center justify-center w-6 h-6 rounded-md bg-slate-100 text-[10px] font-bold text-slate-600 shrink-0">
-                            {getInitials(order.supplierName)}
-                          </span>
-                          <strong className="text-xs sm:text-sm font-semibold text-slate-800 truncate">{order.supplierName}</strong>
-                        </div>
+                        <td className="py-2.5 px-1.5 sm:px-2 border-b border-slate-100">
+                          <div className="flex items-center gap-1.5 min-w-0">
+                            <span className="flex items-center justify-center w-5 h-5 rounded-md bg-slate-100 text-[10px] font-bold text-slate-600 shrink-0">
+                              {getInitials(order.supplierName)}
+                            </span>
+                            <strong className="text-xs font-semibold text-slate-800 truncate block max-w-[105px] sm:max-w-[130px]" title={order.supplierName}>
+                              {order.supplierName}
+                            </strong>
+                          </div>
+                        </td>
 
-                        <span className="text-xs text-slate-500 font-medium">
+                        <td className="py-2.5 px-1.5 sm:px-2 text-xs text-slate-500 font-medium whitespace-nowrap border-b border-slate-100">
                           {items.length} {items.length === 1 ? t('itemCount') : t('itemsCount')}
-                        </span>
+                        </td>
 
-                        <strong className="text-xs sm:text-sm font-bold text-slate-900">{formatPrice(order.subtotal)}</strong>
+                        <td className="py-2.5 px-1.5 sm:px-2 text-xs font-bold text-slate-900 tabular-nums whitespace-nowrap border-b border-slate-100">
+                          {formatPrice(order.subtotal)}
+                        </td>
 
-                        <div>
+                        <td className="py-2.5 px-1.5 sm:px-2 whitespace-nowrap border-b border-slate-100">
                           <StatusBadge status={order.status} />
-                        </div>
+                        </td>
 
-                        <span className="text-xs text-slate-400 whitespace-nowrap">{formatOrderDate(order.createdAt)}</span>
-                      </article>
+                        <td className="py-2.5 px-1.5 sm:px-2 text-xs text-slate-500 whitespace-nowrap border-b border-slate-100">
+                          {formatOrderDate(order.createdAt)}
+                        </td>
+                      </tr>
                     )
                   })}
-                </div>
-              </div>
+                </tbody>
+              </table>
             </div>
           ) : (
             <EmptyState title={t('noOrders')} message={orders.length ? t('noOrdersFoundSearch') : t('noOrdersYet')} />
@@ -334,17 +379,16 @@ export default function ShopOwnerOrdersPage() {
         </div>
 
         {selectedOrder && (
-          <aside className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 space-y-5 xl:sticky xl:top-20">
+          <aside className="w-full min-w-0 bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 sm:p-5 space-y-4 xl:sticky xl:top-20">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h2 className="text-base font-bold text-slate-900">{t('ordersDetails')}</h2>
-              <Link className="text-xs font-bold text-brand-orange hover:text-brand-orange-dark transition-colors" to="/dashboard/shop-owner/orders">
-                {t('ordersViewAll')} →
-              </Link>
             </div>
 
-            <div className="flex items-center justify-between gap-2">
-              <strong className="text-sm font-mono font-bold text-slate-900">#{selectedOrder.id}</strong>
-              <StatusBadge status={selectedOrder.status} />
+            <div className="flex items-center justify-between gap-2 min-w-0">
+              <strong className="text-xs sm:text-sm font-mono font-bold text-slate-900 truncate" title={`#${selectedOrder.id}`}>
+                {formatOrderId(selectedOrder.id)}
+              </strong>
+              <span className="shrink-0"><StatusBadge status={selectedOrder.status} /></span>
             </div>
 
             <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
@@ -419,7 +463,7 @@ export default function ShopOwnerOrdersPage() {
             </div>
 
             <Link
-              className="block w-full text-center py-2.5 rounded-xl bg-orange-50 hover:bg-orange-100 text-brand-orange font-bold text-xs transition-colors border border-orange-200/60"
+              className="block w-full text-center py-2.5 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white font-semibold text-xs transition-colors shadow-xs"
               to={`/dashboard/shop-owner/orders/${encodeURIComponent(selectedOrder.id)}`}
             >
               {t('ordersViewFullDetails')} →

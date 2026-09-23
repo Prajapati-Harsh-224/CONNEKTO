@@ -83,7 +83,8 @@ export default function ProductDetailPage() {
       unitsPerBox: unitsPerBox,
       boxes: Number(boxes),
       quantity: totalQuantity,
-      unitPrice: unitPrice
+      unitPrice: unitPrice,
+      price: unitPrice
     })
     window.dispatchEvent(new Event('connecto-cart-updated'))
     setSuccessMessage(

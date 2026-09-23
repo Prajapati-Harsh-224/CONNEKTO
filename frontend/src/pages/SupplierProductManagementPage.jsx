@@ -1,31 +1,32 @@
 import { useEffect, useMemo, useState } from 'react'
+import { Link, useLocation } from 'react-router-dom'
 import EmptyState from '../components/EmptyState.jsx'
 import LoadingState from '../components/LoadingState.jsx'
 import ProductImage from '../components/ProductImage.jsx'
-import ProductManagementForm from '../components/ProductManagementForm.jsx'
-import { normalizeImageUrl } from '../utils/imageUrl.js'
 import { useLocale } from '../context/LocaleContext.jsx'
-import { createSupplierProduct, deactivateSupplierProduct, getSupplierProducts, updateSupplierProduct } from '../services/supplierProductService.js'
-
-const emptyForm = { name: '', brand: '', category: '', packSize: '', price: '', minimumQuantity: '1', availableStock: '0', imageUrl: '' }
+import { deactivateSupplierProduct, getSupplierProducts } from '../services/supplierProductService.js'
 
 function formatPrice(value) {
-  return `Rs ${Number(value || 0).toLocaleString('en-IN')}`
+  return `Rs\u00A0${Number(value || 0).toLocaleString('en-IN')}`
 }
 
 export default function SupplierProductManagementPage() {
   const { t } = useLocale()
+  const location = useLocation()
   const [products, setProducts] = useState([])
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
-  const [formError, setFormError] = useState('')
-  const [form, setForm] = useState(emptyForm)
-  const [editingId, setEditingId] = useState(null)
-  const [isSaving, setIsSaving] = useState(false)
-  const [feedback, setFeedback] = useState('')
+  const [feedback, setFeedback] = useState(location.state?.feedback || '')
   const [query, setQuery] = useState('')
   const [activeCategory, setActiveCategory] = useState('All categories')
   const [sortBy, setSortBy] = useState('popular')
+
+  useEffect(() => {
+    if (location.state?.feedback) {
+      setFeedback(location.state.feedback)
+      window.history.replaceState({}, document.title)
+    }
+  }, [location.state])
 
   useEffect(() => {
     getSupplierProducts()
@@ -56,68 +57,6 @@ export default function SupplierProductManagementPage() {
       })
   }, [activeCategory, products, query, sortBy])
 
-  function startAdd() {
-    setEditingId('new')
-    setForm({ ...emptyForm, category: activeCategory !== 'All categories' ? activeCategory : '' })
-    setFormError('')
-    setFeedback('')
-  }
-
-  function startEdit(product) {
-    setEditingId(product.id)
-    setForm({
-      name: product.name,
-      brand: product.brand,
-      category: product.category,
-      packSize: product.packSize,
-      price: String(product.price),
-      minimumQuantity: String(product.minimumQuantity),
-      availableStock: String(product.availableStock ?? 0),
-      imageUrl: product.imageUrl || ''
-    })
-    setFormError('')
-    setFeedback('')
-  }
-
-  function updateField(event) {
-    const { name, value } = event.target
-    if (name === 'availableStock') {
-      const sanitized = value.replace(/\D/g, '')
-      setForm((current) => ({ ...current, [name]: sanitized }))
-      setFormError('')
-      return
-    }
-    setForm((current) => ({ ...current, [name]: value }))
-    setFormError('')
-  }
-
-  async function saveProduct(event) {
-    event.preventDefault()
-    setFormError('')
-    setFeedback('')
-    setIsSaving(true)
-    const cleanedImageUrl = normalizeImageUrl(form.imageUrl)
-    const parsedStock = form.availableStock === '' ? 0 : parseInt(form.availableStock, 10)
-    const payload = {
-      ...form,
-      imageUrl: cleanedImageUrl,
-      price: Number(form.price),
-      minimumQuantity: Number(form.minimumQuantity),
-      availableStock: isNaN(parsedStock) ? 0 : Math.max(0, parsedStock)
-    }
-    try {
-      const response = editingId === 'new' ? await createSupplierProduct(payload) : await updateSupplierProduct(editingId, payload)
-      setProducts((current) => editingId === 'new'
-        ? [...current, response.data.product]
-        : current.map((product) => product.id === editingId ? response.data.product : product))
-      setEditingId(null)
-      setFeedback(editingId === 'new' ? t('productAdded') : t('productUpdated'))
-    } catch (requestError) {
-      setFormError(requestError.message)
-    } finally {
-      setIsSaving(false)
-    }
-  }
 
   async function deactivateProduct(product) {
     setFeedback('')
@@ -154,13 +93,12 @@ export default function SupplierProductManagementPage() {
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">{t('yourProducts')}</h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('manageCatalogVisible')}</p>
         </div>
-        <button 
-          className="px-5 py-2.5 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white font-bold text-sm shadow-xs hover:shadow transition-all self-start sm:self-auto cursor-pointer" 
-          onClick={startAdd} 
-          type="button"
+        <Link 
+          className="px-5 py-2.5 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white font-bold text-sm shadow-xs hover:shadow transition-all self-start sm:self-auto cursor-pointer inline-flex items-center gap-1.5" 
+          to="/dashboard/supplier/products/new"
         >
           + {t('addProduct')}
-        </button>
+        </Link>
       </div>
 
       {feedback && (
@@ -168,25 +106,6 @@ export default function SupplierProductManagementPage() {
           <span>{feedback}</span>
           <button className="text-emerald-600 hover:text-emerald-900 text-xs font-bold ml-2 cursor-pointer" onClick={() => setFeedback('')} type="button">{t('dismiss')}</button>
         </div>
-      )}
-
-      {editingId && (
-        <section className="p-5 sm:p-7 rounded-2xl bg-white border border-slate-200/80 shadow-xs">
-          <div className="mb-6 pb-4 border-b border-slate-100">
-            <span className="text-xs font-bold uppercase tracking-wider text-brand-orange">{editingId === 'new' ? t('newListing') : t('editListing')}</span>
-            <h2 className="text-xl sm:text-2xl font-black text-slate-900 tracking-tight mt-0.5">{editingId === 'new' ? t('addAProduct') : t('updateProduct')}</h2>
-          </div>
-          <ProductManagementForm
-            categories={categories.filter((cat) => cat !== 'All categories')}
-            errors={{ form: formError }}
-            form={form}
-            isSubmitting={isSaving}
-            onCancel={() => setEditingId(null)}
-            onChange={updateField}
-            onSubmit={saveProduct}
-            submitLabel={editingId === 'new' ? t('addProduct') : t('saveChanges')}
-          />
-        </section>
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[240px_1fr] gap-6 items-start">
@@ -295,32 +214,30 @@ export default function SupplierProductManagementPage() {
                       </p>
                     </div>
 
-                    <div>
-                      <div className="flex items-center justify-between text-xs text-slate-500 py-2 border-y border-slate-100 mb-3 font-medium">
+                    <div className="space-y-2.5">
+                      <div className="flex items-center justify-between text-xs text-slate-500 py-2 border-y border-slate-100 font-medium">
                         <span>{t('minStock', { minimum: product.minimumQuantity, stock: product.availableStock ?? 0 })}</span>
-                        <span>{product.isActive ? t('live') : t('hidden')}</span>
+                        <strong className="text-base sm:text-lg font-black text-slate-900 whitespace-nowrap">
+                          {formatPrice(product.price)}
+                        </strong>
                       </div>
 
-                      <div className="flex items-center justify-between gap-2">
-                        <strong className="text-base sm:text-lg font-extrabold text-slate-900">{formatPrice(product.price)}</strong>
-                        <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-2">
+                        <Link 
+                          className="flex-1 py-1.5 px-3 rounded-xl border border-slate-200 hover:border-brand-orange hover:bg-orange-50 hover:text-brand-orange text-xs font-bold text-slate-700 transition-all cursor-pointer text-center inline-flex items-center justify-center whitespace-nowrap" 
+                          to={`/dashboard/supplier/products/${product.id}/edit`}
+                        >
+                          {t('edit')}
+                        </Link>
+                        {product.isActive && (
                           <button 
-                            className="px-3 py-1.5 rounded-lg border border-slate-200 hover:border-brand-orange hover:bg-orange-50 hover:text-brand-orange text-xs font-bold text-slate-700 transition-all cursor-pointer" 
-                            onClick={() => startEdit(product)} 
+                            className="flex-1 py-1.5 px-3 rounded-xl border border-rose-200 bg-rose-50/70 hover:bg-rose-100 text-rose-600 hover:text-rose-700 text-xs font-bold transition-all cursor-pointer text-center inline-flex items-center justify-center whitespace-nowrap" 
+                            onClick={() => deactivateProduct(product)} 
                             type="button"
                           >
-                            {t('edit')}
+                            {t('deactivate')}
                           </button>
-                          {product.isActive && (
-                            <button 
-                              className="px-2 py-1 text-xs font-semibold text-rose-600 hover:text-rose-700 hover:underline cursor-pointer" 
-                              onClick={() => deactivateProduct(product)} 
-                              type="button"
-                            >
-                              {t('deactivate')}
-                            </button>
-                          )}
-                        </div>
+                        )}
                       </div>
                     </div>
                   </div>

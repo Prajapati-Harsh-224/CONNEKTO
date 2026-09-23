@@ -11,6 +11,8 @@ export async function apiRequest(path, options = {}) {
   if (!response.ok) {
     const error = new Error(payload?.error?.message || 'The Connekto API is unavailable.')
     error.status = response.status
+    error.code = payload?.error?.code
+    error.details = payload?.error?.details
     throw error
   }
   return payload
