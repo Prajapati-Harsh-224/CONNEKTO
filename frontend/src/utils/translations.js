@@ -152,6 +152,7 @@ const english = {
   allCategories: 'All categories',
   categoriesTitle: 'Categories',
   showingAllProducts: 'Showing all products',
+  filteredByQuery: 'Filtered by “{query}”',
   noAnalytics: 'No analytics available',
   supplierWorkspace: 'Supplier workspace',
   shopOwnerWorkspace: 'Shop Owner workspace',

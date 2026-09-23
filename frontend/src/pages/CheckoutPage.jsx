@@ -183,12 +183,12 @@ export default function CheckoutPage() {
             <div className="p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-1">
               <strong className="text-sm font-bold text-slate-900 block">{confirmation.sentTitle}</strong>
               <p className="text-xs text-slate-500 leading-relaxed">{confirmation.sentDescription}</p>
-              <p className="text-xs text-slate-400">{t('confirmationTrackMessage')}</p>
+              <p className="text-xs text-slate-500">{t('confirmationTrackMessage')}</p>
             </div>
 
             <div className="flex items-center justify-between pb-2 border-b border-slate-100">
               <h2 className="text-base sm:text-lg font-bold text-slate-900">
-                {t('confirmationSupplierOrders')} <span className="text-xs font-normal text-slate-400">({checkoutOrders.length})</span>
+                {t('confirmationSupplierOrders')} <span className="text-xs font-normal text-slate-500">({checkoutOrders.length})</span>
               </h2>
               <Link className="text-xs font-bold text-brand-orange hover:text-brand-orange-dark transition-colors" to="/dashboard/shop-owner/orders">
                 {t('confirmationViewOrders')} →
@@ -216,11 +216,11 @@ export default function CheckoutPage() {
                               {orderConfirmation.status}
                             </span>
                           </div>
-                          <p className="text-xs text-slate-400">{order.location} • {order.category}</p>
+                          <p className="text-xs text-slate-500">{order.location} • {order.category}</p>
                         </div>
                       </div>
                       <div className="text-right">
-                        <span className="text-xs font-mono text-slate-400 block">{order.id}</span>
+                        <span className="text-xs font-mono text-slate-500 block">{order.id}</span>
                         <strong className="text-sm sm:text-base font-black text-slate-900">{formatPrice(priceValue(order.subtotal))}</strong>
                       </div>
                     </div>
@@ -248,7 +248,7 @@ export default function CheckoutPage() {
 
           <aside className="space-y-4 xl:sticky xl:top-20">
             <section className="p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs space-y-3">
-              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-400 pb-2 border-b border-slate-100">{confirmation.summary}</h2>
+              <h2 className="text-sm font-bold uppercase tracking-wider text-slate-500 pb-2 border-b border-slate-100">{confirmation.summary}</h2>
               <div className="flex justify-between text-xs sm:text-sm text-slate-600">
                 <span>{t('confirmationTotalSuppliers')}</span>
                 <strong className="font-bold text-slate-900">{checkoutOrders.length}</strong>
@@ -270,21 +270,21 @@ export default function CheckoutPage() {
                   <span className="text-brand-orange font-black">●</span>
                   <div>
                     <strong className="text-slate-900 block font-semibold">{confirmation.currentNext}</strong>
-                    <small className="text-slate-400">{confirmation.sentDescription}</small>
+                    <small className="text-slate-500">{confirmation.sentDescription}</small>
                   </div>
                 </div>
                 <div className="flex items-start gap-2.5">
                   <span className="text-slate-300 font-black">○</span>
                   <div>
                     <strong className="text-slate-700 block font-semibold">{confirmation.suppliersNext}</strong>
-                    <small className="text-slate-400">{confirmation.updatesNext}</small>
+                    <small className="text-slate-500">{confirmation.updatesNext}</small>
                   </div>
                 </div>
                 <div className="flex items-start gap-2.5">
                   <span className="text-slate-300 font-black">○</span>
                   <div>
                     <strong className="text-slate-700 block font-semibold">{t('confirmationTrackManage')}</strong>
-                    <small className="text-slate-400">{t('confirmationTrackDetails')}</small>
+                    <small className="text-slate-500">{t('confirmationTrackDetails')}</small>
                   </div>
                 </div>
               </div>
@@ -298,7 +298,7 @@ export default function CheckoutPage() {
   if (!cart.length) {
     return (
       <section className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+        <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
           <span>{t('shopOwner')}</span>
           <span aria-hidden="true">›</span>
           <span className="text-slate-700">{t('checkout')}</span>
@@ -318,7 +318,7 @@ export default function CheckoutPage() {
 
   return (
     <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
-      <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+      <div className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider">
         <span>{t('shopOwner')}</span>
         <span aria-hidden="true">›</span>
         <span className="text-slate-700">{t('checkout')}</span>
@@ -355,7 +355,7 @@ export default function CheckoutPage() {
                         <h3 className="text-sm sm:text-base font-bold text-slate-900">{group.name}</h3>
                         {group.verified && <span className="text-[10px] font-bold text-emerald-700 bg-emerald-50 px-2 py-0.5 rounded-full">● {t('verified')}</span>}
                       </div>
-                      <p className="text-xs text-slate-400">{group.location} • {group.category}</p>
+                      <p className="text-xs text-slate-500">{group.location} • {group.category}</p>
                     </div>
                   </div>
 

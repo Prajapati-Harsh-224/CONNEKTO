@@ -33,8 +33,8 @@ export default function RoleSelectionPage() {
   return (
     <section className="min-h-[calc(100vh-4.5rem)] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 grid grid-cols-1 lg:grid-cols-[minmax(280px,0.72fr)_minmax(600px,1.28fr)] gap-8 lg:gap-14 items-center">
       <div className="flex flex-col justify-center max-w-xl lg:max-w-none">
-        <div className="text-xs font-bold uppercase tracking-widest text-[#f06535] mb-2">{t('accountSetup')}</div>
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-[#102d45] tracking-tight leading-[1.1] mb-4">
+        <div className="text-xs font-bold uppercase tracking-widest text-brand-orange mb-2">{t('accountSetup')}</div>
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-brand-navy tracking-tight leading-[1.1] mb-4">
           {t('roleSelectionHeading')}
         </h1>
         <p className="text-sm sm:text-base text-slate-600 leading-relaxed mb-6 sm:mb-8">
@@ -47,10 +47,10 @@ export default function RoleSelectionPage() {
               <span
                 className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${
                   index === 0
-                    ? 'bg-orange-100 text-orange-600'
+                    ? 'bg-brand-orange-light text-brand-orange'
                     : index === 1
-                    ? 'bg-emerald-100 text-emerald-600'
-                    : 'bg-purple-100 text-purple-600'
+                    ? 'bg-emerald-100 text-emerald-800'
+                    : 'bg-purple-100 text-purple-800'
                 }`}
                 aria-hidden="true"
               >
@@ -68,9 +68,9 @@ export default function RoleSelectionPage() {
           ))}
         </div>
 
-        <blockquote className="border-l-2 border-orange-200 pl-4 text-xs sm:text-sm italic text-slate-600">
+        <blockquote className="border-l-2 border-brand-orange/30 pl-4 text-xs sm:text-sm italic text-slate-600">
           <p>“{t('roleQuote')}”</p>
-          <cite className="block not-italic text-[11px] text-slate-400 font-medium mt-1.5">
+          <cite className="block not-italic text-[11px] text-slate-500 font-medium mt-1.5">
             — {t('appName')}
           </cite>
         </blockquote>
@@ -99,8 +99,8 @@ export default function RoleSelectionPage() {
           <button
             className={`w-full sm:w-auto px-8 py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${
               selectedRole
-                ? 'bg-[#f06535] hover:bg-[#e05424] text-white shadow-md shadow-orange-500/20 active:scale-[0.98]'
-                : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+                ? 'bg-brand-orange hover:bg-brand-orange-dark text-white shadow-md shadow-brand-orange/20 active:scale-[0.98]'
+                : 'bg-slate-200 text-slate-500 cursor-not-allowed'
             }`}
             disabled={!selectedRole}
             onClick={() => continueToSignup()}

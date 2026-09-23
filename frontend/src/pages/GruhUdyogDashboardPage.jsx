@@ -47,13 +47,13 @@ function StatusPill({ status, locale }) {
   }
   if (normalized === 'confirmed' || normalized === 'accepted') {
     return (
-      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#eaf5ef] text-[#1b6442] border border-[#c4e4d0]">
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
         {text('confirmed', text('accepted', 'Confirmed'))}
       </span>
     )
   }
   return (
-    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#eaf5ef] text-[#1b6442] border border-[#c4e4d0]">
+    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
       {text('delivered', 'Delivered')}
     </span>
   )
@@ -188,7 +188,7 @@ export default function GruhUdyogDashboardPage() {
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
         {/* Total Orders */}
         <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-xs flex items-center gap-4 hover:border-slate-200 transition-colors">
-          <div className="w-12 h-12 rounded-xl bg-[#eaf5ef] text-[#1b6442] flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0">
             <FiPackage className="w-6 h-6" />
           </div>
           <div className="min-w-0">
@@ -196,13 +196,13 @@ export default function GruhUdyogDashboardPage() {
             <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-0.5">
               {metrics.totalOrders}
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5 truncate">{t('allOrdersReceived') || 'All orders received'}</p>
+            <p className="text-[11px] text-slate-500 mt-0.5 truncate">{t('allOrdersReceived') || 'All orders received'}</p>
           </div>
         </div>
 
         {/* Pending Orders */}
         <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-xs flex items-center gap-4 hover:border-slate-200 transition-colors">
-          <div className="w-12 h-12 rounded-xl bg-[#fef4ea] text-[#d95d2c] flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-amber-50 text-amber-800 flex items-center justify-center shrink-0">
             <FiClock className="w-6 h-6" />
           </div>
           <div className="min-w-0">
@@ -210,13 +210,13 @@ export default function GruhUdyogDashboardPage() {
             <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-0.5">
               {metrics.pendingOrders}
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5 truncate">{t('needYourAction') || 'Need your action'}</p>
+            <p className="text-[11px] text-slate-500 mt-0.5 truncate">{t('needYourAction') || 'Need your action'}</p>
           </div>
         </div>
 
         {/* Completed Orders */}
         <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-xs flex items-center gap-4 hover:border-slate-200 transition-colors">
-          <div className="w-12 h-12 rounded-xl bg-[#f2effb] text-[#7c3aed] flex items-center justify-center shrink-0">
+          <div className="w-12 h-12 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center shrink-0">
             <FiCheck className="w-6 h-6 stroke-[2.5]" />
           </div>
           <div className="min-w-0">
@@ -224,13 +224,13 @@ export default function GruhUdyogDashboardPage() {
             <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-0.5">
               {metrics.completedOrders}
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5 truncate">{t('successfullyDelivered') || 'Successfully delivered'}</p>
+            <p className="text-[11px] text-slate-500 mt-0.5 truncate">{t('successfullyDelivered') || 'Successfully delivered'}</p>
           </div>
         </div>
 
         {/* Total Sales */}
         <div className="bg-white rounded-2xl border border-slate-100 p-5 shadow-xs flex items-center gap-4 hover:border-slate-200 transition-colors">
-          <div className="w-12 h-12 rounded-xl bg-[#eaf5ef] text-[#1b6442] flex items-center justify-center shrink-0 text-xl font-bold">
+          <div className="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0 text-xl font-bold">
             ₹
           </div>
           <div className="min-w-0">
@@ -238,7 +238,7 @@ export default function GruhUdyogDashboardPage() {
             <p className="text-2xl sm:text-3xl font-black text-slate-900 tracking-tight mt-0.5">
               {metrics.totalSales}
             </p>
-            <p className="text-[11px] text-slate-400 mt-0.5 truncate">{t('fromAllOrders') || 'From all orders'}</p>
+            <p className="text-[11px] text-slate-500 mt-0.5 truncate">{t('fromAllOrders') || 'From all orders'}</p>
           </div>
         </div>
       </div>

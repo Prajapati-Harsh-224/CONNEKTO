@@ -76,7 +76,7 @@ export default function WelcomePage() {
             {/* Action Buttons */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
               <Link
-                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm sm:text-base font-bold text-white bg-brand-orange hover:bg-orange-700 active:scale-95 shadow-md shadow-orange-500/20 transition-all"
+                className="inline-flex items-center gap-2 px-6 py-3.5 rounded-xl text-sm sm:text-base font-bold text-white bg-brand-orange hover:bg-brand-orange-dark active:scale-95 shadow-md shadow-brand-orange/20 transition-all"
                 to="/role-selection"
               >
                 <span>{t('getStarted')}</span>
@@ -107,7 +107,7 @@ export default function WelcomePage() {
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 border border-emerald-200/60 shadow-xs">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-200/60 shadow-xs">
                   <FiShield className="w-4 h-4" />
                 </div>
                 <div>
@@ -117,7 +117,7 @@ export default function WelcomePage() {
               </div>
 
               <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-600 flex items-center justify-center shrink-0 border border-amber-200/60 shadow-xs">
+                <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 border border-amber-200/60 shadow-xs">
                   <FiTrendingUp className="w-4 h-4" />
                 </div>
                 <div>
@@ -165,18 +165,18 @@ export default function WelcomePage() {
             <Link
               to="/role-selection?role=SUPPLIER"
               aria-label={t('supplier')}
-              className="group p-6 rounded-2xl bg-white border border-slate-200/90 hover:border-emerald-500 hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-6 shadow-xs"
+              className="group p-6 rounded-2xl bg-white border border-slate-200/90 hover:border-emerald-600 hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-6 shadow-xs"
             >
               <div className="space-y-4">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-600 flex items-center justify-center border border-emerald-200/60 shadow-xs group-hover:scale-110 transition-transform">
+                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-200/60 shadow-xs group-hover:scale-110 transition-transform">
                   <FiTruck className="w-6 h-6" />
                 </div>
                 <div>
-                  <strong className="block text-lg font-bold text-slate-900 group-hover:text-emerald-600 transition-colors">{t('supplier')}</strong>
+                  <strong className="block text-lg font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">{t('supplier')}</strong>
                   <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">{t('supplierHomeDesc')}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-1 text-xs font-bold text-emerald-600">
+              <div className="flex items-center gap-1 text-xs font-bold text-emerald-700">
                 <span>{t('getStarted')}</span>
                 <FiArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
@@ -186,18 +186,18 @@ export default function WelcomePage() {
             <Link
               to="/role-selection?role=GRUH_UDYOG"
               aria-label={t('gruhUdyog')}
-              className="group p-6 rounded-2xl bg-white border border-slate-200/90 hover:border-purple-500 hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-6 shadow-xs"
+              className="group p-6 rounded-2xl bg-white border border-slate-200/90 hover:border-purple-600 hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-6 shadow-xs"
             >
               <div className="space-y-4">
-                <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-600 flex items-center justify-center border border-purple-200/60 shadow-xs group-hover:scale-110 transition-transform">
+                <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-700 flex items-center justify-center border border-purple-200/60 shadow-xs group-hover:scale-110 transition-transform">
                   <FiUsers className="w-6 h-6" />
                 </div>
                 <div>
-                  <strong className="block text-lg font-bold text-slate-900 group-hover:text-purple-600 transition-colors">{t('gruhUdyog')}</strong>
+                  <strong className="block text-lg font-bold text-slate-900 group-hover:text-purple-700 transition-colors">{t('gruhUdyog')}</strong>
                   <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">{t('gruhUdyogHomeDesc')}</p>
                 </div>
               </div>
-              <div className="flex items-center gap-1 text-xs font-bold text-purple-600">
+              <div className="flex items-center gap-1 text-xs font-bold text-purple-700">
                 <span>{t('getStarted')}</span>
                 <FiArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
               </div>
@@ -245,7 +245,7 @@ export default function WelcomePage() {
             <p className="text-sm sm:text-base font-semibold text-brand-navy pt-2">{t('aboutClosing')}</p>
             <div className="pt-2">
               <Link
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-brand-orange hover:bg-orange-700 active:scale-95 shadow-sm transition-all"
+                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-brand-orange hover:bg-brand-orange-dark active:scale-95 shadow-sm transition-all"
                 to="/role-selection"
               >
                 <span>{t('getStarted')}</span>

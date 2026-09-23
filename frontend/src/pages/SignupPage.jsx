@@ -104,9 +104,9 @@ export default function SignupPage() {
   }
 
   const roleTone = {
-    SHOP_OWNER: { badge: 'bg-orange-50 text-orange-600', icon: '▦' },
-    SUPPLIER: { badge: 'bg-emerald-50 text-emerald-700', icon: '▰' },
-    GRUH_UDYOG: { badge: 'bg-purple-50 text-purple-700', icon: '⌂' },
+    SHOP_OWNER: { badge: 'bg-brand-orange-light text-brand-orange-dark font-bold', icon: '▦' },
+    SUPPLIER: { badge: 'bg-emerald-50 text-emerald-800 font-bold', icon: '▰' },
+    GRUH_UDYOG: { badge: 'bg-purple-50 text-purple-800 font-bold', icon: '⌂' },
   }
   const currentTone = roleTone[selectedRole] || roleTone.SHOP_OWNER
 
@@ -115,8 +115,8 @@ export default function SignupPage() {
       <div className="w-full max-w-xl">
         {selectedRole !== 'SHOP_OWNER' && selectedRole !== 'SUPPLIER' && selectedRole !== 'GRUH_UDYOG' && (
           <div className="text-center mb-6">
-            <div className="text-xs font-bold uppercase tracking-widest text-[#f06535] mb-1">{t('createYourAccount')}</div>
-            <h1 className="text-2xl sm:text-3xl font-bold font-serif text-[#102d45]">{t('startWithConnecto')}</h1>
+            <div className="text-xs font-bold uppercase tracking-widest text-brand-orange mb-1">{t('createYourAccount')}</div>
+            <h1 className="text-2xl sm:text-3xl font-bold font-serif text-brand-navy">{t('startWithConnecto')}</h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('accountSetupDescription')}</p>
           </div>
         )}
@@ -128,13 +128,13 @@ export default function SignupPage() {
                 <span>{currentTone.icon}</span>
                 <span>{t(selectedRole === 'SHOP_OWNER' ? 'shopOwner' : selectedRole === 'SUPPLIER' ? 'supplier' : 'gruhUdyog')}</span>
               </span>
-              <h1 className="text-xl sm:text-2xl font-bold font-serif text-[#102d45] tracking-tight">
+              <h1 className="text-xl sm:text-2xl font-bold font-serif text-brand-navy tracking-tight">
                 {t(selectedRole === 'SHOP_OWNER' ? 'shopOwnerSignupHeading' : selectedRole === 'SUPPLIER' ? 'supplierSignupHeading' : 'gruhUdyogSignupHeading')}
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
                 {t(selectedRole === 'SHOP_OWNER' ? 'shopOwnerSignupSubtitle' : selectedRole === 'SUPPLIER' ? 'supplierSignupSubtitle' : 'gruhUdyogSignupSubtitle')}
               </p>
-              <Link className="text-xs font-medium text-[#f06535] hover:underline mt-2 inline-block" to={`/role-selection${selectedRole ? `?role=${selectedRole}` : ''}`}>
+              <Link className="text-xs font-medium text-brand-orange hover:text-brand-orange-dark hover:underline mt-2 inline-block" to={`/role-selection${selectedRole ? `?role=${selectedRole}` : ''}`}>
                 {t('changeRole')}
               </Link>
             </header>
@@ -145,7 +145,7 @@ export default function SignupPage() {
             <strong className="text-slate-800 font-semibold">
               {selectedRole ? t(selectedRole === 'SHOP_OWNER' ? 'shopOwner' : selectedRole === 'SUPPLIER' ? 'supplier' : 'gruhUdyog') : t('noRoleSelected')}
             </strong>
-            <Link className="text-[#f06535] hover:underline font-medium" to={`/role-selection${selectedRole ? `?role=${selectedRole}` : ''}`}>{t('changeRole')}</Link>
+            <Link className="text-brand-orange hover:text-brand-orange-dark hover:underline font-medium" to={`/role-selection${selectedRole ? `?role=${selectedRole}` : ''}`}>{t('changeRole')}</Link>
           </div>
 
           {isNotOurUser && (
@@ -207,7 +207,7 @@ export default function SignupPage() {
           {requestError && <p className="p-3 rounded-xl text-xs font-medium text-rose-700 bg-rose-50 border border-rose-200" role="alert">{requestError}</p>}
           {successMessage && <p className="p-3 rounded-xl text-xs font-medium text-emerald-700 bg-emerald-50 border border-emerald-200" role="status">{successMessage}</p>}
 
-          <button className="w-full py-3.5 px-4 rounded-xl font-semibold text-sm text-white bg-[#f06535] hover:bg-[#e05424] shadow-md shadow-orange-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed mt-2" disabled={isSubmitting} type="submit">
+          <button className="w-full py-3.5 px-4 rounded-xl font-semibold text-sm text-white bg-brand-orange hover:bg-brand-orange-dark shadow-md shadow-brand-orange/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed mt-2" disabled={isSubmitting} type="submit">
             <span>{isSubmitting ? t('creatingAccount') : t('createAccount')}</span>
             {(selectedRole === 'SHOP_OWNER' || selectedRole === 'SUPPLIER' || selectedRole === 'GRUH_UDYOG') && <span aria-hidden="true">→</span>}
           </button>

@@ -5,15 +5,9 @@ from dotenv import load_dotenv
 from sqlalchemy import create_engine, text
 from sqlalchemy.orm import DeclarativeBase, Session, sessionmaker
 
-try:
-    import pymysql
-    DEFAULT_DATABASE_URL = "mysql+pymysql://root:password@localhost:3306/connekto"
-except ImportError:
-    DEFAULT_DATABASE_URL = "mysql+mysqldb://root:password@localhost:3306/connekto"
-
 load_dotenv(Path(__file__).resolve().parents[1] / ".env")
 
-DATABASE_URL = os.getenv("DATABASE_URL", DEFAULT_DATABASE_URL)
+DATABASE_URL = os.getenv("DATABASE_URL", "sqlite:///connekto.db")
 
 if DATABASE_URL.startswith("sqlite"):
     sqlite_db_path = Path(DATABASE_URL.split("sqlite:///", 1)[1] if DATABASE_URL.startswith("sqlite:///") else "/app/connekto.db")

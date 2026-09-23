@@ -69,8 +69,8 @@ export default function NotificationDropdown({ role, isOpen, onClose, onUnreadCh
             setNotifications(list)
           }
         }
-      } catch (err) {
-        console.error('Failed to load notifications:', err)
+      } catch {
+        // Graceful error handling for background notifications
       } finally {
         if (isMounted) setLoading(false)
       }
@@ -94,8 +94,8 @@ export default function NotificationDropdown({ role, isOpen, onClose, onUnreadCh
     setReadIds(allIds)
     try {
       localStorage.setItem('connecto_read_notifications', JSON.stringify(allIds))
-    } catch (e) {
-      console.error(e)
+    } catch {
+      // Ignore localStorage write failures in private/restricted browsing modes
     }
   }
 
@@ -105,8 +105,8 @@ export default function NotificationDropdown({ role, isOpen, onClose, onUnreadCh
       setReadIds(next)
       try {
         localStorage.setItem('connecto_read_notifications', JSON.stringify(next))
-      } catch (e) {
-        console.error(e)
+      } catch {
+        // Ignore localStorage write failures in private/restricted browsing modes
       }
     }
     onClose()
@@ -132,7 +132,7 @@ export default function NotificationDropdown({ role, isOpen, onClose, onUnreadCh
           <button
             onClick={handleMarkAllRead}
             type="button"
-            className="text-xs font-semibold text-[#f06535] hover:text-[#e05424] cursor-pointer bg-transparent border-none p-0"
+            className="text-xs font-semibold text-brand-orange-dark hover:underline cursor-pointer bg-transparent border-none p-0"
           >
             {t('markAllAsRead') || 'Mark all read'}
           </button>
@@ -141,11 +141,11 @@ export default function NotificationDropdown({ role, isOpen, onClose, onUnreadCh
 
       <div className="overflow-y-auto flex-1 divide-y divide-slate-50 py-1">
         {loading ? (
-          <div className="p-6 text-center text-slate-400 text-xs">
+          <div className="p-6 text-center text-slate-500 text-xs">
             {t('loadingNotifications') || 'Loading notifications...'}
           </div>
         ) : notifications.length === 0 ? (
-          <div className="p-6 text-center text-slate-400 text-xs">
+          <div className="p-6 text-center text-slate-500 text-xs">
             {t('noNotifications') || 'No notifications available'}
           </div>
         ) : (
@@ -157,13 +157,13 @@ export default function NotificationDropdown({ role, isOpen, onClose, onUnreadCh
                 to={n.link}
                 onClick={() => handleItemClick(n.id)}
                 className={`block px-4 py-3 transition-colors ${
-                  isRead ? 'bg-white hover:bg-slate-50' : 'bg-orange-50/40 hover:bg-orange-50/70'
+                  isRead ? 'bg-white hover:bg-slate-50' : 'bg-brand-orange-light/50 hover:bg-brand-orange-light/80'
                 }`}
               >
                 <div className="flex items-start gap-2.5">
                   <div
                     className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
-                      isRead ? 'bg-transparent' : 'bg-[#f06535]'
+                      isRead ? 'bg-transparent' : 'bg-brand-orange'
                     }`}
                   />
                   <div className="flex-1 min-w-0">
@@ -174,7 +174,7 @@ export default function NotificationDropdown({ role, isOpen, onClose, onUnreadCh
                       {n.message}
                     </div>
                     {n.time && (
-                      <div className="text-[10px] text-slate-400 mt-1">
+                      <div className="text-[10px] text-slate-500 mt-1">
                         {new Date(n.time).toLocaleString()}
                       </div>
                     )}

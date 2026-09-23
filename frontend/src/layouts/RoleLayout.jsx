@@ -30,11 +30,11 @@ export default function RoleLayout({ role: routeRole }) {
   const avatarInitial = displayName.trim().slice(0, 1).toUpperCase()
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f4f6f9]">
+    <div className="min-h-screen flex flex-col bg-surface-bg">
       <header className="fixed top-0 left-0 right-0 h-16 bg-white/95 backdrop-blur-md border-b border-slate-100 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 z-40">
         <div className="flex items-center gap-4">
           <Link className="flex items-center gap-2.5 shrink-0" to="/" aria-label={t('connectoHome')}>
-            <span className="w-8 h-8 rounded-full bg-[#f06535] text-white flex items-center justify-center font-bold text-base shadow-sm shrink-0">
+            <span className="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center font-bold text-base shadow-sm shrink-0">
               C
             </span>
             <span className="font-bold text-slate-900 text-lg tracking-tight hidden sm:inline">{messages.appName}</span>
@@ -43,19 +43,19 @@ export default function RoleLayout({ role: routeRole }) {
 
         {role !== 'supplier' && role !== 'shop-owner' && role !== 'gruh-udyog' ? (
           <div className="relative flex-1 max-w-md hidden md:flex items-center">
-            <span className="absolute left-3 text-slate-400"><FiSearch size={16} /></span>
+            <span className="absolute left-3 text-slate-500"><FiSearch size={16} /></span>
             <input
               aria-label={t('searchSuppliersOrders')}
               placeholder={t('searchSuppliersOrders')}
               type="text"
-              className="w-full pl-9 pr-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50/50 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-orange-500 focus:bg-white transition-all"
+              className="w-full pl-9 pr-3.5 py-2 rounded-xl border border-slate-200 bg-slate-50/50 text-xs text-slate-800 placeholder-slate-500 focus:outline-none focus:border-brand-orange focus:bg-white transition-all"
             />
           </div>
         ) : null}
 
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
           <div className="hidden sm:flex items-center gap-1.5 text-slate-600">
-            <FiGlobe size={15} className="text-slate-400" />
+            <FiGlobe size={15} className="text-slate-500" />
             <LanguageSelector />
           </div>
 
@@ -78,12 +78,12 @@ export default function RoleLayout({ role: routeRole }) {
           </div>
 
           <Link className="flex items-center gap-2.5 p-1 sm:px-2 sm:py-1.5 rounded-xl hover:bg-slate-100/60 transition-colors" to={`/dashboard/${role}/profile`} aria-label={`${displayName}, ${roleLabel}. ${t('profile')}`}>
-            <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${role === 'gruh-udyog' ? 'bg-[#ea6a53] text-white' : 'bg-orange-100 text-[#f06535]'}`} aria-hidden="true">
+            <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${role === 'gruh-udyog' ? 'bg-brand-orange-dark text-white' : 'bg-brand-orange-light text-brand-orange'}`} aria-hidden="true">
               {avatarInitial}
             </span>
             <div className="hidden md:flex flex-col text-left leading-tight">
               <span className="text-xs font-bold text-slate-800">{displayName}</span>
-              <span className="text-[10px] text-slate-400 capitalize">{roleLabel}</span>
+              <span className="text-[10px] text-slate-500 capitalize">{roleLabel}</span>
             </div>
           </Link>
         </div>

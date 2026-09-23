@@ -128,16 +128,16 @@ const CategoryIcon = ({ type }) => {
 
 // Category icon accent colors (background tint / icon color)
 const categoryColors = {
-  all: { bg: '#f1f5f9', color: '#475569' },
-  fmcg: { bg: '#e8f5e9', color: '#2E7D32' },
-  grocery: { bg: '#fff8e1', color: '#F57F17' },
-  beverage: { bg: '#e3f2fd', color: '#1565C0' },
-  personal: { bg: '#fce4ec', color: '#AD1457' },
-  cleaning: { bg: '#e8eaf6', color: '#283593' },
-  dairy: { bg: '#f3e5f5', color: '#6A1B9A' },
-  snacks: { bg: '#fff3e0', color: '#E65100' },
-  local: { bg: '#e0f2f1', color: '#00695C' },
-  stationary: { bg: '#ede7f6', color: '#512DA8' },
+  all: { bg: '#f1f5f9', color: '#334155' },
+  fmcg: { bg: '#ecfdf5', color: '#047857' },
+  grocery: { bg: '#fffbeb', color: '#b45309' },
+  beverage: { bg: '#eff6ff', color: '#1d4ed8' },
+  personal: { bg: '#fdf2f8', color: '#be185d' },
+  cleaning: { bg: '#f0fdfa', color: '#0f766e' },
+  dairy: { bg: '#f5f3ff', color: '#6d28d9' },
+  snacks: { bg: '#fff7ed', color: '#c2410c' },
+  local: { bg: '#ecfdf5', color: '#065f46' },
+  stationary: { bg: '#f1f5f9', color: '#475569' },
   tag: { bg: '#f8fafc', color: '#64748b' },
 }
 
@@ -156,8 +156,14 @@ function getInitials(name = '') {
 }
 
 const avatarPalette = [
-  '#1a3a4c', '#2e5266', '#4a6741', '#6b4e3d',
-  '#3d5a6e', '#5c4033', '#1b5e20', '#4a148c',
+  '#0f2942', // brand navy
+  '#1e293b', // slate 800
+  '#0f766e', // teal 700
+  '#15803d', // green 700
+  '#334155', // slate 700
+  '#1e3a5f', // deep blue
+  '#4338ca', // indigo 700
+  '#b45309', // amber 700
 ]
 function getAvatarBg(name = '') {
   return avatarPalette[name.charCodeAt(0) % avatarPalette.length]
@@ -168,9 +174,9 @@ function getAvatarBg(name = '') {
 // ---------------------------------------------------------------------------
 function VerifiedBadge({ label = 'Verified Supplier' }) {
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-700 text-[10px] font-bold uppercase tracking-wider" aria-label={label}>
+    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-bold uppercase tracking-wider" aria-label={label}>
       <svg viewBox="0 0 14 14" fill="none" aria-hidden="true" width="11" height="11">
-        <circle cx="7" cy="7" r="6.5" fill="#1a7a3c" />
+        <circle cx="7" cy="7" r="6.5" fill="#15803d" />
         <path d="M4.5 7l1.8 1.8L9.5 5.5" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
       {label}
@@ -185,14 +191,14 @@ function StarRating({ rating, reviewCount }) {
   return (
     <div className="flex items-center gap-1 text-xs">
       {rating == null ? (
-        <span className="text-slate-400">Not rated</span>
+        <span className="text-slate-500">Not rated</span>
       ) : (
         <>
           <svg viewBox="0 0 16 16" fill="#F59E0B" aria-hidden="true" width="14" height="14">
             <path d="M8 1l1.854 3.756L14 5.528l-3 2.924.708 4.133L8 10.5l-3.708 2.085L5 8.452 2 5.528l4.146-.772L8 1z" />
           </svg>
           <span className="font-bold text-slate-900">{rating.toFixed(1)}</span>
-          <span className="text-slate-400">({reviewCount})</span>
+          <span className="text-slate-500">({reviewCount})</span>
         </>
       )}
     </div>
@@ -250,7 +256,7 @@ function SupplierCard({ supplier, isFavorite, onToggleFavorite }) {
             </div>
             <span className="text-xs font-semibold text-brand-orange">{supplier.type}</span>
             {(supplier.serviceAreas?.length > 0 || supplier.location) && (
-              <div className="flex items-center gap-1 text-xs text-slate-400 mt-1 truncate">
+              <div className="flex items-center gap-1 text-xs text-slate-500 mt-1 truncate">
                 <span>📍</span>
                 <span className="truncate">{supplier.serviceAreas?.length > 0 ? supplier.serviceAreas.join(', ') : supplier.location}</span>
               </div>
@@ -273,7 +279,7 @@ function SupplierCard({ supplier, isFavorite, onToggleFavorite }) {
 
       <div className="pt-4 mt-4 border-t border-slate-100">
         <Link
-          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-orange-50 hover:bg-brand-orange hover:text-white text-brand-orange font-bold text-xs sm:text-sm transition-all border border-orange-200/60 shadow-xs"
+          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-brand-orange-light hover:bg-brand-orange hover:text-white text-brand-orange font-bold text-xs sm:text-sm transition-all border border-brand-orange/20 shadow-xs"
           to={`/dashboard/shop-owner/suppliers/${supplier.id}/products`}
           aria-label={`${t('viewProducts')} ${supplier.name}`}
         >
@@ -398,7 +404,7 @@ export default function SupplierListPage() {
       {/* ── Page header ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
-          <nav className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2" aria-label="Breadcrumb">
+          <nav className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2" aria-label="Breadcrumb">
             <span>{t('shopOwner')}</span>
             <span aria-hidden="true">›</span>
             <span className="text-slate-700">{t('suppliers')}</span>
@@ -419,7 +425,7 @@ export default function SupplierListPage() {
       {/* ── Category selector (single row of square cards) ── */}
       <div className="space-y-3">
         <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-400">{t('shopByCategory')}</span>
+          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">{t('shopByCategory')}</span>
           <div className="flex items-center gap-1.5">
             <button
               type="button"
@@ -460,7 +466,7 @@ export default function SupplierListPage() {
                 role="listitem"
                 className={`aspect-square w-[130px] sm:w-[140px] shrink-0 flex flex-col items-center justify-center p-3 rounded-2xl border transition-all text-center cursor-pointer shadow-2xs hover:shadow-xs ${
                   isActive 
-                    ? 'bg-orange-50 border-orange-300 ring-2 ring-orange-200' 
+                    ? 'bg-brand-orange-light border-brand-orange/40 ring-2 ring-brand-orange/20' 
                     : 'bg-white border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/50'
                 }`}
                 onClick={() => setSelectedCategory(isActive && cat.id !== 'all' ? 'all' : cat.id)}
@@ -485,17 +491,17 @@ export default function SupplierListPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
           <h2 className="text-lg font-black text-slate-900">
-            {activeCategoryLabel} <span className="text-xs font-semibold text-slate-400">({filteredSuppliers.length} {t('suppliers')})</span>
+            {activeCategoryLabel} <span className="text-xs font-semibold text-slate-500">({filteredSuppliers.length} {t('suppliers')})</span>
           </h2>
         </div>
 
         <label className="relative sm:w-80 flex items-center bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 shadow-xs focus-within:ring-2 focus-within:ring-brand-orange/20 focus-within:border-brand-orange transition-all" htmlFor="sdc-search">
-          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" width="16" height="16" className="text-slate-400 mr-2 shrink-0">
+          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" width="16" height="16" className="text-slate-500 mr-2 shrink-0">
             <circle cx="9" cy="9" r="5.5" stroke="currentColor" strokeWidth="1.6" />
             <path d="m13 13 3.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
           </svg>
           <input
-            className="w-full bg-transparent text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden"
+            className="w-full bg-transparent text-xs sm:text-sm text-slate-800 placeholder-slate-500 focus:outline-hidden"
             id="sdc-search"
             type="text"
             value={searchTerm}

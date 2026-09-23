@@ -40,12 +40,12 @@ export default function AppShell() {
   const isRegister = pathname === '/register'
 
   return (
-    <div className="min-h-screen flex flex-col bg-[#f4f6f9]">
+    <div className="min-h-screen flex flex-col bg-surface-bg">
       {!isWorkspace && (
         <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100">
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
             <Link className="flex items-center gap-2.5 shrink-0" to="/" aria-label={t('connectoHome')}>
-              <span className="w-8 h-8 rounded-full bg-[#f06535] text-white flex items-center justify-center font-bold text-base shadow-sm shrink-0">
+              <span className="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center font-bold text-base shadow-sm shrink-0">
                 C
               </span>
               <span className="flex flex-col">
@@ -62,7 +62,7 @@ export default function AppShell() {
               >
                 {t('signUp')}
               </Link>
-              <Link className="px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-[#f06535] hover:bg-[#e05424] shadow-xs hover:shadow-sm transition-all flex items-center gap-1.5" to="/role-selection">
+              <Link className="px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-brand-orange hover:bg-brand-orange-dark shadow-xs hover:shadow-sm transition-all flex items-center gap-1.5" to="/role-selection">
                 <span>{t('getStarted')}</span>
                 <span aria-hidden="true">→</span>
               </Link>

@@ -2,21 +2,21 @@ export default function RoleCard({ role, selected, onSelect }) {
   const toneColors = {
     orange: {
       border: 'border-orange-200 hover:border-orange-300',
-      activeRing: 'ring-2 ring-orange-500 border-orange-500 shadow-orange-100/70',
-      badge: 'text-orange-600 bg-orange-50',
-      check: 'text-orange-500',
+      activeRing: 'ring-2 ring-brand-orange border-brand-orange shadow-orange-100/70',
+      badge: 'text-brand-orange-dark bg-brand-orange-light',
+      check: 'text-brand-orange',
     },
     green: {
       border: 'border-emerald-200 hover:border-emerald-300',
       activeRing: 'ring-2 ring-emerald-600 border-emerald-600 shadow-emerald-100/70',
-      badge: 'text-emerald-700 bg-emerald-50',
-      check: 'text-emerald-600',
+      badge: 'text-emerald-800 bg-emerald-50',
+      check: 'text-emerald-700',
     },
     purple: {
       border: 'border-purple-200 hover:border-purple-300',
       activeRing: 'ring-2 ring-purple-600 border-purple-600 shadow-purple-100/70',
-      badge: 'text-purple-700 bg-purple-50',
-      check: 'text-purple-600',
+      badge: 'text-purple-800 bg-purple-50',
+      check: 'text-purple-700',
     },
   }
 

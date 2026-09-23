@@ -37,7 +37,7 @@ export default function Navbar() {
       {navLinks.map((item) => {
         const isActive = isItemActive(item)
         const baseClass = "px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
-        const activeClass = isActive ? "text-[#f06535] font-semibold bg-orange-50" : "hover:text-slate-900 hover:bg-slate-100/60"
+        const activeClass = isActive ? "text-brand-orange font-semibold bg-brand-orange-light" : "hover:text-slate-900 hover:bg-slate-100/60"
 
         return (
           <Link

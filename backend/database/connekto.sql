@@ -129,23 +129,3 @@ CREATE TABLE supplier_order_items (
   CONSTRAINT fk_order_items_order FOREIGN KEY (order_id) REFERENCES supplier_orders (id) ON DELETE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci;
 
-INSERT INTO suppliers (id, name, owner_id) VALUES
-  ('narmada-wholesale', 'Narmada Wholesale', NULL),
-  ('kesar-supply', 'Kesar Supply Co.', NULL);
-
-INSERT INTO products (id, supplier_id, name, brand, category, pack_size, price, minimum_quantity, image_url, is_active, is_demo_data) VALUES
-  ('demo-rice-001', 'narmada-wholesale', 'Daily Grain Rice', 'Harvest Lane', 'Staples', '5 kg', 420.00, 2, '', 1, 1),
-  ('demo-biscuits-001', 'narmada-wholesale', 'Crisp Tea Biscuits', 'Kite & Kettle', 'Biscuits', '300 g', 62.00, 12, '', 1, 1),
-  ('demo-soap-001', 'narmada-wholesale', 'Everyday Bath Soap', 'Field & Foam', 'Personal care', '100 g', 38.00, 12, '', 0, 1),
-  ('demo-oil-001', 'kesar-supply', 'Sunrise Cooking Oil', 'Sunrise Kitchen', 'Cooking oil', '1 L', 148.00, 6, '', 1, 1),
-  ('demo-fizz-001', 'kesar-supply', 'Lemon Fizz', 'Fresh Sip', 'Beverages', '750 ml', 48.00, 12, '', 1, 1);
-
--- Confirm the imported tables and seed counts.
-SELECT TABLE_NAME
-FROM information_schema.TABLES
-WHERE TABLE_SCHEMA = 'connekto'
-ORDER BY TABLE_NAME;
-
-SELECT 'suppliers' AS table_name, COUNT(*) AS row_count FROM connekto.suppliers
-UNION ALL
-SELECT 'products', COUNT(*) FROM connekto.products;

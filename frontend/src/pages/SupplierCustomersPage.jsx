@@ -77,8 +77,7 @@ export default function SupplierCustomersPage() {
           setSelectedCustomerId(list[0].id)
         }
       })
-      .catch((err) => {
-        console.error('Failed to load supplier customers:', err)
+      .catch(() => {
         if (isMounted) setCustomers([])
       })
       .finally(() => {
@@ -142,7 +141,7 @@ export default function SupplierCustomersPage() {
 
       <div>
         <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 mb-1">{t('supplierWorkspace')}</p>
-        <h1 className="text-2xl sm:text-3xl font-bold font-serif text-[#102d45]">{t('customers')}</h1>
+        <h1 className="text-2xl sm:text-3xl font-bold font-serif text-brand-navy">{t('customers')}</h1>
         <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('customersDescription')}</p>
       </div>
 
@@ -152,7 +151,7 @@ export default function SupplierCustomersPage() {
           <div className="flex flex-col">
             <span className="text-xs text-slate-500 font-medium">{t('totalCustomers')}</span>
             <strong className="text-xl font-bold text-slate-900 tabular-nums">{stats.totalCustomers}</strong>
-            <small className="text-[11px] text-slate-400 mt-0.5">{t('activeThisMonth', { count: stats.activeCustomers })}</small>
+            <small className="text-[11px] text-slate-500 mt-0.5">{t('activeThisMonth', { count: stats.activeCustomers })}</small>
           </div>
         </div>
         <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex items-center gap-3.5">

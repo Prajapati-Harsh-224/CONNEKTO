@@ -42,8 +42,7 @@ export default function ShopOwnerDashboardPage() {
           setOrders(res.data?.orders || [])
         }
       })
-      .catch((err) => {
-        console.error('Failed to load shop owner orders:', err)
+      .catch(() => {
         if (isMounted) setOrders([])
       })
       .finally(() => {
@@ -134,7 +133,7 @@ export default function ShopOwnerDashboardPage() {
             <div className="-mx-5 sm:-mx-6 px-5 sm:px-6 overflow-x-hidden">
               <table className="w-full text-left border-separate border-spacing-0">
                 <thead>
-                  <tr className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                  <tr className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                     <th className="py-2.5 px-3 bg-slate-50 rounded-l-xl font-bold w-[38%]">{t('supplier')}</th>
                     <th className="py-2.5 px-3 bg-slate-50 font-bold w-[14%]">{t('amount')}</th>
                     <th className="py-2.5 px-3 bg-slate-50 font-bold w-[24%]">{t('status')}</th>
@@ -164,7 +163,7 @@ export default function ShopOwnerDashboardPage() {
                       </td>
                       <td className="py-3 px-3 text-right whitespace-nowrap border-b border-slate-100">
                         <Link 
-                          className="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-slate-200 hover:border-brand-orange hover:bg-orange-50 hover:text-brand-orange text-slate-400 transition-colors" 
+                          className="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-slate-200 hover:border-brand-orange hover:bg-brand-orange-light hover:text-brand-orange text-slate-500 transition-colors" 
                           to={`/dashboard/shop-owner/orders/${encodeURIComponent(order.id)}`} 
                           aria-label={`View ${order.id}`}
                         >
@@ -206,13 +205,13 @@ export default function ShopOwnerDashboardPage() {
                       <strong className="text-sm font-semibold text-slate-900 whitespace-nowrap" title={delivery.supplier}>{delivery.supplier}</strong>
                       <span className="shrink-0"><StatusBadge status={delivery.status} /></span>
                     </div>
-                    <div className="flex items-center justify-between gap-2 text-xs text-slate-400 mt-1 font-mono">
+                    <div className="flex items-center justify-between gap-2 text-xs text-slate-500 mt-1 font-mono">
                       <span className="truncate" title={delivery.orderId}>{formatDashboardOrderId(delivery.orderId)}</span>
                       <span className="shrink-0">{delivery.time}</span>
                     </div>
                   </div>
                   <Link 
-                    className="flex items-center justify-center w-7 h-7 rounded-lg border border-slate-200 hover:border-brand-orange hover:bg-orange-50 hover:text-brand-orange text-slate-400 transition-colors shrink-0" 
+                    className="flex items-center justify-center w-7 h-7 rounded-lg border border-slate-200 hover:border-brand-orange hover:bg-brand-orange-light hover:text-brand-orange text-slate-500 transition-colors shrink-0" 
                     to={`/dashboard/shop-owner/orders/${encodeURIComponent(delivery.orderId)}`} 
                     aria-label={`View ${delivery.orderId}`}
                   >
@@ -238,7 +237,7 @@ export default function ShopOwnerDashboardPage() {
           </div>
         </div>
         <Link 
-          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-orange-200 text-xs font-bold text-brand-orange hover:bg-orange-50 transition-all shadow-xs shrink-0 self-start sm:self-auto" 
+          className="inline-flex items-center gap-1.5 px-4 py-2 rounded-xl bg-white border border-brand-orange/30 text-xs font-bold text-brand-orange hover:bg-brand-orange-light transition-all shadow-xs shrink-0 self-start sm:self-auto" 
           to="/dashboard/shop-owner/analytics"
         >
           {t('viewInsights')} <FiArrowRight />

@@ -478,8 +478,8 @@ export default function GruhUdyogProductsPage() {
                     <span
                       className={`absolute top-3 left-3 px-2.5 py-0.5 rounded-full text-[11px] font-bold shadow-2xs z-10 ${
                         isActive
-                          ? 'bg-[#eaf5ef] text-[#1b6442] border border-[#c4e4d0]'
-                          : 'bg-[#fef4ea] text-[#d95d2c] border border-[#fbd8c0]'
+                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                          : 'bg-amber-50 text-amber-800 border border-amber-200'
                       }`}
                     >
                       {isActive ? t('active') : t('inactive')}
@@ -587,7 +587,7 @@ export default function GruhUdyogProductsPage() {
                         <button
                           type="button"
                           onClick={() => openViewModal(product)}
-                          className="flex-1 py-2 rounded-xl bg-[#eaf5ef] hover:bg-[#d8ecdf] text-xs font-semibold text-[#1b6442] transition-colors cursor-pointer text-center"
+                          className="flex-1 py-2 rounded-xl bg-emerald-50 hover:bg-emerald-100 text-xs font-semibold text-emerald-800 transition-colors cursor-pointer text-center"
                         >
                           View
                         </button>
@@ -604,7 +604,7 @@ export default function GruhUdyogProductsPage() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse min-w-[600px]">
                 <thead>
-                  <tr className="text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 bg-white">
+                  <tr className="text-[11px] font-bold uppercase tracking-wider text-slate-500 border-b border-slate-100 bg-white">
                     <th className="py-3 px-4">{t('product') || 'Product'}</th>
                     <th className="py-3 px-4">{t('category') || 'Category'}</th>
                     <th className="py-3 px-4">{t('packSize') || 'Pack Size'}</th>
@@ -628,7 +628,7 @@ export default function GruhUdyogProductsPage() {
                             />
                             <div>
                               <p className="text-xs font-bold text-slate-900 leading-tight">{product.name}</p>
-                              <p className="text-[11px] text-slate-400 line-clamp-1">{product.description || 'Handmade'}</p>
+                              <p className="text-[11px] text-slate-500 line-clamp-1">{product.description || 'Handmade'}</p>
                             </div>
                           </div>
                         </td>
@@ -642,8 +642,8 @@ export default function GruhUdyogProductsPage() {
                           <span
                             className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                               isActive
-                                ? 'bg-[#eaf5ef] text-[#1b6442] border border-[#c4e4d0]'
-                                : 'bg-[#fef4ea] text-[#d95d2c] border border-[#fbd8c0]'
+                                ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                                : 'bg-amber-50 text-amber-800 border border-amber-200'
                             }`}
                           >
                             {isActive ? t('active') : t('inactive')}
@@ -661,7 +661,7 @@ export default function GruhUdyogProductsPage() {
                             <button
                               type="button"
                               onClick={() => openViewModal(product)}
-                              className="px-2.5 py-1 rounded-lg bg-[#eaf5ef] hover:bg-[#d8ecdf] text-xs font-semibold text-[#1b6442]"
+                              className="px-2.5 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-xs font-semibold text-emerald-800"
                             >
                               {t('view') || 'View'}
                             </button>
@@ -750,14 +750,14 @@ export default function GruhUdyogProductsPage() {
             {/* Modal Header */}
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-[#eaf5ef] text-[#1b6442] flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center">
                   <FiPackage className="w-4 h-4" />
                 </div>
                 <div>
                   <h2 className="text-base font-bold text-slate-900">
                     {modalMode === 'add' ? t('addNewProduct') || 'Add New Product' : t('editProduct') || 'Edit Product'}
                   </h2>
-                  <p className="text-[11px] text-slate-400">{t('enterProductDetails') || 'Enter details to showcase your handmade product.'}</p>
+                  <p className="text-[11px] text-slate-500">{t('enterProductDetails') || 'Enter details to showcase your handmade product.'}</p>
                 </div>
               </div>
               <button
@@ -929,8 +929,8 @@ export default function GruhUdyogProductsPage() {
                     <span
                       className={`inline-block mt-1 px-2 py-0.5 rounded-full text-[10px] font-bold ${
                         form.isActive
-                          ? 'bg-[#eaf5ef] text-[#1b6442]'
-                          : 'bg-[#fef4ea] text-[#d95d2c]'
+                          ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                          : 'bg-amber-50 text-amber-800 border border-amber-200'
                       }`}
                     >
                       {form.isActive ? (t('active') || 'Active') : (t('inactive') || 'Inactive')}
@@ -952,7 +952,7 @@ export default function GruhUdyogProductsPage() {
                 <button
                   type="submit"
                   disabled={isSaving}
-                  className="px-5 py-2 rounded-xl bg-[#1b6442] hover:bg-[#144d32] text-white text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-emerald-900/10 transition-all cursor-pointer disabled:opacity-60"
+                  className="px-5 py-2 rounded-xl bg-emerald-800 hover:bg-emerald-900 text-white text-xs font-bold flex items-center gap-1.5 shadow-sm shadow-emerald-900/10 transition-all cursor-pointer disabled:opacity-60"
                 >
                   {isSaving ? (
                     <span>{t('saving') || 'Saving...'}</span>
@@ -977,8 +977,8 @@ export default function GruhUdyogProductsPage() {
               <span
                 className={`px-2.5 py-0.5 rounded-full text-[11px] font-bold ${
                   viewingProduct.isActive !== false
-                    ? 'bg-[#eaf5ef] text-[#1b6442] border border-[#c4e4d0]'
-                    : 'bg-[#fef4ea] text-[#d95d2c] border border-[#fbd8c0]'
+                    ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                    : 'bg-amber-50 text-amber-800 border border-amber-200'
                 }`}
               >
                 {viewingProduct.isActive !== false ? 'Active' : 'Inactive'}

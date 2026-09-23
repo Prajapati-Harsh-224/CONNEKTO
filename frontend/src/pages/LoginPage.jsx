@@ -166,14 +166,9 @@ export default function LoginPage() {
           navigate(`/register?role=${selectedRole}&reason=not_found&identifier=${encodeURIComponent(identifierVal)}`)
           return
         } else {
-          // User already exists in backend and matches selected role -> redirect to respective role dashboard!
-          const userRole = checkData.role || checkData.user?.role || selectedRole
-          if (checkData.user) {
-            updateUser(checkData.user)
-          }
-          saveSelectedRole(userRole)
-          const targetPath = checkData.dashboardPath || getRoleDashboardPath(userRole)
-          navigate(targetPath)
+          // User exists: prompt to enter password
+          setAuthStatus('USER_FOUND')
+          setErrors({ password: 'Enter your password to sign in.' })
           return
         }
       } catch (error) {
@@ -318,9 +313,9 @@ export default function LoginPage() {
   }
 
   const roleTone = {
-    SHOP_OWNER: { badge: 'bg-orange-50 text-orange-600', icon: '▦' },
-    SUPPLIER: { badge: 'bg-emerald-50 text-emerald-700', icon: '▰' },
-    GRUH_UDYOG: { badge: 'bg-purple-50 text-purple-700', icon: '⌂' },
+    SHOP_OWNER: { badge: 'bg-brand-orange-light text-brand-orange-dark font-bold', icon: '▦' },
+    SUPPLIER: { badge: 'bg-emerald-50 text-emerald-800 font-bold', icon: '▰' },
+    GRUH_UDYOG: { badge: 'bg-purple-50 text-purple-800 font-bold', icon: '⌂' },
   }
   const currentTone = roleTone[selectedRole] || roleTone.SHOP_OWNER
 
@@ -338,13 +333,13 @@ export default function LoginPage() {
               <span>{currentTone.icon}</span>
               <span>{t(selectedRole === 'SHOP_OWNER' ? 'shopOwner' : selectedRole === 'SUPPLIER' ? 'supplier' : 'gruhUdyog')}</span>
             </span>
-            <h1 className="text-xl sm:text-2xl font-bold font-serif text-[#102d45] tracking-tight">
+            <h1 className="text-xl sm:text-2xl font-bold font-serif text-brand-navy tracking-tight">
               {authConfig.heading}
             </h1>
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
               {authConfig.subheading}
             </p>
-            <Link className="text-xs font-medium text-[#f06535] hover:underline mt-2 inline-block" to={`/role-selection${selectedRole ? `?role=${selectedRole}` : ''}`}>
+            <Link className="text-xs font-medium text-brand-orange hover:text-brand-orange-dark hover:underline mt-2 inline-block" to={`/role-selection${selectedRole ? `?role=${selectedRole}` : ''}`}>
               {t('changeRole')}
             </Link>
           </header>
@@ -363,7 +358,7 @@ export default function LoginPage() {
             <strong className="text-slate-800 font-semibold">
               {t(selectedRole === 'SHOP_OWNER' ? 'shopOwner' : selectedRole === 'SUPPLIER' ? 'supplier' : 'gruhUdyog')}
             </strong>
-            <Link className="text-[#f06535] hover:underline font-medium" to={`/role-selection${selectedRole ? `?role=${selectedRole}` : ''}`}>
+            <Link className="text-brand-orange hover:text-brand-orange-dark hover:underline font-medium" to={`/role-selection${selectedRole ? `?role=${selectedRole}` : ''}`}>
               {t('changeRole')}
             </Link>
           </div>
@@ -398,7 +393,7 @@ export default function LoginPage() {
               />
 
               <div className="flex justify-end text-xs">
-                <Link className="text-[#f06535] hover:underline font-medium" to="/forgot-password">
+                <Link className="text-brand-orange hover:text-brand-orange-dark hover:underline font-medium" to="/forgot-password">
                   {t('forgotPassword')}
                 </Link>
               </div>
@@ -406,12 +401,12 @@ export default function LoginPage() {
           ) : (
             /* STEP 2: Inline Expanded Registration Profile */
             <div className="space-y-4 animate-fadeIn">
-              <div className="flex items-center justify-between text-xs bg-orange-50 border border-orange-200/70 px-3.5 py-2.5 rounded-xl text-orange-950">
+              <div className="flex items-center justify-between text-xs bg-brand-orange-light border border-brand-orange/20 px-3.5 py-2.5 rounded-xl text-slate-800">
                 <span>Account setup for <strong>{form.identifier || form.email || form.phone}</strong></span>
                 <button
                   type="button"
                   onClick={handleSwitchToStep1}
-                  className="text-[#f06535] font-semibold hover:underline cursor-pointer"
+                  className="text-brand-orange hover:text-brand-orange-dark font-semibold hover:underline cursor-pointer"
                 >
                   Change
                 </button>
@@ -474,7 +469,7 @@ export default function LoginPage() {
               <span>{requestError}</span>
               {(requestError.toLowerCase().includes('registered as') || requestError.toLowerCase().includes('change role')) && (
                 <Link
-                  className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-[#f06535] hover:bg-[#e05424] text-white font-semibold text-xs shrink-0 transition-colors shadow-xs"
+                  className="inline-flex items-center justify-center px-3 py-1.5 rounded-lg bg-brand-orange hover:bg-brand-orange-dark text-white font-semibold text-xs shrink-0 transition-colors shadow-xs"
                   to={`/role-selection`}
                 >
                   <span>Change Role</span>
@@ -491,7 +486,7 @@ export default function LoginPage() {
           )}
 
           <button
-            className="w-full py-3 px-4 rounded-xl font-semibold text-sm text-white bg-[#f06535] hover:bg-[#e05424] shadow-md shadow-orange-500/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed mt-2"
+            className="w-full py-3 px-4 rounded-xl font-semibold text-sm text-white bg-brand-orange hover:bg-brand-orange-dark shadow-md shadow-brand-orange/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed mt-2"
             disabled={isSubmitting}
             type="submit"
           >
@@ -531,7 +526,7 @@ export default function LoginPage() {
             <div className="flex items-center gap-2.5 pt-2">
               <button
                 type="button"
-                className="flex-1 py-2.5 px-4 rounded-xl bg-[#f06535] hover:bg-[#e05424] text-white text-xs sm:text-sm font-bold shadow-md shadow-orange-500/20 transition-all cursor-pointer text-center inline-flex items-center justify-center"
+                className="flex-1 py-2.5 px-4 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white text-xs sm:text-sm font-bold shadow-md shadow-brand-orange/20 transition-all cursor-pointer text-center inline-flex items-center justify-center"
                 onClick={() => {
                   const targetRole = roleMismatchAlert.actualRole || 'SHOP_OWNER'
                   saveSelectedRole(targetRole)

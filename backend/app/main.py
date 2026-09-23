@@ -1,4 +1,3 @@
-from __future__ import annotations
 import hashlib
 import hmac
 import os
@@ -9,14 +8,22 @@ from decimal import Decimal
 from uuid import uuid4
 
 from fastapi import Depends, FastAPI, Request, Response
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+import logging
+from slowapi import Limiter
+from slowapi.errors import RateLimitExceeded
+from slowapi.util import get_remote_address
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from sqlalchemy import delete, func, or_, select, text
 from sqlalchemy.orm import Session, joinedload, object_session
 
 from .database import Base, SessionLocal, engine, get_db
 from .models import Checkout, OrderItem, Product, SessionToken, Shop, Supplier, SupplierOrder, SupplierServiceArea, User
 from .schemas import CheckoutRequest, LoginRequest, CheckIdentifierRequest, ProductRequest, ShopOwnerRegisterRequest, SupplierRegisterRequest, GruhUdyogRegisterRequest, StatusRequest, ProfileUpdateRequest
+
+logger = logging.getLogger("connekto")
 
 SESSION_COOKIE = "connecto_session"
 SESSION_DAYS = 7
@@ -29,7 +36,9 @@ TRANSITIONS = {
     "Delivered": set(), "Cancelled": set(),
 }
 
+limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"], enabled=os.getenv("TESTING", "").lower() not in {"true", "1"})
 app = FastAPI(title="Connecto API", version="2.0.0")
+app.state.limiter = limiter
 app.add_middleware(CORSMiddleware, allow_origins=CLIENT_ORIGINS, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 @app.on_event("startup")
@@ -219,6 +228,39 @@ class AuthError(Exception):
 def auth_error(_: Request, __: AuthError):
     return error("Authentication is required.", "UNAUTHENTICATED", 401)
 
+@app.exception_handler(RateLimitExceeded)
+def rate_limit_handler(_: Request, __: RateLimitExceeded):
+    return JSONResponse(
+        {"success": False, "error": {"code": "RATE_LIMIT_EXCEEDED", "message": "Too many requests. Please slow down and try again later."}},
+        status_code=429
+    )
+
+@app.exception_handler(RequestValidationError)
+def validation_exception_handler(_: Request, exc: RequestValidationError):
+    field_errors = {}
+    for err in exc.errors():
+        loc = ".".join(str(l) for l in err.get("loc", []) if l not in {"body", "__root__"}) or "request"
+        field_errors[loc] = err.get("msg", "Invalid value.")
+    return JSONResponse(
+        {"success": False, "error": {"code": "VALIDATION_ERROR", "message": "Invalid request parameters.", "details": field_errors}},
+        status_code=400
+    )
+
+@app.exception_handler(StarletteHTTPException)
+def http_exception_handler(_: Request, exc: StarletteHTTPException):
+    return JSONResponse(
+        {"success": False, "error": {"code": "HTTP_ERROR", "message": str(exc.detail)}},
+        status_code=exc.status_code
+    )
+
+@app.exception_handler(Exception)
+def unhandled_exception_handler(_: Request, exc: Exception):
+    logger.exception("Unhandled server error: %s", exc)
+    return JSONResponse(
+        {"success": False, "error": {"code": "INTERNAL_SERVER_ERROR", "message": "An unexpected error occurred. Please try again later."}},
+        status_code=500
+    )
+
 
 def set_session(response, db: Session, user: User):
     token = secrets.token_urlsafe(48)
@@ -407,7 +449,8 @@ def _process_registration(
 
 
 @app.post("/api/auth/register/shop-owner", status_code=201, summary="Shop Owner Register API")
-def register_shop_owner(payload: ShopOwnerRegisterRequest, response: Response, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def register_shop_owner(request: Request, payload: ShopOwnerRegisterRequest, response: Response, db: Session = Depends(get_db)):
     return _process_registration(
         db=db,
         response=response,
@@ -424,7 +467,8 @@ def register_shop_owner(payload: ShopOwnerRegisterRequest, response: Response, d
 
 
 @app.post("/api/auth/register/supplier", status_code=201, summary="Supplier Register API")
-def register_supplier(payload: SupplierRegisterRequest, response: Response, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def register_supplier(request: Request, payload: SupplierRegisterRequest, response: Response, db: Session = Depends(get_db)):
     return _process_registration(
         db=db,
         response=response,
@@ -441,7 +485,8 @@ def register_supplier(payload: SupplierRegisterRequest, response: Response, db: 
 
 
 @app.post("/api/auth/register/gruh-udyog", status_code=201, summary="Gruh Udyog Register API")
-def register_gruh_udyog(payload: GruhUdyogRegisterRequest, response: Response, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def register_gruh_udyog(request: Request, payload: GruhUdyogRegisterRequest, response: Response, db: Session = Depends(get_db)):
     return _process_registration(
         db=db,
         response=response,
@@ -468,7 +513,8 @@ def get_role_mismatch_alert(actual_role: str) -> str:
 
 
 @app.post("/api/auth/check-identifier")
-def check_identifier(payload: CheckIdentifierRequest, response: Response, db: Session = Depends(get_db)):
+@limiter.limit("15/minute")
+def check_identifier(request: Request, payload: CheckIdentifierRequest, response: Response, db: Session = Depends(get_db)):
     raw_input = payload.emailOrPhone.strip()
     if not raw_input:
         return error("Email or phone number is required.", "VALIDATION_ERROR", 400, {"emailOrPhone": "Email or phone number is required."})
@@ -512,7 +558,6 @@ def check_identifier(payload: CheckIdentifierRequest, response: Response, db: Se
                 {"actualRole": user.role, "expectedRole": expected_role, "alertMessage": alert_msg}
             )
 
-    set_session(response, db, user)
     dashboard_path = "/dashboard/shop-owner" if user.role == "SHOP_OWNER" else f"/dashboard/{user.role.lower().replace('_', '-')}"
 
     return envelope({
@@ -520,12 +565,12 @@ def check_identifier(payload: CheckIdentifierRequest, response: Response, db: Se
         "status": "USER_FOUND",
         "role": user.role,
         "name": user.name,
-        "user": safe_user(user, db=db),
         "dashboardPath": dashboard_path
-    }, "User found and authenticated")
+    }, "Identifier check completed")
 
 @app.post("/api/auth/login")
-def login(payload: LoginRequest, response: Response, db: Session = Depends(get_db)):
+@limiter.limit("10/minute")
+def login(request: Request, payload: LoginRequest, response: Response, db: Session = Depends(get_db)):
     raw_input = payload.emailOrPhone.strip()
     if not raw_input:
         return error("Email or phone number is required.", "VALIDATION_ERROR", 400, {"emailOrPhone": "Email or phone number is required."})
@@ -1081,8 +1126,8 @@ def public_supplier_json(supplier: Supplier, products: list[Product]) -> dict:
 
     service_areas = [service_area.area for service_area in sorted(supplier.service_areas, key=lambda service_area: service_area.area_key)]
     location = service_areas[0] if service_areas else (supplier.owner.area if (supplier.owner and supplier.owner.area) else "")
-    phone = supplier.owner.phone if (supplier.owner and supplier.owner.phone) else "+91 98765 43210"
-    email = supplier.owner.email if (supplier.owner and supplier.owner.email) else ""
+    phone = supplier.owner.phone if (supplier.owner and supplier.owner.phone) else (supplier.phone or "")
+    email = supplier.owner.email if (supplier.owner and supplier.owner.email) else (supplier.email or "")
     return {
         "id": supplier.id,
         "name": supplier.name,
@@ -1260,7 +1305,8 @@ def shop_order(order_id: str, user: User = Depends(require_user), db: Session = 
     return envelope({"order": order_json(order)}, "Order returned") if order else error("Order not found.", "NOT_FOUND", 404)
 
 @app.post("/api/checkout", status_code=201)
-def checkout(payload: CheckoutRequest, user: User = Depends(require_user), db: Session = Depends(get_db)):
+@limiter.limit("20/minute")
+def checkout(request: Request, payload: CheckoutRequest, user: User = Depends(require_user), db: Session = Depends(get_db)):
     if user.role != "SHOP_OWNER": return role_error("Shop Owners", user)
     if payload.paymentMethod not in PAYMENT_METHODS or not payload.items:
         return error("Please correct the checkout details.", "VALIDATION_ERROR", 400)

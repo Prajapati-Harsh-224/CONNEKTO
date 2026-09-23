@@ -227,7 +227,7 @@ def test_check_identifier():
     assert data_found["data"]["status"] == "USER_FOUND"
     assert data_found["data"]["role"] == "SHOP_OWNER"
     assert data_found["data"]["dashboardPath"] == "/dashboard/shop-owner"
-    assert "connecto_session" in res_found.cookies
+    assert "connecto_session" not in res_found.cookies
 
 
 def test_role_enforcement_only_selected_role_can_login():

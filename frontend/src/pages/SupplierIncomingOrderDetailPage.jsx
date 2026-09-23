@@ -125,7 +125,7 @@ export default function SupplierIncomingOrderDetailPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
           <span className="text-[11px] font-bold uppercase tracking-wider text-emerald-700">{t('supplierOrder')}</span>
-          <h1 className="text-2xl sm:text-3xl font-bold font-serif text-[#102d45]">{t('orderNumber', { id: order.id || order.orderId })}</h1>
+          <h1 className="text-2xl sm:text-3xl font-bold font-serif text-brand-navy">{t('orderNumber', { id: order.id || order.orderId })}</h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('customerColon')} <strong className="text-slate-700 font-semibold">{customerName}</strong></p>
         </div>
         <div>

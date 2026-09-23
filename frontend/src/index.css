@@ -2,19 +2,40 @@
 @import "tailwindcss";
 
 @theme {
-  --color-brand-navy: #102d45;
-  --color-brand-navy-dark: #0c2336;
+  /* Brand Primary (Connekto Coral/Orange) */
   --color-brand-orange: #f06535;
-  --color-brand-orange-hover: #e05424;
-  --color-brand-orange-light: #fff0e7;
-  --color-brand-green: #188452;
-  --color-brand-green-hover: #126840;
-  --color-brand-green-light: #e5f5ec;
-  --color-brand-purple: #7554d6;
-  --color-brand-purple-hover: #6140c2;
-  --color-brand-purple-light: #eee8ff;
-  --color-brand-cream: #f4f6f9;
-  --color-brand-border: #e6e9e8;
+  --color-brand-orange-dark: #d95222;
+  --color-brand-orange-hover: #d95222;
+  --color-brand-orange-light: #fff4ef;
+  --color-brand-orange-subtle: #ffedd5;
+
+  /* Brand Secondary (Corporate Slate Navy) */
+  --color-brand-navy: #0f2942;
+  --color-brand-navy-dark: #0a1c2d;
+  --color-brand-navy-light: #163e63;
+
+  /* Brand Accent (Commercial Growth Green / Gruh Udyog) */
+  --color-brand-green: #15803d;
+  --color-brand-green-hover: #166534;
+  --color-brand-green-light: #f0fdf4;
+  --color-brand-green-subtle: #dcfce7;
+
+  /* Accent Purple */
+  --color-brand-purple: #6d28d9;
+  --color-brand-purple-hover: #5b21b6;
+  --color-brand-purple-light: #f5f3ff;
+
+  /* Surface & Background */
+  --color-surface-bg: #f8fafc;
+  --color-surface-card: #ffffff;
+  --color-surface-muted: #f1f5f9;
+  --color-brand-cream: #f8fafc;
+
+  /* Border */
+  --color-brand-border: #e2e8f0;
+  --color-border-subtle: #f1f5f9;
+
+  /* Typography */
   --font-body: 'Space Grotesk', 'Inter', 'Helvetica Neue', Arial, sans-serif;
   --font-num: 'Inter', 'Space Grotesk', system-ui, sans-serif;
 }
@@ -23,8 +44,8 @@
   --font-body: 'Space Grotesk', 'Inter', 'Helvetica Neue', Arial, sans-serif;
   --font-num: 'Inter', 'Space Grotesk', system-ui, sans-serif;
   font-family: var(--font-body);
-  color: #20313a;
-  background: #f4f6f9;
+  color: #0f172a;
+  background: #f8fafc;
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;

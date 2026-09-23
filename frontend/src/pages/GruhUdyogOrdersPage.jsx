@@ -82,20 +82,20 @@ function StatusPill({ status, locale }) {
   }
   if (normalized === 'confirmed' || normalized === 'accepted') {
     return (
-      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#eaf5ef] text-[#1b6442] border border-[#c4e4d0]">
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
         {text('accepted', 'Confirmed')}
       </span>
     )
   }
   if (normalized === 'cancelled') {
     return (
-      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#fdf2f2] text-[#e02424] border border-[#fbd5d5]">
+      <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-rose-50 text-rose-700 border border-rose-200">
         {text('cancelled', 'Cancelled')}
       </span>
     )
   }
   return (
-    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-[#eaf5ef] text-[#1b6442] border border-[#c4e4d0]">
+    <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-semibold bg-emerald-50 text-emerald-800 border border-emerald-200">
       {text('delivered', 'Delivered')}
     </span>
   )
@@ -491,12 +491,12 @@ export default function GruhUdyogOrdersPage() {
               {/* Header */}
               <div className="flex items-start justify-between gap-3 pb-3.5 border-b border-slate-100">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-xl bg-[#eaf5ef] text-[#1b6442] flex items-center justify-center shrink-0">
+                  <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-800 flex items-center justify-center shrink-0">
                     <FiPackage className="w-5 h-5" />
                   </div>
                   <div>
                     <h2 className="text-sm font-bold text-slate-900 leading-tight">{t('orderDetails') || 'Order Details'}</h2>
-                    <p className="text-[11px] text-slate-400 mt-0.5 leading-tight">
+                    <p className="text-[11px] text-slate-500 mt-0.5 leading-tight">
                       {t('viewAndManageOrderInfo') || 'View and manage order information'}
                     </p>
                   </div>

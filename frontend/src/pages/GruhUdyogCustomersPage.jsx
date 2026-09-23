@@ -247,13 +247,13 @@ export default function GruhUdyogCustomersPage() {
               aria-hidden="true"
             >
               {/* Partner 1 */}
-              <circle cx="28" cy="20" r="10" stroke="currentColor" strokeWidth="2.5" fill="#eaf5ef" />
+              <circle cx="28" cy="20" r="10" stroke="currentColor" strokeWidth="2.5" fill="#ecfdf5" />
               <path d="M12 48C12 37 19 32 28 32C37 32 44 37 44 48" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
               {/* Partner 2 (Center) */}
-              <circle cx="50" cy="16" r="11" stroke="#166534" strokeWidth="2.5" fill="#d8ecdf" />
+              <circle cx="50" cy="16" r="11" stroke="#166534" strokeWidth="2.5" fill="#d1fae5" />
               <path d="M33 48C33 35 41 29 50 29C59 29 67 35 67 48" stroke="#166534" strokeWidth="2.5" strokeLinecap="round" />
               {/* Partner 3 */}
-              <circle cx="72" cy="20" r="10" stroke="currentColor" strokeWidth="2.5" fill="#eaf5ef" />
+              <circle cx="72" cy="20" r="10" stroke="currentColor" strokeWidth="2.5" fill="#ecfdf5" />
               <path d="M56 48C56 37 63 32 72 32C81 32 88 37 88 48" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
             </svg>
             <div className="text-[10px] font-semibold text-emerald-800 leading-tight max-w-[80px]">
@@ -427,13 +427,13 @@ export default function GruhUdyogCustomersPage() {
                       <span
                         className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                           isActive
-                            ? 'bg-[#eaf5ef] text-[#1b6442] border border-[#c4e4d0]'
-                            : 'bg-[#fef4ea] text-[#d95d2c] border border-[#fbd8c0]'
+                            ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                            : 'bg-amber-50 text-amber-800 border border-amber-200'
                         }`}
                       >
                         {customer.status || 'Active'}
                       </span>
-                      <FiChevronRight className="w-4 h-4 text-slate-400" />
+                      <FiChevronRight className="w-4 h-4 text-slate-500" />
                     </div>
                   </article>
                 )
@@ -522,7 +522,7 @@ export default function GruhUdyogCustomersPage() {
                   </div>
                   <div>
                     <h3 className="text-base font-bold text-slate-900 leading-tight">{selectedCustomer.name}</h3>
-                    <p className="text-xs text-slate-400 mt-0.5">{selectedCustomer.shopOwner}</p>
+                    <p className="text-xs text-slate-500 mt-0.5">{selectedCustomer.shopOwner}</p>
                   </div>
                 </div>
 
@@ -530,15 +530,15 @@ export default function GruhUdyogCustomersPage() {
                   <span
                     className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
                       selectedCustomer.status === 'Active'
-                        ? 'bg-[#eaf5ef] text-[#1b6442] border border-[#c4e4d0]'
-                        : 'bg-[#fef4ea] text-[#d95d2c] border border-[#fbd8c0]'
+                        ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                        : 'bg-amber-50 text-amber-800 border border-amber-200'
                     }`}
                   >
                     {selectedCustomer.status || 'Active'}
                   </span>
                   <button
                     type="button"
-                    className="p-1 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors"
+                    className="p-1 rounded-lg text-slate-500 hover:text-slate-700 hover:bg-slate-100 transition-colors"
                     aria-label="More options"
                   >
                     <FiMoreVertical className="w-4 h-4" />
@@ -668,7 +668,7 @@ export default function GruhUdyogCustomersPage() {
 
                   {/* Valued Customer Badge Card */}
                   <div className="bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-100 rounded-2xl p-3.5 flex items-center gap-3 shadow-2xs">
-                    <div className="w-8 h-8 rounded-xl bg-[#eaf5ef] text-[#1b6442] flex items-center justify-center shrink-0">
+                    <div className="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
                       <FiAward className="w-4 h-4" />
                     </div>
                     <div>

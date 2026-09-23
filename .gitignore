@@ -8,6 +8,7 @@ coverage/
 
 # Runtime and local backend data
 backend/uploads/
+*.db
 *.db-shm
 *.db-wal
 *.sqlite

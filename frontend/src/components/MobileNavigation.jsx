@@ -6,6 +6,7 @@ import { useLocale } from '../context/LocaleContext.jsx'
 function NavIcon({ section }) {
   const icons = {
     home: <FiHome />,
+    dashboard: <FiHome />,
     suppliers: <FiTruck />,
     cart: <FiShoppingCart />,
     orders: <FiFileText />,
@@ -30,7 +31,7 @@ export default function MobileNavigation({ role: routeRole }) {
         <NavLink
           className={({ isActive }) =>
             `flex flex-col items-center gap-0.5 px-2 py-1 rounded-lg text-[10px] font-medium transition-colors ${
-              isActive ? 'text-[#f06535] font-semibold' : 'text-slate-500 hover:text-slate-800'
+              isActive ? (role === 'gruh-udyog' ? 'text-emerald-800 font-bold' : 'text-brand-orange font-bold') : 'text-slate-600 hover:text-slate-900'
             }`
           }
           end={item.section === 'home'}

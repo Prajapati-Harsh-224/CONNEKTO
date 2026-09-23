@@ -22,7 +22,6 @@ import SupplierIncomingOrdersPage from './pages/SupplierIncomingOrdersPage.jsx'
 import SupplierIncomingOrderDetailPage from './pages/SupplierIncomingOrderDetailPage.jsx'
 import SupplierProductManagementPage from './pages/SupplierProductManagementPage.jsx'
 import SupplierEditProductPage from './pages/SupplierEditProductPage.jsx'
-import SupplierShopOwnersPage from './pages/SupplierShopOwnersPage.jsx'
 import SupplierAnalyticsPage from './pages/SupplierAnalyticsPage.jsx'
 import SupplierCustomersPage from './pages/SupplierCustomersPage.jsx'
 import ShopOwnerAnalyticsPage from './pages/ShopOwnerAnalyticsPage.jsx'
@@ -57,6 +56,7 @@ export default function App() {
           <Route path="dashboard/shop-owner" element={<ProtectedRoute allowedRole="SHOP_OWNER"><RoleLayout role="shop-owner" /></ProtectedRoute>}>
             <Route index element={<ShopOwnerDashboardPage />} />
             <Route path="home" element={<ShopOwnerDashboardPage />} />
+            <Route path="dashboard" element={<Navigate replace to="/dashboard/shop-owner/home" />} />
             <Route path="suppliers" element={<SupplierListPage />} />
             <Route path="cart" element={<ShopOwnerCartPage />} />
             <Route path="checkout" element={<CheckoutPage />} />
@@ -73,6 +73,7 @@ export default function App() {
           <Route path="dashboard/supplier" element={<ProtectedRoute allowedRole="SUPPLIER"><RoleLayout role="supplier" /></ProtectedRoute>}>
             <Route index element={<SupplierDashboardPage />} />
             <Route path="home" element={<SupplierDashboardPage />} />
+            <Route path="dashboard" element={<Navigate replace to="/dashboard/supplier/home" />} />
             <Route path="orders" element={<SupplierIncomingOrdersPage />} />
             <Route path="orders/:orderId" element={<SupplierIncomingOrderDetailPage />} />
             <Route path="incoming-orders" element={<Navigate replace to="/dashboard/supplier/orders" />} />
@@ -80,7 +81,7 @@ export default function App() {
             <Route path="products" element={<SupplierProductManagementPage />} />
             <Route path="products/new" element={<SupplierEditProductPage />} />
             <Route path="products/:productId/edit" element={<SupplierEditProductPage />} />
-            <Route path="shop-owners" element={<SupplierShopOwnersPage />} />
+            <Route path="shop-owners" element={<Navigate replace to="/dashboard/supplier/customers" />} />
             <Route path="customers" element={<SupplierCustomersPage />} />
             <Route path="analytics" element={<SupplierAnalyticsPage />} />
             <Route path="profile" element={<ProfilePage role="supplier" />} />
@@ -90,6 +91,7 @@ export default function App() {
           <Route path="dashboard/gruh-udyog" element={<ProtectedRoute allowedRole="GRUH_UDYOG"><RoleLayout role="gruh-udyog" /></ProtectedRoute>}>
             <Route index element={<GruhUdyogDashboardPage />} />
             <Route path="home" element={<GruhUdyogDashboardPage />} />
+            <Route path="dashboard" element={<Navigate replace to="/dashboard/gruh-udyog/home" />} />
             <Route path="orders" element={<GruhUdyogOrdersPage />} />
             <Route path="products" element={<GruhUdyogProductsPage />} />
             <Route path="customers" element={<GruhUdyogCustomersPage />} />

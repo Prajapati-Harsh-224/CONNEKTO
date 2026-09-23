@@ -115,7 +115,7 @@ export default function Footer() {
                 className="inline-flex items-center gap-2.5 group"
                 aria-label="Connekto Home"
               >
-                <span className="w-8 h-8 rounded-full bg-[#f06535] text-white flex items-center justify-center font-bold text-base shadow-xs group-hover:scale-105 transition-transform shrink-0">
+                <span className="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center font-bold text-base shadow-xs group-hover:scale-105 transition-transform shrink-0">
                   C
                 </span>
                 <span className="flex flex-col">
@@ -136,7 +136,7 @@ export default function Footer() {
                   <a
                     href="#home"
                     onClick={(e) => handleSectionNav(e, 'home')}
-                    className="text-slate-600 hover:text-[#f06535] transition-colors"
+                    className="text-slate-600 hover:text-brand-orange transition-colors"
                   >
                     {t('home')}
                   </a>
@@ -145,7 +145,7 @@ export default function Footer() {
                   <a
                     href="#about"
                     onClick={(e) => handleSectionNav(e, 'about')}
-                    className="text-slate-600 hover:text-[#f06535] transition-colors"
+                    className="text-slate-600 hover:text-brand-orange transition-colors"
                   >
                     {t('about')}
                   </a>
@@ -154,7 +154,7 @@ export default function Footer() {
                   <a
                     href="#how-it-works"
                     onClick={(e) => handleSectionNav(e, 'how-it-works')}
-                    className="text-slate-600 hover:text-[#f06535] transition-colors"
+                    className="text-slate-600 hover:text-brand-orange transition-colors"
                   >
                     {t('howItWorks')}
                   </a>
@@ -163,7 +163,7 @@ export default function Footer() {
                   <a
                     href="#contact"
                     onClick={(e) => handleSectionNav(e, 'contact')}
-                    className="text-slate-600 hover:text-[#f06535] transition-colors"
+                    className="text-slate-600 hover:text-brand-orange transition-colors"
                   >
                     {t('contact')}
                   </a>
@@ -179,7 +179,7 @@ export default function Footer() {
                   <button
                     type="button"
                     onClick={() => openModal('help')}
-                    className="text-left text-slate-600 hover:text-[#f06535] transition-colors cursor-pointer"
+                    className="text-left text-slate-600 hover:text-brand-orange transition-colors cursor-pointer"
                   >
                     {t('helpCenter')}
                   </button>
@@ -188,7 +188,7 @@ export default function Footer() {
                   <button
                     type="button"
                     onClick={() => openModal('faqs')}
-                    className="text-left text-slate-600 hover:text-[#f06535] transition-colors cursor-pointer"
+                    className="text-left text-slate-600 hover:text-brand-orange transition-colors cursor-pointer"
                   >
                     {t('faqs')}
                   </button>
@@ -197,7 +197,7 @@ export default function Footer() {
                   <button
                     type="button"
                     onClick={() => openModal('privacy')}
-                    className="text-left text-slate-600 hover:text-[#f06535] transition-colors cursor-pointer"
+                    className="text-left text-slate-600 hover:text-brand-orange transition-colors cursor-pointer"
                   >
                     {t('privacyPolicy')}
                   </button>
@@ -206,7 +206,7 @@ export default function Footer() {
                   <button
                     type="button"
                     onClick={() => openModal('terms')}
-                    className="text-left text-slate-600 hover:text-[#f06535] transition-colors cursor-pointer"
+                    className="text-left text-slate-600 hover:text-brand-orange transition-colors cursor-pointer"
                   >
                     {t('termsOfService')}
                   </button>
@@ -215,7 +215,7 @@ export default function Footer() {
                   <button
                     type="button"
                     onClick={() => openModal('cookies')}
-                    className="text-left text-slate-600 hover:text-[#f06535] transition-colors cursor-pointer"
+                    className="text-left text-slate-600 hover:text-brand-orange transition-colors cursor-pointer"
                   >
                     {t('cookiePolicy')}
                   </button>
@@ -225,10 +225,10 @@ export default function Footer() {
 
             {/* Column 4: Newsletter / Subscribe Card */}
             <div className="lg:col-span-4">
-              <div className="bg-[#f4f9f6] border border-emerald-100/90 rounded-2xl p-5 sm:p-6 shadow-2xs">
+              <div className="bg-emerald-50/50 border border-emerald-100/90 rounded-2xl p-5 sm:p-6 shadow-2xs">
                 <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-emerald-100/80 text-emerald-800 flex items-center justify-center shrink-0">
-                    <svg className="w-5 h-5 text-[#14532d]" viewBox="0 0 24 24" fill="currentColor">
+                  <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+                    <svg className="w-5 h-5 text-emerald-800" viewBox="0 0 24 24" fill="currentColor">
                       <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66 1.45-3.62C8.75 19.38 10.74 20 13 20c6.08 0 8-7 8-12 0-.55-.45-1-1-1zm-4 10c-1.8 0-3.39-.48-4.73-1.3l5.04-5.04c.39-.39.39-1.02 0-1.41a.996.996 0 00-1.41 0l-5.04 5.04C6.48 13.96 6 12.37 6 10.57c2.53-.48 5.75-1.54 8.52-2.19-1.39 3.03-1.89 6.64-1.52 9.62z" />
                     </svg>
                   </div>
@@ -267,12 +267,12 @@ export default function Footer() {
                           if (error) setError('')
                         }}
                         placeholder={t('enterYourEmail')}
-                        className="flex-1 bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 shadow-2xs transition-all"
+                        className="flex-1 bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-slate-800 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 shadow-2xs transition-all"
                       />
                       <button
                         type="submit"
                         disabled={status === 'submitting'}
-                        className="bg-[#0f5132] hover:bg-[#0b3d26] text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1.5 shrink-0 cursor-pointer disabled:opacity-60"
+                        className="bg-emerald-800 hover:bg-emerald-900 text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1.5 shrink-0 cursor-pointer disabled:opacity-60"
                       >
                         <span>{status === 'submitting' ? '...' : t('subscribe')}</span>
                         <span aria-hidden="true">→</span>

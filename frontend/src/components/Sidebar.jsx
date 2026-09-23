@@ -8,6 +8,7 @@ import { getCart } from '../utils/cartStorage.js'
 function NavIcon({ section }) {
   const icons = {
     home: <FiHome style={{ marginRight: '8px' }} />,
+    dashboard: <FiHome style={{ marginRight: '8px' }} />,
     suppliers: <FiTruck style={{ marginRight: '8px' }} />,
     cart: <FiShoppingCart style={{ marginRight: '8px' }} />,
     orders: <FiFileText style={{ marginRight: '8px' }} />,
@@ -43,17 +44,16 @@ export default function Sidebar({ role: routeRole }) {
 
   return (
     <aside className="hidden md:flex flex-col w-56 lg:w-64 border-r border-slate-200/70 bg-white fixed top-16 left-0 bottom-0 h-[calc(100vh-4rem)] overflow-y-auto p-4 space-y-1 shrink-0 z-30 select-none" aria-label={t('workspace')}>
-      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400 px-3 py-2">{t('workspace')}</div>
+      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500 px-3 py-2">{t('workspace')}</div>
       {items.map((item) => {
         const badge = item.section === 'cart' ? String(cartCount || 0) : item.badge
-        const showSupplierDivider = role === 'supplier' && item.section === 'customers'
         return (
           <Fragment key={item.section}>
             <NavLink
               className={({ isActive }) =>
                 `flex items-center justify-between px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-colors ${
                   isActive
-                    ? (role === 'gruh-udyog' ? 'bg-[#eaf5ef] text-[#1b6442] font-semibold' : 'bg-orange-50 text-[#f06535] font-semibold')
+                    ? (role === 'gruh-udyog' ? 'bg-emerald-50 text-emerald-800 font-semibold' : 'bg-brand-orange-light text-brand-orange font-semibold')
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`
               }
@@ -65,12 +65,11 @@ export default function Sidebar({ role: routeRole }) {
                 {t(item.key)}
               </span>
               {badge && Number(badge) > 0 ? (
-                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-[#f06535] text-white tabular-nums">
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-bold bg-brand-orange text-white tabular-nums">
                   {badge}
                 </span>
               ) : null}
             </NavLink>
-            {showSupplierDivider ? <div className="h-px bg-slate-100 my-2" aria-hidden="true" /> : null}
           </Fragment>
         )
       })}
