@@ -1,6 +1,6 @@
 import { useCallback, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
-import { FiArrowRight, FiPlay, FiBriefcase, FiShield, FiTrendingUp, FiShoppingBag, FiTruck, FiUsers, FiMail, FiMapPin } from 'react-icons/fi'
+import { FiArrowRight, FiPlay, FiShoppingBag, FiTruck, FiUsers, FiMail, FiMapPin } from 'react-icons/fi'
 import { useLocale } from '../context/LocaleContext.jsx'
 import homeHeroBg from '../assets/Home_Hero.png'
 import contactIllustration from '../assets/contact_illustration.svg'
@@ -43,7 +43,7 @@ export default function WelcomePage() {
     <div className="w-full min-h-screen bg-brand-cream/30 text-slate-800 selection:bg-brand-orange/20 selection:text-brand-orange">
 
       {/* ── HERO SECTION ── */}
-      <section className="relative w-full overflow-hidden pt-6 sm:pt-12 pb-14 sm:pb-20" id="home" aria-label="Hero">
+      <section className="relative w-full overflow-hidden pt-6 sm:pt-12 pb-24 sm:pb-36 lg:pb-40 min-h-[520px] sm:min-h-[580px] lg:min-h-[640px]" id="home" aria-label="Hero">
         {/* Full Hero Background Image */}
         <div
           className="absolute inset-0 w-full h-full bg-cover bg-center sm:bg-[position:65%_center] lg:bg-center pointer-events-none"
@@ -92,39 +92,6 @@ export default function WelcomePage() {
                 </span>
                 <span>{t('watchVideo')}</span>
               </Link>
-            </div>
-
-            {/* Value Points */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 pt-4 border-t border-slate-200/80">
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-orange-50 text-brand-orange flex items-center justify-center shrink-0 border border-orange-200/60 shadow-xs">
-                  <FiBriefcase className="w-4 h-4" />
-                </div>
-                <div>
-                  <strong className="block text-xs sm:text-sm font-bold text-slate-900">{t('wideNetwork')}</strong>
-                  <span className="text-[11px] sm:text-xs text-slate-500">{t('wideNetworkDesc')}</span>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center shrink-0 border border-emerald-200/60 shadow-xs">
-                  <FiShield className="w-4 h-4" />
-                </div>
-                <div>
-                  <strong className="block text-xs sm:text-sm font-bold text-slate-900">{t('reliableSupply')}</strong>
-                  <span className="text-[11px] sm:text-xs text-slate-500">{t('reliableSupplyDesc')}</span>
-                </div>
-              </div>
-
-              <div className="flex items-start gap-3">
-                <div className="w-9 h-9 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center shrink-0 border border-amber-200/60 shadow-xs">
-                  <FiTrendingUp className="w-4 h-4" />
-                </div>
-                <div>
-                  <strong className="block text-xs sm:text-sm font-bold text-slate-900">{t('businessGrowth')}</strong>
-                  <span className="text-[11px] sm:text-xs text-slate-500">{t('businessGrowthDesc')}</span>
-                </div>
-              </div>
             </div>
           </div>
         </div>
@@ -206,29 +173,6 @@ export default function WelcomePage() {
         </div>
       </section>
 
-      {/* ── STATISTICS STRIP ── */}
-      <section className="py-10 bg-brand-cream/40 px-4 sm:px-6 lg:px-8" aria-label={t('platformStats')}>
-        <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 text-center">
-            <div className="space-y-1">
-              <strong className="block text-2xl sm:text-3xl font-black text-brand-navy">{t('stat1Value')}</strong>
-              <span className="text-xs sm:text-sm text-slate-500 font-medium">{t('stat1Label')}</span>
-            </div>
-            <div className="space-y-1">
-              <strong className="block text-2xl sm:text-3xl font-black text-brand-navy">{t('stat2Value')}</strong>
-              <span className="text-xs sm:text-sm text-slate-500 font-medium">{t('stat2Label')}</span>
-            </div>
-            <div className="space-y-1">
-              <strong className="block text-2xl sm:text-3xl font-black text-brand-navy">{t('stat3Value')}</strong>
-              <span className="text-xs sm:text-sm text-slate-500 font-medium">{t('stat3Label')}</span>
-            </div>
-            <div className="space-y-1">
-              <strong className="block text-2xl sm:text-3xl font-black text-brand-navy">{t('stat4Value')}</strong>
-              <span className="text-xs sm:text-sm text-slate-500 font-medium">{t('stat4Label')}</span>
-            </div>
-          </div>
-        </div>
-      </section>
 
       {/* ── ABOUT SECTION ── */}
       <section className="py-14 sm:py-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto" id="about" aria-labelledby="about-heading">
