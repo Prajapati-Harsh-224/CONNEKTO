@@ -6,6 +6,7 @@ import StatusBadge from '../components/StatusBadge.jsx'
 import StatusTimeline from '../components/StatusTimeline.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { getSupplierOrder, updateSupplierOrderStatus } from '../services/supplierOrderService.js'
+import { getItemUnitLabel } from '../utils/cartStorage.js'
 
 const statusTransitions = {
   Pending: ['Accepted', 'Cancelled'],
@@ -112,6 +113,11 @@ export default function SupplierIncomingOrderDetailPage() {
 
   const customerName = order.customer || order.shopOwner || 'Shop owner'
   const orderItemLabel = items.length === 1 ? t('itemCount') : t('itemsCount')
+  const totalBoxes = items.reduce((sum, item) => {
+    const unitsPerBox = Number(item.unitsPerBoxSnapshot || item.unitsPerBox || item.minimumQuantity || item.minimum_quantity || 1)
+    const boxes = Number(item.boxes) || (unitsPerBox > 1 ? Math.floor(Number(item.quantity) / unitsPerBox) : Number(item.quantity)) || 1
+    return sum + boxes
+  }, 0)
   const paymentLabelKey = paymentLabels[order.paymentMethod] || 'cashOnDelivery'
 
   return (
@@ -161,7 +167,7 @@ export default function SupplierIncomingOrderDetailPage() {
                 <h2 className="text-lg font-bold text-slate-900 font-serif">{t('orderItems')}</h2>
               </div>
               <span className="px-2.5 py-1 rounded-full bg-slate-100 text-xs font-semibold text-slate-600">
-                {items.length} {orderItemLabel}
+                {totalBoxes} {totalBoxes === 1 ? (t('boxSingular') || 'Box') : (t('boxPlural') || 'Boxes')} ({items.length} {orderItemLabel})
               </span>
             </div>
 
@@ -172,18 +178,20 @@ export default function SupplierIncomingOrderDetailPage() {
 
             <div className="divide-y divide-slate-100">
               {items.map((item, index) => {
-                const unitsPerBox = Number(item.unitsPerBoxSnapshot || item.unitsPerBox || 1)
+                const unitsPerBox = Number(item.unitsPerBoxSnapshot || item.unitsPerBox || item.minimumQuantity || item.minimum_quantity || 1)
                 const isBox = unitsPerBox > 1
                 const boxes = item.boxes || (isBox ? Math.floor(item.quantity / unitsPerBox) : item.quantity)
                 const unitPrice = Number(String(item.unitPriceSnapshot || item.unitPrice || 0).replace(/[^0-9.]/g, ''))
+                const unitLabel = getItemUnitLabel(item, item.quantity)
+                const unitSingular = getItemUnitLabel(item, 1)
                 return (
                   <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-1 py-3 text-xs" key={`${item.sku || item.product}-${index}`}>
                     <div>
                       <strong className="font-semibold text-slate-800 text-sm block">{item.product || item.name || t('product')}</strong>
                       <span className="text-slate-400 text-xs mt-0.5 block">
                         {isBox
-                          ? `${boxes} ${boxes === 1 ? t('boxSingular') : t('boxPlural')} (${item.quantity} ${item.quantity === 1 ? t('packetSingular') : t('packetPlural')}) × ${formatCurrency(unitPrice)}/${t('packetSingular')}`
-                          : `${item.quantity} ${item.quantity === 1 ? t('unitSingular') : t('unitsPlural')} × ${formatCurrency(unitPrice)}`}
+                          ? `${boxes} ${boxes === 1 ? t('boxSingular') : t('boxPlural')} (${item.quantity} ${unitLabel}) × ${formatCurrency(unitPrice)}/${unitSingular}`
+                          : `${item.quantity} ${unitLabel} × ${formatCurrency(unitPrice)}`}
                       </span>
                     </div>
                     <strong className="font-bold text-slate-900 text-sm tabular-nums self-end sm:self-center">{formatCurrency(item.total || unitPrice * (item.quantity || 1))}</strong>

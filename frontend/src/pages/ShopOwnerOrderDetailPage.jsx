@@ -6,6 +6,7 @@ import StatusBadge from '../components/StatusBadge.jsx'
 import StatusTimeline from '../components/StatusTimeline.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { getOrder } from '../services/orderService.js'
+import { getItemUnitLabel } from '../utils/cartStorage.js'
 
 export default function ShopOwnerOrderDetailPage() {
   const { orderId } = useParams()
@@ -95,10 +96,12 @@ export default function ShopOwnerOrderDetailPage() {
 
           <div className="divide-y divide-slate-100">
             {order.items.map((item) => {
-              const unitsPerBox = Number(item.unitsPerBoxSnapshot || item.unitsPerBox || 1)
+              const unitsPerBox = Number(item.unitsPerBoxSnapshot || item.unitsPerBox || item.minimumQuantity || item.minimum_quantity || 1)
               const isBox = unitsPerBox > 1
               const boxes = item.boxes || (isBox ? Math.floor(item.quantity / unitsPerBox) : item.quantity)
               const unitPrice = Number(String(item.unitPriceSnapshot || item.unitPrice || 0).replace(/[^0-9.]/g, ''))
+              const unitLabel = getItemUnitLabel(item, item.quantity)
+              const unitSingular = getItemUnitLabel(item, 1)
               return (
                 <div className="flex items-center justify-between gap-4 py-4 first:pt-0 last:pb-0" key={item.productId}>
                   <div className="flex flex-col min-w-0">
@@ -107,8 +110,8 @@ export default function ShopOwnerOrderDetailPage() {
                     </strong>
                     <span className="text-xs text-slate-500 mt-0.5">
                       {isBox
-                        ? `${boxes} ${boxes === 1 ? t('boxSingular') : t('boxPlural')} (${item.quantity} ${t('packetPlural')}) × Rs ${unitPrice.toLocaleString('en-IN')}/${t('packetSingular')}`
-                        : `${item.quantity} ${t('units')} × Rs ${unitPrice.toLocaleString('en-IN')}`}
+                        ? `${boxes} ${boxes === 1 ? t('boxSingular') : t('boxPlural')} (${item.quantity} ${unitLabel}) × Rs ${unitPrice.toLocaleString('en-IN')}/${unitSingular}`
+                        : `${item.quantity} ${unitLabel} × Rs ${unitPrice.toLocaleString('en-IN')}`}
                     </span>
                   </div>
                   <strong className="text-sm sm:text-base font-bold text-slate-900 whitespace-nowrap">

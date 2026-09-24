@@ -140,8 +140,15 @@ export default function ProductManagementForm({
             )}
 
             <FormField error={errors.packSize} label={t('packSize')} name="packSize" onChange={onChange} placeholder="e.g. 1 kg" value={form.packSize} />
-            <FormField error={errors.price} label={`${t('price')} (₹)`} name="price" onChange={onChange} placeholder="0" type="number" value={form.price} />
-            <FormField error={errors.minimumQuantity} label={t('minimumQuantity')} name="minimumQuantity" onChange={onChange} placeholder="1" type="number" value={form.minimumQuantity} />
+            <FormField error={errors.price} label={`${t('price')} (₹ / unit)`} name="price" onChange={onChange} placeholder="0" type="number" value={form.price} />
+            <div>
+              <FormField error={errors.minimumQuantity} label="Units per Box (Box Size)" name="minimumQuantity" onChange={onChange} placeholder="1" type="number" value={form.minimumQuantity} />
+              {Number(form.price) > 0 && Number(form.minimumQuantity) > 0 && (
+                <p className="text-[11px] font-semibold text-brand-orange mt-1">
+                  📦 1 Box = {form.minimumQuantity} units (₹{(Number(form.price) * Number(form.minimumQuantity)).toLocaleString('en-IN')} / Box)
+                </p>
+              )}
+            </div>
             <FormField
               error={errors.availableStock}
               inputMode="numeric"

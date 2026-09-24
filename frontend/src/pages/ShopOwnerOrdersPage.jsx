@@ -7,6 +7,7 @@ import ProductImage from '../components/ProductImage.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { getOrders } from '../services/orderService.js'
+import { getItemUnitLabel } from '../utils/cartStorage.js'
 
 const tabs = [
   { value: 'All', key: 'ordersAll' },
@@ -353,7 +354,7 @@ export default function ShopOwnerOrdersPage() {
                         </td>
 
                         <td className="py-2.5 px-1.5 sm:px-2 text-xs text-slate-500 font-medium whitespace-nowrap border-b border-slate-100">
-                          {items.length} {items.length === 1 ? t('itemCount') : t('itemsCount')}
+                          {items.reduce((sum, itm) => sum + Number(itm.boxes || (itm.quantity ? Math.floor(itm.quantity / (itm.unitsPerBoxSnapshot || itm.unitsPerBox || 1)) : 1)), 0)} Boxes ({items.length} {items.length === 1 ? t('itemCount') : t('itemsCount')})
                         </td>
 
                         <td className="py-2.5 px-1.5 sm:px-2 text-xs font-bold text-slate-900 tabular-nums whitespace-nowrap border-b border-slate-100">
@@ -407,9 +408,9 @@ export default function ShopOwnerOrdersPage() {
               </h3>
               <div className="space-y-2.5 max-h-56 overflow-y-auto pr-1">
                 {selectedItems.map((item) => {
-                  const upb = Number(item.unitsPerBoxSnapshot || item.unitsPerBox || 1)
-                  const isBox = upb > 1
-                  const boxes = item.boxes || (isBox ? Math.floor(item.quantity / upb) : item.quantity)
+                  const upb = Math.max(1, Number(item.unitsPerBoxSnapshot || item.unitsPerBox || 1))
+                  const boxes = Number(item.boxes) || Math.max(1, Math.floor(Number(item.quantity || upb) / upb))
+                  const unitLabel = getItemUnitLabel(item, item.quantity)
                   return (
                     <div className="flex items-center justify-between gap-3 text-xs" key={item.productId}>
                       <div className="flex items-center gap-2.5 min-w-0">
@@ -423,7 +424,7 @@ export default function ShopOwnerOrdersPage() {
                         <div className="flex flex-col min-w-0">
                           <strong className="text-slate-800 truncate font-semibold">{productName(item)}</strong>
                           <small className="text-slate-400">
-                            {isBox ? `${boxes} ${boxes === 1 ? 'Box' : 'Boxes'} (${item.quantity} pkts)` : `${item.quantity} units`}
+                            {boxes} {boxes === 1 ? 'Box' : 'Boxes'} ({item.quantity} {unitLabel})
                           </small>
                         </div>
                       </div>

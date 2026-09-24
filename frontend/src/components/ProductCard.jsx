@@ -1,5 +1,6 @@
 import { Link } from 'react-router-dom'
 import ProductImage from './ProductImage.jsx'
+import { getItemUnitLabel } from '../utils/cartStorage.js'
 
 export default function ProductCard({ product, supplierId }) {
   const unitsPerBox = Math.max(1, Number(product.unitsPerBox || product.minimumQuantity || 1))
@@ -7,6 +8,8 @@ export default function ProductCard({ product, supplierId }) {
   const boxPrice = unitPrice * unitsPerBox
   const availableStock = Number(product.availableStock ?? product.stock ?? 1)
   const isAvailable = availableStock > 0
+  const unitPlural = getItemUnitLabel(product, unitsPerBox)
+  const unitSingular = getItemUnitLabel(product, 1)
 
   return (
     <article className="group flex flex-col bg-white rounded-2xl border border-slate-200/80 shadow-xs hover:shadow-md hover:border-slate-300 transition-all duration-200 overflow-hidden">
@@ -40,11 +43,11 @@ export default function ProductCard({ product, supplierId }) {
           <div>Min. order <strong className="block text-slate-800 font-semibold">1 box</strong></div>
         </div>
         <div className="text-xs text-emerald-700 font-semibold mb-3">
-          1 Box = {unitsPerBox} packets (₹{boxPrice.toLocaleString('en-IN')}/box)
+          1 Box = {unitsPerBox} {unitPlural} (₹{boxPrice.toLocaleString('en-IN')}/box)
         </div>
         <div className="mt-auto pt-3 border-t border-slate-100 flex items-center justify-between gap-2">
           <strong className="text-base font-bold text-slate-900">
-            ₹{unitPrice.toLocaleString('en-IN')} <span className="text-xs font-normal text-slate-500">/ packet</span>
+            ₹{unitPrice.toLocaleString('en-IN')} <span className="text-xs font-normal text-slate-500">/ {unitSingular}</span>
           </strong>
           <Link
             className="inline-flex items-center justify-center px-3 py-1.5 rounded-xl text-xs font-semibold bg-brand-orange text-white hover:bg-orange-700 active:scale-95 transition-all shadow-xs"
@@ -57,3 +60,4 @@ export default function ProductCard({ product, supplierId }) {
     </article>
   )
 }
+

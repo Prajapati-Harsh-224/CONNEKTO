@@ -8,8 +8,6 @@ import { getSupplierOrders, updateSupplierOrderStatus } from '../services/suppli
 
 const pageSize = 8
 
-const statusValues = ['All Statuses', 'Pending', 'Accepted', 'Preparing', 'Out for Delivery', 'Delivered', 'Cancelled']
-
 function normalizeOrder(order) {
   return {
     ...order,
@@ -348,6 +346,11 @@ export default function SupplierIncomingOrdersPage() {
               <tbody className="divide-y divide-slate-100">
                 {visibleOrders.map((order) => {
                   const orderItems = Array.isArray(order.items) ? order.items : []
+                  const orderBoxes = orderItems.reduce((sum, item) => {
+                    const unitsPerBox = Number(item.unitsPerBoxSnapshot || item.unitsPerBox || item.minimumQuantity || item.minimum_quantity || 1)
+                    const boxes = Number(item.boxes) || (unitsPerBox > 1 ? Math.floor(Number(item.quantity) / unitsPerBox) : Number(item.quantity)) || 1
+                    return sum + boxes
+                  }, 0)
 
                   return (
                     <tr className="hover:bg-slate-50/70 transition-colors text-xs" key={order.id}>
@@ -364,7 +367,8 @@ export default function SupplierIncomingOrdersPage() {
                         <small className="text-slate-400 text-[11px] truncate">{order.area}</small>
                       </td>
                       <td className="py-3.5 px-4 text-xs font-medium text-slate-500 whitespace-nowrap">
-                        {orderItems.length} {orderItems.length === 1 ? (t('itemCount') || 'item') : (t('itemsCount') || 'items')}
+                        <span className="font-semibold text-slate-700">{orderBoxes} {orderBoxes === 1 ? (t('boxSingular') || 'Box') : (t('boxPlural') || 'Boxes')}</span>
+                        <span className="text-[11px] text-slate-400 block">({orderItems.length} {orderItems.length === 1 ? (t('productSingular') || 'Product') : (t('productPlural') || 'Products')})</span>
                       </td>
                       <td className="py-3.5 px-4 font-bold text-slate-900 tabular-nums whitespace-nowrap">
                         {formatCurrency(order.amount)}

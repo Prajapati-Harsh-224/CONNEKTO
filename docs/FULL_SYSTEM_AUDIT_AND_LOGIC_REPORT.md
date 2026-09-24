@@ -218,8 +218,8 @@ useEffect(() => {
 | brand | VARCHAR(100) | |
 | category | VARCHAR(100) | |
 | pack_size | VARCHAR(80) | |
-| price | Numeric(10,2) | |
-| minimum_quantity | Integer | |
+| price | Numeric(10,2) | Unit price of 1 item |
+| minimum_quantity | Integer | Number of individual units inside one box (Box Size). Products are sold in full boxes. |
 | image_url | Text | |
 | is_active | Boolean | |
 | is_demo_data | Boolean | |

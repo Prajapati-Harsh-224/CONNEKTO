@@ -21,7 +21,7 @@ import EmptyState from '../components/EmptyState.jsx'
 import LoadingState from '../components/LoadingState.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { getSupplierProducts } from '../services/catalogService.js'
-import { addToCart, getCart, updateCartItem, removeFromCart } from '../utils/cartStorage.js'
+import { addToCart, getCart, updateCartItem, removeFromCart, getItemUnitLabel } from '../utils/cartStorage.js'
 
 function getInitials(name = '') {
   return name.split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'S'
@@ -342,12 +342,15 @@ export default function SupplierCatalogPage() {
       imageUrl: product.imageUrl || '',
       minimumQuantity: unitsPerBox,
       unitsPerBox: unitsPerBox,
+      boxQuantity: minBoxes,
       boxes: minBoxes,
       quantity: actualQuantity,
       unitPrice: product.price,
+      price: product.price,
     })
     notifyCartUpdated()
-    const msg = `${product.name} added to cart!`
+    const unitLabel = getItemUnitLabel(product, unitsPerBox)
+    const msg = `${product.name} (1 Box = ${unitsPerBox} ${unitLabel}) added to cart!`
     setCartMessage(msg)
     setTimeout(() => setCartMessage(''), 3000)
   }
@@ -358,7 +361,7 @@ export default function SupplierCatalogPage() {
       handleAdd(product)
       return
     }
-    const currentBoxes = Number(cartItem.boxes || 1)
+    const currentBoxes = Number(cartItem.boxQuantity || cartItem.boxes || 1)
     const nextBoxes = currentBoxes + 1
     updateCartItem(product.id, supplier.id, nextBoxes)
     notifyCartUpdated()
@@ -368,7 +371,7 @@ export default function SupplierCatalogPage() {
     const cartItem = cart.find((item) => item.productId === product.id && item.supplierId === supplier.id)
     if (!cartItem) return
 
-    const currentBoxes = Number(cartItem.boxes || 1)
+    const currentBoxes = Number(cartItem.boxQuantity || cartItem.boxes || 1)
     if (currentBoxes <= 1) {
       removeFromCart(product.id, supplier.id)
       notifyCartUpdated()
@@ -622,7 +625,7 @@ export default function SupplierCatalogPage() {
 
                   const cartItem = cart.find((item) => item.productId === product.id && item.supplierId === supplier.id)
                   const cartBoxes = cartItem
-                    ? Number(cartItem.boxes || Math.max(1, Math.round(Number(cartItem.quantity || unitsPerBox) / unitsPerBox)))
+                    ? Number(cartItem.boxQuantity || cartItem.boxes || 1)
                     : 0
 
                   return (
@@ -700,12 +703,10 @@ export default function SupplierCatalogPage() {
                           <div>
                             <div className="text-base font-black text-slate-900 leading-none">
                               {formatPrice(unitPrice)}{' '}
-                              <small className="text-[11px] text-slate-400 font-normal">/ unit</small>
+                              <small className="text-[11px] text-slate-400 font-normal">/ {getItemUnitLabel(product, 1)}</small>
                             </div>
                             <div className="text-xs text-emerald-700 font-semibold mt-1 truncate">
-                              {unitsPerBox > 1
-                                ? `1 Box = ${unitsPerBox} pkts (${formatPrice(boxPrice)}/box)`
-                                : `${formatPrice(boxPrice)} / box`}
+                              1 Box = {unitsPerBox} {getItemUnitLabel(product, unitsPerBox)} ({formatPrice(boxPrice)}/box)
                             </div>
                           </div>
 
@@ -821,9 +822,9 @@ export default function SupplierCatalogPage() {
                             <td className="py-3 px-4 text-xs text-slate-600">{product.brand || '—'}</td>
                             <td className="py-3 px-4 text-xs text-slate-500">{product.packSize}</td>
                             <td className="py-3 px-4 text-xs">
-                              <strong className="text-slate-900">{formatPrice(unitPrice)}</strong>
+                              <strong className="text-slate-900">{formatPrice(unitPrice)} <small className="text-[11px] text-slate-400 font-normal">/ {getItemUnitLabel(product, 1)}</small></strong>
                               <span className="text-[11px] text-slate-500 block">
-                                {formatPrice(boxPrice)} / box ({unitsPerBox} pkts)
+                                {formatPrice(boxPrice)} / box ({unitsPerBox} {getItemUnitLabel(product, unitsPerBox)})
                               </span>
                             </td>
                             <td className="py-3 px-4">
@@ -998,7 +999,7 @@ export default function SupplierCatalogPage() {
               <div>
                 <p className="text-slate-400 font-medium">Wholesale Box Packaging</p>
                 <p className="text-xs font-bold text-emerald-700 mt-0.5">
-                  1 Box = {Number(viewingProduct.unitsPerBox || viewingProduct.minimumQuantity || 1)} pkts
+                  1 Box = {Number(viewingProduct.unitsPerBox || viewingProduct.minimumQuantity || 1)} {getItemUnitLabel(viewingProduct, Number(viewingProduct.unitsPerBox || viewingProduct.minimumQuantity || 1))}
                 </p>
               </div>
               <div>

@@ -1,8 +1,8 @@
 import { useLocale } from '../context/LocaleContext.jsx'
 
-export default function QuantitySelector({ value, minimum, onChange, error, isBox = false }) {
+export default function QuantitySelector({ value, minimum = 1, onChange, error, isBox = true }) {
   const { t } = useLocale()
-  const numVal = Number(value) || minimum
+  const numVal = Math.max(minimum, Number(value) || minimum)
 
   function decrease() {
     onChange(Math.max(minimum, numVal - 1))
@@ -53,9 +53,10 @@ export default function QuantitySelector({ value, minimum, onChange, error, isBo
         </button>
       </div>
       <span className={`block text-xs font-medium ${error ? 'text-rose-600' : 'text-slate-400'}`}>
-        {error || `${isBox ? 'Min. order' : t('minimumQuantity')}: ${minDisplay}`}
+        {error || `Min. order: ${minDisplay}`}
       </span>
     </div>
   )
 }
+
 

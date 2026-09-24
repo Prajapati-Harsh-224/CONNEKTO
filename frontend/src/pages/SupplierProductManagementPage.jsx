@@ -537,7 +537,7 @@ export default function SupplierProductManagementPage() {
                             ₹{Number(product.price).toLocaleString('en-IN')}
                           </p>
                           <p className="text-[11px] text-slate-400 mt-0.5">
-                            Min: {product.minimumQuantity || 1} · Stock: {product.availableStock ?? 0}
+                            1 Box = {product.minimumQuantity || 1} units · Stock: {product.availableStock ?? 0}
                           </p>
                         </div>
 
@@ -608,7 +608,7 @@ export default function SupplierProductManagementPage() {
                     <th className="py-3 px-4">{t('brand') || 'Brand'}</th>
                     <th className="py-3 px-4">{t('packSize') || 'Pack Size'}</th>
                     <th className="py-3 px-4">{t('price') || 'Price'}</th>
-                    <th className="py-3 px-4">Min / Stock</th>
+                    <th className="py-3 px-4">Box Size / Stock</th>
                     <th className="py-3 px-4">{t('status')}</th>
                     <th className="py-3 px-4 text-right">{t('actions') || 'Actions'}</th>
                   </tr>
@@ -638,7 +638,7 @@ export default function SupplierProductManagementPage() {
                           ₹{Number(product.price).toLocaleString('en-IN')}
                         </td>
                         <td className="py-3 px-4 text-xs text-slate-600">
-                          {product.minimumQuantity || 1} / {product.availableStock ?? 0}
+                          1 Box ({product.minimumQuantity || 1} units) / {product.availableStock ?? 0}
                         </td>
                         <td className="py-3 px-4">
                           <span
@@ -854,7 +854,7 @@ export default function SupplierProductManagementPage() {
                 </div>
 
                 <div>
-                  <label className="block text-xs font-bold text-slate-700 mb-1">Min Order Qty *</label>
+                  <label className="block text-xs font-bold text-slate-700 mb-1">Units per Box (Box Size) *</label>
                   <input
                     type="number"
                     min="1"
@@ -864,6 +864,11 @@ export default function SupplierProductManagementPage() {
                     onChange={(e) => setForm({ ...form, minimumQuantity: e.target.value })}
                     className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange focus:bg-white"
                   />
+                  {Number(form.price) > 0 && Number(form.minimumQuantity) > 0 && (
+                    <p className="text-[11px] font-semibold text-brand-orange mt-1">
+                      📦 1 Box = {form.minimumQuantity} units (₹{(Number(form.price) * Number(form.minimumQuantity)).toLocaleString('en-IN')} / Box)
+                    </p>
+                  )}
                 </div>
 
                 <div>
@@ -1042,8 +1047,8 @@ export default function SupplierProductManagementPage() {
                 <p className="text-sm font-bold text-slate-800 mt-0.5">{viewingProduct.availableStock ?? 0} units</p>
               </div>
               <div>
-                <p className="text-slate-500 font-medium">Minimum Order</p>
-                <p className="text-sm font-bold text-slate-800 mt-0.5">{viewingProduct.minimumQuantity || 1} units</p>
+                <p className="text-slate-500 font-medium">Packaging (Box Size)</p>
+                <p className="text-sm font-bold text-slate-800 mt-0.5">1 Box = {viewingProduct.minimumQuantity || 1} units</p>
               </div>
               <div>
                 <p className="text-slate-500 font-medium">Listing Status</p>

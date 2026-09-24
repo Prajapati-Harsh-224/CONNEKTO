@@ -27,12 +27,12 @@ export default function Sidebar({ role: routeRole }) {
   const items = getRoleNavigation(role)
   const { t } = useLocale()
   const [cartCount, setCartCount] = useState(() => {
-    return getCart().reduce((sum, item) => sum + Number(item.boxes || 1), 0)
+    return getCart().reduce((sum, item) => sum + Number(item.boxQuantity || item.boxes || 1), 0)
   })
 
   useEffect(() => {
     const refreshCartCount = () => {
-      setCartCount(getCart().reduce((sum, item) => sum + Number(item.boxes || 1), 0))
+      setCartCount(getCart().reduce((sum, item) => sum + Number(item.boxQuantity || item.boxes || 1), 0))
     }
     window.addEventListener('connecto-cart-updated', refreshCartCount)
     window.addEventListener('storage', refreshCartCount)

@@ -4,7 +4,7 @@ import EmptyState from '../components/EmptyState.jsx'
 import ProductImage from '../components/ProductImage.jsx'
 import QuantitySelector from '../components/QuantitySelector.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
-import { getCart, removeFromCart, updateCartItem } from '../utils/cartStorage.js'
+import { getCart, removeFromCart, updateCartItem, getItemUnitLabel } from '../utils/cartStorage.js'
 
 function parsePrice(value) {
   return Number(String(value).replace(/[^0-9.]/g, '')) || 0
@@ -37,18 +37,28 @@ export default function ShopOwnerCartPage() {
   const groups = useMemo(() => cart.reduce((supplierGroups, item) => {
     const details = { ...getSupplierDetails(item.supplierName), category: item.category || '', location: item.serviceArea || '' }
     const group = supplierGroups.find((entry) => entry.supplierId === item.supplierId)
+    const itemBoxes = Number(item.boxQuantity || item.boxes || 1)
+    const lineTotal = parsePrice(item.unitPrice) * Number(item.quantity)
     if (group) {
       group.items.push(item)
-      group.subtotal += parsePrice(item.unitPrice) * Number(item.quantity)
+      group.subtotal += lineTotal
+      group.totalBoxes = (group.totalBoxes || 0) + itemBoxes
       group.itemQuantity += Number(item.quantity)
     } else {
-      supplierGroups.push({ supplierId: item.supplierId, ...details, items: [item], subtotal: parsePrice(item.unitPrice) * Number(item.quantity), itemQuantity: Number(item.quantity) })
+      supplierGroups.push({
+        supplierId: item.supplierId,
+        ...details,
+        items: [item],
+        subtotal: lineTotal,
+        totalBoxes: itemBoxes,
+        itemQuantity: Number(item.quantity),
+      })
     }
     return supplierGroups
   }, []), [cart])
 
   const total = cart.reduce((sum, item) => sum + parsePrice(item.unitPrice) * Number(item.quantity), 0)
-  const totalBoxes = cart.reduce((sum, item) => sum + Number(item.boxes || 1), 0)
+  const totalBoxes = cart.reduce((sum, item) => sum + Number(item.boxQuantity || item.boxes || 1), 0)
 
   function notifyCartUpdated() {
     window.dispatchEvent(new Event('connecto-cart-updated'))
@@ -156,7 +166,9 @@ export default function ShopOwnerCartPage() {
                   <div className="divide-y divide-slate-100 p-4 sm:p-5">
                     {group.items.map((item) => {
                       const unitsPerBox = Math.max(1, Number(item.unitsPerBox || item.minimumQuantity || 1))
-                      const boxes = Number(item.boxes || Math.max(1, Math.round(Number(item.quantity || unitsPerBox) / unitsPerBox)))
+                      const boxes = Number(item.boxQuantity || item.boxes || 1)
+                      const unitLabel = getItemUnitLabel(item, item.quantity)
+                      const boxPrice = parsePrice(item.unitPrice) * unitsPerBox
                       return (
                         <article className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 first:pt-0 last:pb-0" key={`${item.supplierId}-${item.productId}`}>
                           <div className="flex items-center gap-3.5 min-w-0">
@@ -171,9 +183,7 @@ export default function ShopOwnerCartPage() {
                               <strong className="text-sm sm:text-base font-bold text-slate-900 truncate">{item.name}</strong>
                               <span className="text-xs text-slate-400 font-medium">{item.packSize} • {item.brand}</span>
                               <div className="text-xs text-emerald-700 font-semibold mt-1">
-                                {unitsPerBox > 1
-                                  ? `1 ${t('box')} = ${unitsPerBox} ${t('packetsShort')} (${formatPrice(parsePrice(item.unitPrice) * unitsPerBox)}/box)`
-                                  : `${formatPrice(parsePrice(item.unitPrice))} / ${t('unit') || 'unit'}`}
+                                1 Box = {unitsPerBox} {getItemUnitLabel(item, unitsPerBox)} ({formatPrice(boxPrice)}/box)
                               </div>
                             </div>
                           </div>
@@ -190,7 +200,7 @@ export default function ShopOwnerCartPage() {
                               <strong className="text-sm sm:text-base font-black text-slate-900 block">
                                 {formatPrice(parsePrice(item.unitPrice) * Number(item.quantity))}
                               </strong>
-                              <span className="text-[11px] text-slate-400">{item.quantity} {t('packetsShort')}</span>
+                              <span className="text-[11px] text-slate-400 font-medium">{item.quantity} {unitLabel}</span>
                             </div>
                             <button 
                               className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer text-lg font-bold" 
@@ -208,7 +218,7 @@ export default function ShopOwnerCartPage() {
                 )}
 
                 <div className="flex items-center justify-between px-5 py-3 bg-slate-50/50 border-t border-slate-100 text-xs text-slate-500 font-medium">
-                  <span>{group.items.length} {group.items.length === 1 ? t('itemCount') : t('itemsCount')}</span>
+                  <span>{group.items.length} {group.items.length === 1 ? 'Product' : 'Products'} · {group.totalBoxes} {group.totalBoxes === 1 ? 'Box' : 'Boxes'}</span>
                   <button className="text-rose-600 hover:text-rose-800 font-semibold cursor-pointer" type="button" onClick={() => group.items.forEach(removeItem)}>
                     {t('clearSupplierCart')}
                   </button>

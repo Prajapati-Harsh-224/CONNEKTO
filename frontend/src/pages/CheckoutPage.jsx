@@ -5,7 +5,7 @@ import ProductImage from '../components/ProductImage.jsx'
 import QuantitySelector from '../components/QuantitySelector.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { createCheckoutRequest } from '../services/checkoutService.js'
-import { getCart, clearCart, removeFromCart, updateCartItem } from '../utils/cartStorage.js'
+import { getCart, clearCart, removeFromCart, updateCartItem, getItemUnitLabel } from '../utils/cartStorage.js'
 
 function priceValue(value) {
   return Number(String(value).replace(/[^0-9.]/g, '')) || 0
@@ -97,12 +97,17 @@ export default function CheckoutPage() {
   const groups = useMemo(() => cart.reduce((result, item) => {
     const details = { ...getSupplierDetails(item.supplierName), category: item.category || '', location: item.serviceArea || '' }
     const group = result.find((entry) => entry.supplierId === item.supplierId)
-    if (group) group.items.push(item)
-    else result.push({ supplierId: item.supplierId, ...details, items: [item] })
+    const itemBoxes = Number(item.boxQuantity || item.boxes || 1)
+    if (group) {
+      group.items.push(item)
+      group.totalBoxes = (group.totalBoxes || 0) + itemBoxes
+    } else {
+      result.push({ supplierId: item.supplierId, ...details, items: [item], totalBoxes: itemBoxes })
+    }
     return result
   }, []), [cart])
   const total = cart.reduce((sum, item) => sum + priceValue(item.unitPrice) * Number(item.quantity), 0)
-  const totalBoxes = cart.reduce((sum, item) => sum + Number(item.boxes || 1), 0)
+  const totalBoxes = cart.reduce((sum, item) => sum + Number(item.boxQuantity || item.boxes || 1), 0)
 
   function notifyCartUpdated() {
     window.dispatchEvent(new Event('connecto-cart-updated'))
@@ -155,7 +160,10 @@ export default function CheckoutPage() {
     const confirmation = getConfirmationContent(checkoutPaymentMethod, t, checkout.id)
     const checkoutOrders = checkout.supplierOrders || []
     const checkoutTotal = checkoutOrders.reduce((sum, order) => sum + priceValue(order.subtotal), 0)
-    const checkoutItemCount = checkoutOrders.reduce((sum, order) => sum + (order.items || []).length, 0)
+    const checkoutBoxesCount = checkoutOrders.reduce(
+      (sum, order) => sum + (order.items || []).reduce((itemSum, item) => itemSum + Number(item.boxes || 1), 0),
+      0
+    )
 
     return (
       <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
@@ -198,7 +206,6 @@ export default function CheckoutPage() {
             <div className="space-y-4">
               {checkoutOrders.map((order) => {
                 const orderItems = order.items || []
-                const itemCount = orderItems.length
                 const productNames = orderItems.map((item) => item.name).filter(Boolean).join(', ') || t('confirmationItemsPending')
                 const orderConfirmation = getConfirmationContent(order.paymentMethod || order.payment_method || checkoutPaymentMethod, t, checkout.id)
 
@@ -227,8 +234,10 @@ export default function CheckoutPage() {
 
                     <div className="flex items-center justify-between gap-4 pt-3 border-t border-slate-100 text-xs text-slate-500">
                       <div>
-                        <span>{t('confirmationItems')}: </span>
-                        <strong className="text-slate-800 font-semibold">{itemCount}</strong>
+                        <span>Boxes: </span>
+                        <strong className="text-slate-800 font-semibold">
+                          {(order.items || []).reduce((sum, i) => sum + Number(i.boxes || 1), 0)}
+                        </strong>
                         <span className="mx-1">•</span>
                         <span className="truncate max-w-[200px] inline-block align-bottom">{productNames}</span>
                       </div>
@@ -254,8 +263,8 @@ export default function CheckoutPage() {
                 <strong className="font-bold text-slate-900">{checkoutOrders.length}</strong>
               </div>
               <div className="flex justify-between text-xs sm:text-sm text-slate-600">
-                <span>{t('confirmationTotalItems')}</span>
-                <strong className="font-bold text-slate-900">{checkoutItemCount}</strong>
+                <span>Total Boxes</span>
+                <strong className="font-bold text-slate-900">{checkoutBoxesCount}</strong>
               </div>
               <div className="flex justify-between text-base font-black text-slate-900 pt-2 border-t border-slate-100">
                 <span>{t('confirmationTotalAmount')}</span>
@@ -380,9 +389,10 @@ export default function CheckoutPage() {
                   <div className="divide-y divide-slate-100 p-4 sm:p-5">
                     {group.items.map((item) => {
                       const unitsPerBox = Math.max(1, Number(item.unitsPerBox || item.minimumQuantity || 1))
-                      const boxes = Number(item.boxes || Math.max(1, Math.round(Number(item.quantity || unitsPerBox) / unitsPerBox)))
+                      const boxes = Number(item.boxQuantity || item.boxes || 1)
                       const unitPrice = priceValue(item.unitPrice)
                       const boxPrice = unitPrice * unitsPerBox
+                      const unitLabel = getItemUnitLabel(item, item.quantity)
 
                       return (
                         <article className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 py-4 first:pt-0 last:pb-0" key={`${item.supplierId}-${item.productId}`}>
@@ -397,9 +407,7 @@ export default function CheckoutPage() {
                               <strong className="text-sm sm:text-base font-bold text-slate-900 truncate">{item.name}</strong>
                               <span className="text-xs text-slate-400 font-medium">{item.packSize} • {item.brand}</span>
                               <div className="text-xs text-emerald-700 font-semibold mt-1">
-                                {unitsPerBox > 1
-                                  ? `1 ${t('box')} = ${unitsPerBox} ${t('packetsShort')} (${formatPrice(boxPrice)}/${t('box')})`
-                                  : `${formatPrice(boxPrice)} / ${t('unit') || 'unit'}`}
+                                1 Box = {unitsPerBox} {getItemUnitLabel(item, unitsPerBox)} ({formatPrice(boxPrice)}/box)
                               </div>
                             </div>
                           </div>
@@ -416,7 +424,7 @@ export default function CheckoutPage() {
                               <strong className="text-sm sm:text-base font-black text-slate-900 block">
                                 {formatPrice(unitPrice * Number(item.quantity))}
                               </strong>
-                              <span className="text-[11px] text-slate-400">{item.quantity} {t('packetsShort')}</span>
+                              <span className="text-[11px] text-slate-400 font-medium">{item.quantity} {unitLabel}</span>
                             </div>
                             <button 
                               className="p-2 rounded-lg text-slate-400 hover:text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer text-lg font-bold" 
@@ -434,7 +442,7 @@ export default function CheckoutPage() {
                 )}
 
                 <div className="flex items-center justify-between px-5 py-3 bg-slate-50/50 border-t border-slate-100 text-xs text-slate-500 font-medium">
-                  <span>{group.items.length} {group.items.length === 1 ? t('itemCount') : t('itemsCount')}</span>
+                  <span>{group.items.length} {group.items.length === 1 ? 'Product' : 'Products'} · {group.totalBoxes} {group.totalBoxes === 1 ? 'Box' : 'Boxes'}</span>
                   <button className="text-rose-600 hover:text-rose-800 font-semibold cursor-pointer" type="button" onClick={() => clearSupplier(group)}>
                     {t('clearSupplierCart')}
                   </button>
