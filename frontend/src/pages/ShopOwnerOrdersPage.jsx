@@ -244,8 +244,8 @@ export default function ShopOwnerOrdersPage() {
 
       <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_250px] 2xl:grid-cols-[minmax(0,1fr)_280px] gap-3.5 lg:gap-4 items-start w-full min-w-0">
         <div className="min-w-0 bg-white rounded-2xl border border-slate-200/80 shadow-xs p-3 sm:p-3.5 md:p-4 space-y-3.5">
-          <div className="flex flex-col sm:flex-row items-center gap-2.5 flex-wrap">
-            <label className="relative flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 flex-1 min-w-[220px] w-full sm:w-auto focus-within:ring-2 focus-within:ring-brand-orange/20 focus-within:border-brand-orange transition-all">
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-wrap w-full min-w-0">
+            <label className="relative flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 flex-1 min-w-0 w-full sm:w-auto focus-within:ring-2 focus-within:ring-brand-orange/20 focus-within:border-brand-orange transition-all">
               <span className="text-slate-400 mr-2 text-sm" aria-hidden="true">⌕</span>
               <input
                 className="w-full bg-transparent text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden"
@@ -289,91 +289,144 @@ export default function ShopOwnerOrdersPage() {
           </div>
 
           {visibleOrders.length ? (
-            <div className="overflow-hidden">
-              <table className="w-full text-left border-separate border-spacing-0">
-                <thead>
-                  <tr className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                    <th className="py-2 px-1.5 sm:px-2 bg-slate-50 rounded-l-xl font-bold w-[17%]">{t('ordersColumnOrder')}</th>
-                    <th className="py-2 px-1.5 sm:px-2 bg-slate-50 font-bold w-[23%]">{t('ordersColumnSupplier')}</th>
-                    <th className="py-2 px-1.5 sm:px-2 bg-slate-50 font-bold w-[10%]">{t('ordersColumnItems')}</th>
-                    <th className="py-2 px-1.5 sm:px-2 bg-slate-50 font-bold w-[12%]">{t('ordersColumnAmount')}</th>
-                    <th className="py-2 px-1.5 sm:px-2 bg-slate-50 font-bold w-[19%]">{t('ordersColumnStatus')}</th>
-                    <th className="py-2 px-1.5 sm:px-2 bg-slate-50 rounded-r-xl font-bold w-[19%]">{t('ordersColumnDate')}</th>
-                  </tr>
-                </thead>
+            <>
+              {/* Mobile View: Clean Responsive Card List */}
+              <div className="space-y-3 sm:hidden w-full min-w-0">
+                {visibleOrders.map((order) => {
+                  const items = order.items || []
+                  const isSelected = selectedOrder?.id === order.id
+                  const totalBoxes = items.reduce((sum, itm) => sum + Number(itm.boxes || (itm.quantity ? Math.floor(itm.quantity / (itm.unitsPerBoxSnapshot || itm.unitsPerBox || 1)) : 1)), 0)
 
-                <tbody className="divide-y divide-slate-100">
-                  {visibleOrders.map((order) => {
-                    const items = order.items || []
-                    const isSelected = selectedOrder?.id === order.id
-                    return (
-                      <tr
-                        aria-selected={isSelected}
-                        className={`transition-all cursor-pointer ${
-                          isSelected ? 'bg-orange-50/90 font-semibold' : 'hover:bg-slate-50/70'
-                        }`}
-                        key={order.id}
-                        onClick={() => setSelectedOrderId(order.id)}
-                        onKeyDown={(event) => {
-                          if (event.key === 'Enter' || event.key === ' ') setSelectedOrderId(order.id)
-                        }}
-                        role="button"
-                        tabIndex="0"
-                      >
-                        <td className={`py-2.5 px-1.5 sm:px-2 border-b border-slate-100 ${isSelected ? 'border-l-4 border-l-brand-orange rounded-l-md' : 'border-l-4 border-l-transparent'}`}>
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <div className="shrink-0">
-                              {items[0] ? (
-                                <ProductImage
-                                  key={items[0].productId}
-                                  alt=""
-                                  aria-hidden="true"
-                                  className="w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-md border border-white object-cover shadow-2xs"
-                                  fallbackText={productName(items[0]).slice(0, 1)}
-                                  src={items[0].imageUrl || items[0].imageLabel || ''}
-                                />
-                              ) : (
-                                <span className="flex items-center justify-center w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-md bg-slate-100 text-xs font-bold text-slate-400">#</span>
-                              )}
+                  return (
+                    <div
+                      key={order.id}
+                      onClick={() => setSelectedOrderId(order.id)}
+                      className={`p-3.5 rounded-xl border transition-all cursor-pointer space-y-2.5 ${
+                        isSelected
+                          ? 'border-brand-orange bg-orange-50/50 shadow-xs ring-1 ring-brand-orange/30'
+                          : 'border-slate-200/80 bg-white hover:border-slate-300'
+                      }`}
+                    >
+                      <div className="flex items-center justify-between gap-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          {items[0] ? (
+                            <ProductImage
+                              key={items[0].productId}
+                              alt=""
+                              aria-hidden="true"
+                              className="w-7 h-7 rounded-lg border border-slate-100 object-cover shrink-0"
+                              fallbackText={productName(items[0]).slice(0, 1)}
+                              src={items[0].imageUrl || items[0].imageLabel || ''}
+                            />
+                          ) : (
+                            <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-slate-100 text-xs font-bold text-slate-400">#</span>
+                          )}
+                          <span className="font-mono text-xs font-bold text-slate-900 truncate">{formatOrderId(order.id)}</span>
+                        </div>
+                        <StatusBadge status={order.status} />
+                      </div>
+
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="font-semibold text-slate-700 truncate max-w-[160px]">{order.supplierName}</span>
+                        <strong className="text-slate-900 font-extrabold tabular-nums">{formatPrice(order.subtotal)}</strong>
+                      </div>
+
+                      <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1.5 border-t border-slate-100">
+                        <span>{totalBoxes} Boxes ({items.length} items)</span>
+                        <span>{formatOrderDate(order.createdAt)}</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+
+              {/* Tablet & Desktop View: Table wrapped in scroll-safe container */}
+              <div className="hidden sm:block w-full max-w-full overflow-x-auto rounded-xl">
+                <table className="w-full text-left border-separate border-spacing-0">
+                  <thead>
+                    <tr className="text-xs font-bold text-slate-400 uppercase tracking-wider">
+                      <th className="py-2 px-1.5 sm:px-2 bg-slate-50 rounded-l-xl font-bold w-[17%]">{t('ordersColumnOrder')}</th>
+                      <th className="py-2 px-1.5 sm:px-2 bg-slate-50 font-bold w-[23%]">{t('ordersColumnSupplier')}</th>
+                      <th className="py-2 px-1.5 sm:px-2 bg-slate-50 font-bold w-[10%]">{t('ordersColumnItems')}</th>
+                      <th className="py-2 px-1.5 sm:px-2 bg-slate-50 font-bold w-[12%]">{t('ordersColumnAmount')}</th>
+                      <th className="py-2 px-1.5 sm:px-2 bg-slate-50 font-bold w-[19%]">{t('ordersColumnStatus')}</th>
+                      <th className="py-2 px-1.5 sm:px-2 bg-slate-50 rounded-r-xl font-bold w-[19%]">{t('ordersColumnDate')}</th>
+                    </tr>
+                  </thead>
+
+                  <tbody className="divide-y divide-slate-100">
+                    {visibleOrders.map((order) => {
+                      const items = order.items || []
+                      const isSelected = selectedOrder?.id === order.id
+                      return (
+                        <tr
+                          aria-selected={isSelected}
+                          className={`transition-all cursor-pointer ${
+                            isSelected ? 'bg-orange-50/90 font-semibold' : 'hover:bg-slate-50/70'
+                          }`}
+                          key={order.id}
+                          onClick={() => setSelectedOrderId(order.id)}
+                          onKeyDown={(event) => {
+                            if (event.key === 'Enter' || event.key === ' ') setSelectedOrderId(order.id)
+                          }}
+                          role="button"
+                          tabIndex="0"
+                        >
+                          <td className={`py-2.5 px-1.5 sm:px-2 border-b border-slate-100 ${isSelected ? 'border-l-4 border-l-brand-orange rounded-l-md' : 'border-l-4 border-l-transparent'}`}>
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <div className="shrink-0">
+                                {items[0] ? (
+                                  <ProductImage
+                                    key={items[0].productId}
+                                    alt=""
+                                    aria-hidden="true"
+                                    className="w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-md border border-white object-cover shadow-2xs"
+                                    fallbackText={productName(items[0]).slice(0, 1)}
+                                    src={items[0].imageUrl || items[0].imageLabel || ''}
+                                  />
+                                ) : (
+                                  <span className="flex items-center justify-center w-5.5 h-5.5 sm:w-6 sm:h-6 rounded-md bg-slate-100 text-xs font-bold text-slate-400">#</span>
+                                )}
+                              </div>
+                              <span className="text-xs font-mono font-bold text-slate-900 whitespace-nowrap shrink-0" title={`#${order.id}`}>
+                                {formatOrderId(order.id)}
+                              </span>
                             </div>
-                            <span className="text-xs font-mono font-bold text-slate-900 whitespace-nowrap shrink-0" title={`#${order.id}`}>
-                              {formatOrderId(order.id)}
-                            </span>
-                          </div>
-                        </td>
+                          </td>
 
-                        <td className="py-2.5 px-1.5 sm:px-2 border-b border-slate-100">
-                          <div className="flex items-center gap-1.5 min-w-0">
-                            <span className="flex items-center justify-center w-5 h-5 rounded-md bg-slate-100 text-[10px] font-bold text-slate-600 shrink-0">
-                              {getInitials(order.supplierName)}
-                            </span>
-                            <strong className="text-xs font-semibold text-slate-800 truncate block max-w-[105px] sm:max-w-[130px]" title={order.supplierName}>
-                              {order.supplierName}
-                            </strong>
-                          </div>
-                        </td>
+                          <td className="py-2.5 px-1.5 sm:px-2 border-b border-slate-100">
+                            <div className="flex items-center gap-1.5 min-w-0">
+                              <span className="flex items-center justify-center w-5 h-5 rounded-md bg-slate-100 text-[10px] font-bold text-slate-600 shrink-0">
+                                {getInitials(order.supplierName)}
+                              </span>
+                              <strong className="text-xs font-semibold text-slate-800 truncate block max-w-[105px] sm:max-w-[130px]" title={order.supplierName}>
+                                {order.supplierName}
+                              </strong>
+                            </div>
+                          </td>
 
-                        <td className="py-2.5 px-1.5 sm:px-2 text-xs text-slate-500 font-medium whitespace-nowrap border-b border-slate-100">
-                          {items.reduce((sum, itm) => sum + Number(itm.boxes || (itm.quantity ? Math.floor(itm.quantity / (itm.unitsPerBoxSnapshot || itm.unitsPerBox || 1)) : 1)), 0)} Boxes ({items.length} {items.length === 1 ? t('itemCount') : t('itemsCount')})
-                        </td>
+                          <td className="py-2.5 px-1.5 sm:px-2 text-xs text-slate-500 font-medium whitespace-nowrap border-b border-slate-100">
+                            {items.reduce((sum, itm) => sum + Number(itm.boxes || (itm.quantity ? Math.floor(itm.quantity / (itm.unitsPerBoxSnapshot || itm.unitsPerBox || 1)) : 1)), 0)} Boxes ({items.length} {items.length === 1 ? t('itemCount') : t('itemsCount')})
+                          </td>
 
-                        <td className="py-2.5 px-1.5 sm:px-2 text-xs font-bold text-slate-900 tabular-nums whitespace-nowrap border-b border-slate-100">
-                          {formatPrice(order.subtotal)}
-                        </td>
+                          <td className="py-2.5 px-1.5 sm:px-2 text-xs font-bold text-slate-900 tabular-nums whitespace-nowrap border-b border-slate-100">
+                            {formatPrice(order.subtotal)}
+                          </td>
 
-                        <td className="py-2.5 px-1.5 sm:px-2 whitespace-nowrap border-b border-slate-100">
-                          <StatusBadge status={order.status} />
-                        </td>
+                          <td className="py-2.5 px-1.5 sm:px-2 whitespace-nowrap border-b border-slate-100">
+                            <StatusBadge status={order.status} />
+                          </td>
 
-                        <td className="py-2.5 px-1.5 sm:px-2 text-xs text-slate-500 whitespace-nowrap border-b border-slate-100">
-                          {formatOrderDate(order.createdAt)}
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
-            </div>
+                          <td className="py-2.5 px-1.5 sm:px-2 text-xs text-slate-500 whitespace-nowrap border-b border-slate-100">
+                            {formatOrderDate(order.createdAt)}
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </>
           ) : (
             <EmptyState title={t('noOrders')} message={orders.length ? t('noOrdersFoundSearch') : t('noOrdersYet')} />
           )}

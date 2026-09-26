@@ -85,7 +85,7 @@ export default function ShopOwnerCartPage() {
 
   if (!cart.length) {
     return (
-      <section className="p-4 sm:p-6 lg:p-8 max-w-4xl mx-auto space-y-6">
+      <section className="space-y-6 w-full min-w-0 max-w-full">
         <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
           <span>{t('shopOwner')}</span>
           <span aria-hidden="true">›</span>
@@ -106,7 +106,7 @@ export default function ShopOwnerCartPage() {
   }
 
   return (
-    <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
+    <section className="space-y-6 sm:space-y-8 w-full min-w-0 max-w-full">
       <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
         <span>{t('shopOwner')}</span>
         <span aria-hidden="true">›</span>
@@ -118,8 +118,8 @@ export default function ShopOwnerCartPage() {
         <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('cartReview')}</p>
       </div>
 
-      <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 items-start">
-        <div className="space-y-6">
+      <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1fr)_360px] gap-6 items-start w-full min-w-0 max-w-full">
+        <div className="space-y-6 w-full min-w-0 max-w-full">
           {groups.map((group) => {
             const isCollapsed = collapsedSuppliers[group.supplierId]
             return (

@@ -22,7 +22,7 @@ export default function ShopOwnerOrderDetailPage() {
   if (isLoading) return <LoadingState message={t('loadingOrders')} />
   if (error) {
     return (
-      <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-4">
+      <section className="space-y-4 w-full min-w-0 max-w-full">
         <p className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium" role="alert">{error}</p>
         <Link className="inline-block px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm transition-all" to="/dashboard/shop-owner/orders">
           {t('backToOrders')}
@@ -39,7 +39,7 @@ export default function ShopOwnerOrderDetailPage() {
   }
 
   return (
-    <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
+    <section className="space-y-6 sm:space-y-8 w-full min-w-0 max-w-full">
       <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
         <Link className="hover:text-slate-600 transition-colors" to="/dashboard/shop-owner/orders">{t('orders')}</Link>
         <span aria-hidden="true">›</span>
@@ -82,8 +82,8 @@ export default function ShopOwnerOrderDetailPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-[1fr_340px] gap-6 items-start">
-        <main className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-6">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,1fr)_340px] gap-6 items-start w-full min-w-0 max-w-full">
+        <main className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-6 w-full min-w-0 max-w-full">
           <div className="flex items-center justify-between pb-4 border-b border-slate-100">
             <div>
               <span className="text-xs font-bold uppercase tracking-wider text-brand-orange">{t('productsLabel')}</span>

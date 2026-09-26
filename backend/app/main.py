@@ -38,8 +38,14 @@ TRANSITIONS = {
 
 limiter = Limiter(key_func=get_remote_address, default_limits=["100/minute"], enabled=os.getenv("TESTING", "").lower() not in {"true", "1"})
 app = FastAPI(title="Connecto API", version="2.0.0")
-app.state.limiter = limiter
-app.add_middleware(CORSMiddleware, allow_origins=CLIENT_ORIGINS, allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=CLIENT_ORIGINS,
+    allow_origin_regex=r"^https?://.*",
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 @app.on_event("startup")
 def startup() -> None:

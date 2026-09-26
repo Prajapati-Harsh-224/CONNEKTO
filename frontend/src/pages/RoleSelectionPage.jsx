@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { useNavigate, useSearchParams } from 'react-router-dom'
 import RoleCard from '../components/RoleCard.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
@@ -21,8 +21,18 @@ export default function RoleSelectionPage() {
     ? roleFromUrl
     : (validRoleValues.includes(getSelectedRole()) ? getSelectedRole() : '')
   const [selectedRole, setSelectedRole] = useState(initialRole)
+  const continueBtnRef = useRef(null)
   const navigate = useNavigate()
   const { t } = useLocale()
+
+  const handleRoleSelect = (roleValue) => {
+    setSelectedRole(roleValue)
+    if (window.innerWidth < 768) {
+      setTimeout(() => {
+        continueBtnRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+      }, 100)
+    }
+  }
 
   function continueToSignup(roleToUse = selectedRole) {
     if (!roleToUse) return
@@ -90,13 +100,14 @@ export default function RoleSelectionPage() {
                 benefits: role.benefitKeys.map((key) => t(key)),
               }}
               selected={selectedRole === role.value}
-              onSelect={setSelectedRole}
+              onSelect={handleRoleSelect}
             />
           ))}
         </div>
 
-        <div className="flex flex-col sm:flex-row items-center gap-4 mt-6 sm:mt-8">
+        <div className="flex items-center mt-6 sm:mt-8">
           <button
+            ref={continueBtnRef}
             className={`w-full sm:w-auto px-8 py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${
               selectedRole
                 ? 'bg-brand-orange hover:bg-brand-orange-dark text-white shadow-md shadow-brand-orange/20 active:scale-[0.98]'
@@ -109,9 +120,6 @@ export default function RoleSelectionPage() {
             <span>{t('continue')}</span>
             <span aria-hidden="true">→</span>
           </button>
-          <span className="text-xs text-slate-500 font-medium" aria-live="polite">
-            {selectedRole ? t('roleSelected') : t('selectOneRole')}
-          </span>
         </div>
       </div>
     </section>

@@ -1,4 +1,4 @@
-const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || 'http://localhost:4000/api'
+const apiBaseUrl = import.meta.env.VITE_API_BASE_URL || '/api'
 const DEFAULT_TIMEOUT_MS = 15000
 
 export async function apiRequest(path, options = {}) {

@@ -400,7 +400,7 @@ export default function SupplierListPage() {
   if (isLoading) return <LoadingState message={t('loadingWorkspace')} />
 
   return (
-    <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
+    <section className="space-y-6 sm:space-y-8 w-full min-w-0 max-w-full">
       {/* ── Page header ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
@@ -423,7 +423,7 @@ export default function SupplierListPage() {
       </div>
 
       {/* ── Category selector (single row of square cards) ── */}
-      <div className="space-y-3">
+      <div className="space-y-3 w-full min-w-0 max-w-full">
         <div className="flex items-center justify-between">
           <span className="text-xs font-bold uppercase tracking-wider text-slate-500">{t('shopByCategory')}</span>
           <div className="flex items-center gap-1.5">
@@ -452,8 +452,8 @@ export default function SupplierListPage() {
 
         <div 
           ref={categoryScrollRef}
-          className="flex flex-nowrap gap-3 overflow-x-auto pb-3 pt-1 scroll-smooth"
-          style={{ scrollbarWidth: 'thin' }}
+          className="flex flex-nowrap gap-3 overflow-x-auto pb-3 pt-1 scroll-smooth w-full min-w-0 max-w-full"
+          style={{ scrollbarWidth: 'none' }}
           role="list"
         >
           {categoryCatalog.map((cat) => {
@@ -488,14 +488,14 @@ export default function SupplierListPage() {
       </div>
 
       {/* ── Search toolbar & results header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full min-w-0">
         <div>
           <h2 className="text-lg font-black text-slate-900">
             {activeCategoryLabel} <span className="text-xs font-semibold text-slate-500">({filteredSuppliers.length} {t('suppliers')})</span>
           </h2>
         </div>
 
-        <label className="relative sm:w-80 flex items-center bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 shadow-xs focus-within:ring-2 focus-within:ring-brand-orange/20 focus-within:border-brand-orange transition-all" htmlFor="sdc-search">
+        <label className="relative w-full sm:w-80 flex items-center bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 shadow-xs focus-within:ring-2 focus-within:ring-brand-orange/20 focus-within:border-brand-orange transition-all" htmlFor="sdc-search">
           <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" width="16" height="16" className="text-slate-500 mr-2 shrink-0">
             <circle cx="9" cy="9" r="5.5" stroke="currentColor" strokeWidth="1.6" />
             <path d="m13 13 3.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
@@ -530,7 +530,7 @@ export default function SupplierListPage() {
           <p className="text-slate-600 font-semibold text-sm">{t('noSuppliers')}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 w-full min-w-0">
           {filteredSuppliers.map((supplier) => (
             <SupplierCard
               key={supplier.id}

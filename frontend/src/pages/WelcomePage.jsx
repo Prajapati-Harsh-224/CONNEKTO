@@ -15,13 +15,17 @@ export default function WelcomePage() {
       return
     }
     const el = document.getElementById(id)
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    if (el) {
+      const headerOffset = 70
+      const elementPosition = el.getBoundingClientRect().top
+      const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+      window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
+    }
   }, [])
 
   useEffect(() => {
     const sectionMap = {
       '/about': 'about',
-      '/for-businesses': 'for-businesses',
       '/how-it-works': 'how-it-works',
       '/contact': 'contact',
     }
@@ -30,7 +34,10 @@ export default function WelcomePage() {
       const timer = setTimeout(() => {
         const el = document.getElementById(targetId)
         if (el) {
-          el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+          const headerOffset = 70
+          const elementPosition = el.getBoundingClientRect().top
+          const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+          window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
         }
       }, 60)
       return () => clearTimeout(timer)
@@ -69,9 +76,9 @@ export default function WelcomePage() {
             <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-brand-navy tracking-tight leading-[1.15]">
               {t('heroHeading')}
             </h1>
-            <p className="text-base sm:text-lg text-slate-600 max-w-2xl leading-relaxed">
+            {/* <p className="text-base sm:text-lg text-slate-600 max-w-2xl leading-relaxed">
               {t('heroSubtitle')}
-            </p>
+            </p> */}
 
             {/* Action Buttons */}
             <div className="flex flex-wrap items-center gap-3 pt-2">
@@ -97,81 +104,7 @@ export default function WelcomePage() {
         </div>
       </section>
 
-      {/* ── ROLE SELECTION (FOR BUSINESSES) ── */}
-      <section className="py-14 sm:py-20 bg-white border-y border-slate-200/80 px-4 sm:px-6 lg:px-8" id="for-businesses" aria-labelledby="roles-heading">
-        <div className="max-w-7xl mx-auto space-y-10">
-          <div className="text-center max-w-2xl mx-auto space-y-2">
-            <span className="text-xs font-bold uppercase tracking-wider text-brand-orange">{t('chooseYourRoleEyebrow')}</span>
-            <h2 id="roles-heading" className="text-2xl sm:text-4xl font-extrabold text-brand-navy">{t('joinConnekto')}</h2>
-            <p className="text-sm sm:text-base text-slate-500">{t('joinConnektoDesc')}</p>
-          </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            {/* Shop Owner */}
-            <Link
-              to="/role-selection?role=SHOP_OWNER"
-              aria-label={t('shopOwner')}
-              className="group p-6 rounded-2xl bg-white border border-slate-200/90 hover:border-brand-orange hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-6 shadow-xs"
-            >
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-2xl bg-orange-50 text-brand-orange flex items-center justify-center border border-orange-200/60 shadow-xs group-hover:scale-110 transition-transform">
-                  <FiShoppingBag className="w-6 h-6" />
-                </div>
-                <div>
-                  <strong className="block text-lg font-bold text-slate-900 group-hover:text-brand-orange transition-colors">{t('shopOwner')}</strong>
-                  <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">{t('shopOwnerHomeDesc')}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1 text-xs font-bold text-brand-orange">
-                <span>{t('getStarted')}</span>
-                <FiArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-
-            {/* Supplier */}
-            <Link
-              to="/role-selection?role=SUPPLIER"
-              aria-label={t('supplier')}
-              className="group p-6 rounded-2xl bg-white border border-slate-200/90 hover:border-emerald-600 hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-6 shadow-xs"
-            >
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-2xl bg-emerald-50 text-emerald-700 flex items-center justify-center border border-emerald-200/60 shadow-xs group-hover:scale-110 transition-transform">
-                  <FiTruck className="w-6 h-6" />
-                </div>
-                <div>
-                  <strong className="block text-lg font-bold text-slate-900 group-hover:text-emerald-700 transition-colors">{t('supplier')}</strong>
-                  <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">{t('supplierHomeDesc')}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1 text-xs font-bold text-emerald-700">
-                <span>{t('getStarted')}</span>
-                <FiArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-
-            {/* Gruh Udyog */}
-            <Link
-              to="/role-selection?role=GRUH_UDYOG"
-              aria-label={t('gruhUdyog')}
-              className="group p-6 rounded-2xl bg-white border border-slate-200/90 hover:border-purple-600 hover:shadow-lg transition-all duration-300 flex flex-col justify-between space-y-6 shadow-xs"
-            >
-              <div className="space-y-4">
-                <div className="w-12 h-12 rounded-2xl bg-purple-50 text-purple-700 flex items-center justify-center border border-purple-200/60 shadow-xs group-hover:scale-110 transition-transform">
-                  <FiUsers className="w-6 h-6" />
-                </div>
-                <div>
-                  <strong className="block text-lg font-bold text-slate-900 group-hover:text-purple-700 transition-colors">{t('gruhUdyog')}</strong>
-                  <p className="text-xs sm:text-sm text-slate-500 mt-1 leading-relaxed">{t('gruhUdyogHomeDesc')}</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-1 text-xs font-bold text-purple-700">
-                <span>{t('getStarted')}</span>
-                <FiArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-              </div>
-            </Link>
-          </div>
-        </div>
-      </section>
 
 
       {/* ── ABOUT SECTION ── */}
@@ -187,15 +120,6 @@ export default function WelcomePage() {
               <p>{t('aboutBody4')}</p>
             </div>
             <p className="text-sm sm:text-base font-semibold text-brand-navy pt-2">{t('aboutClosing')}</p>
-            <div className="pt-2">
-              <Link
-                className="inline-flex items-center gap-2 px-5 py-2.5 rounded-xl text-sm font-bold text-white bg-brand-orange hover:bg-brand-orange-dark active:scale-95 shadow-sm transition-all"
-                to="/role-selection"
-              >
-                <span>{t('getStarted')}</span>
-                <FiArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
           </div>
 
           {/* Role Diagram / Visual */}
@@ -298,7 +222,7 @@ export default function WelcomePage() {
             </div>
           </div>
 
-          <div className="lg:col-span-6 flex justify-center">
+          <div className="hidden lg:flex lg:col-span-6 justify-center">
             <img
               alt="Contact illustration showing email, questions, ideas, and partnerships"
               className="w-full max-w-md h-auto"

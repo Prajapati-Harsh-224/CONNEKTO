@@ -15,7 +15,7 @@ export default function AppShell() {
   const isNoScrollPage = isAuthPage || pathname === '/'
 
   useEffect(() => {
-    if (!['/about', '/for-businesses', '/how-it-works', '/contact'].includes(pathname)) {
+    if (!['/about', '/how-it-works', '/contact'].includes(pathname)) {
       window.scrollTo(0, 0)
     }
     if (isNoScrollPage) {
@@ -38,37 +38,58 @@ export default function AppShell() {
   const isGruhUdyogLogin = pathname === '/login' && getSelectedRole() === 'GRUH_UDYOG'
   const isForgotPassword = pathname === '/forgot-password'
   const isRegister = pathname === '/register'
+  const isRoleSelection = pathname === '/role-selection'
+  const isSignInPage = pathname === '/login' || pathname === '/signup'
+
+  const registerUrl =
+    search && search.includes('role=')
+      ? `/register${search}`
+      : '/register'
 
   return (
     <div className="min-h-screen flex flex-col bg-surface-bg">
       {!isWorkspace && (
-        <header className="sticky top-0 z-50 bg-white/90 backdrop-blur-md border-b border-slate-100">
-          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-4">
-            <Link className="flex items-center gap-2.5 shrink-0" to="/" aria-label={t('connectoHome')}>
-              <span className="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center font-bold text-base shadow-sm shrink-0">
-                C
-              </span>
-              <span className="flex flex-col">
-                <span className="text-base font-bold text-slate-900 leading-tight">{messages.appName}</span>
-                <span className="text-[10px] text-slate-500 font-medium hidden sm:inline leading-none mt-0.5">{t('strongerLocalBusinesses')}</span>
-              </span>
-            </Link>
-            {!isAuthPage && <Navbar />}
-            <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-              <LanguageSelector />
-              <Link 
-                className="px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100/60 transition-colors" 
-                to={search && search.includes('role=') ? `/register${search}` : '/register'}
-              >
-                {t('signUp')}
+        <>
+          <header className="fixed top-0 left-0 right-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-2xs">
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3 sm:gap-4">
+              <Link className="flex items-center gap-2.5 shrink-0" to="/" aria-label={t('connectoHome')}>
+                <span className="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center font-bold text-base shadow-sm shrink-0">
+                  C
+                </span>
+                <span className="flex flex-col">
+                  <span className="text-base font-bold text-slate-900 leading-tight">{messages.appName}</span>
+                  <span className="text-[10px] text-slate-500 font-medium hidden sm:inline leading-none mt-0.5">{t('strongerLocalBusinesses')}</span>
+                </span>
               </Link>
-              <Link className="px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-brand-orange hover:bg-brand-orange-dark shadow-xs hover:shadow-sm transition-all flex items-center gap-1.5" to="/role-selection">
-                <span>{t('getStarted')}</span>
-                <span aria-hidden="true">→</span>
-              </Link>
+              {!isAuthPage ? (
+                <Navbar />
+              ) : (
+                <div className="flex items-center gap-2 sm:gap-3 shrink-0">
+                  <LanguageSelector />
+                  {(isSignInPage || isRoleSelection) && (
+                    <Link
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-brand-orange hover:bg-brand-orange-dark shadow-xs hover:shadow-sm active:scale-95 transition-all"
+                      to={registerUrl}
+                    >
+                      <span>{t('signUp')}</span>
+                      <span aria-hidden="true">→</span>
+                    </Link>
+                  )}
+                  {isRegister && (
+                    <Link
+                      className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-brand-orange hover:bg-brand-orange-dark shadow-xs hover:shadow-sm active:scale-95 transition-all"
+                      to="/login"
+                    >
+                      <span>{t('signIn')}</span>
+                      <span aria-hidden="true">→</span>
+                    </Link>
+                  )}
+                </div>
+              )}
             </div>
-          </div>
-        </header>
+          </header>
+          <div className="h-16 shrink-0" aria-hidden="true" />
+        </>
       )}
       <main className={`flex-1 w-full ${isWorkspace ? 'h-full overflow-hidden' : ''}`}>
         <Outlet />

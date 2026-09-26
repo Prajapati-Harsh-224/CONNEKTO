@@ -119,9 +119,9 @@ function TrendChart({ items }) {
       </div>
 
       {/* SVG Chart */}
-      <div className="relative w-full">
+      <div className="relative w-full max-w-full overflow-hidden">
         <svg
-          className="w-full h-auto overflow-visible select-none"
+          className="w-full h-auto overflow-hidden select-none"
           viewBox={`0 0 ${width} ${height}`}
           role="img"
           aria-label="Spending trend chart"
@@ -365,8 +365,8 @@ export default function ShopOwnerAnalyticsPage() {
         </label>
       </div>
 
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start">
-        <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 items-start w-full min-w-0 max-w-full">
+        <section className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4 w-full min-w-0 max-w-full">
           <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-100">
             <div className="flex items-center gap-3">
               <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-orange-50 text-brand-orange text-lg">

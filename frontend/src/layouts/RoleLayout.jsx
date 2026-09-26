@@ -30,14 +30,21 @@ export default function RoleLayout({ role: routeRole }) {
   const avatarInitial = displayName.trim().slice(0, 1).toUpperCase()
 
   return (
-    <div className="min-h-screen flex flex-col bg-surface-bg">
-      <header className="fixed top-0 left-0 right-0 h-16 bg-white/95 backdrop-blur-md border-b border-slate-100 px-4 sm:px-6 lg:px-8 flex items-center justify-between gap-4 z-40">
+    <div className="min-h-screen flex flex-col bg-surface-bg w-full max-w-full overflow-x-clip">
+      <header className="fixed top-0 left-0 right-0 h-16 bg-white/95 backdrop-blur-md border-b border-slate-100 px-3 sm:px-6 lg:px-8 flex items-center justify-between gap-3 sm:gap-4 z-40 max-w-full">
         <div className="flex items-center gap-4">
-          <Link className="flex items-center gap-2.5 shrink-0" to="/" aria-label={t('connectoHome')}>
-            <span className="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center font-bold text-base shadow-sm shrink-0">
+          <Link className="flex items-center gap-2 sm:gap-2.5 shrink-0 group" to="/" aria-label={t('connectoHome')}>
+            <span className="w-8 h-8 rounded-xl bg-brand-orange text-white flex items-center justify-center font-black text-base shadow-xs shrink-0 group-hover:scale-105 transition-transform">
               C
             </span>
-            <span className="font-bold text-slate-900 text-lg tracking-tight hidden sm:inline">{messages.appName}</span>
+            <span className="flex flex-col">
+              <span className="font-black text-slate-900 text-base sm:text-lg tracking-tight leading-none">
+                {messages?.appName || 'CONNEKTO'}
+              </span>
+              <span className="text-[10px] font-semibold text-slate-500 capitalize leading-tight mt-0.5">
+                {roleLabel}
+              </span>
+            </span>
           </Link>
         </div>
 
@@ -89,10 +96,10 @@ export default function RoleLayout({ role: routeRole }) {
         </div>
       </header>
 
-      <div className="flex-1 w-full min-w-0 pt-16 md:pl-56 lg:pl-64">
+      <div className="flex-1 w-full min-w-0 max-w-full pt-16 md:pl-56 lg:pl-64 overflow-x-clip">
         <Sidebar role={role} />
-        <main ref={mainRef} className="w-full min-w-0 px-4 sm:px-6 lg:px-8 py-6 pb-20 md:pb-8">
-          <div className="max-w-7xl mx-auto w-full">
+        <main ref={mainRef} className="w-full min-w-0 max-w-full px-3 sm:px-6 lg:px-8 py-5 sm:py-6 pb-24 md:pb-8">
+          <div className="max-w-7xl mx-auto w-full min-w-0">
             <Outlet />
           </div>
         </main>

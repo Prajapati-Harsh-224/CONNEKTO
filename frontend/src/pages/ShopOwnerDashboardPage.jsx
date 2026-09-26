@@ -116,7 +116,7 @@ export default function ShopOwnerDashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 xl:grid-cols-[minmax(0,1.4fr)_minmax(0,1.3fr)] gap-6 items-start w-full min-w-0">
-        <section className="min-w-0 bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4">
+        <section className="min-w-0 w-full max-w-full bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 sm:p-6 space-y-4 overflow-hidden">
           <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-100">
             <div className="flex items-center gap-3 min-w-0">
               <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-orange-50 text-brand-orange text-lg shrink-0">
@@ -130,57 +130,85 @@ export default function ShopOwnerDashboardPage() {
           </div>
 
           {recentOrders.length ? (
-            <div className="-mx-5 sm:-mx-6 px-5 sm:px-6 overflow-x-hidden">
-              <table className="w-full text-left border-separate border-spacing-0">
-                <thead>
-                  <tr className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                    <th className="py-2.5 px-3 bg-slate-50 rounded-l-xl font-bold w-[38%]">{t('supplier')}</th>
-                    <th className="py-2.5 px-3 bg-slate-50 font-bold w-[14%]">{t('amount')}</th>
-                    <th className="py-2.5 px-3 bg-slate-50 font-bold w-[24%]">{t('status')}</th>
-                    <th className="py-2.5 px-4 bg-slate-50 font-bold w-[18%]">{t('date')}</th>
-                    <th className="py-2.5 px-3 bg-slate-50 rounded-r-xl text-right font-bold w-[6%]">
-                      <span className="sr-only">{t('action') || 'Action'}</span>
-                    </th>
-                  </tr>
-                </thead>
+            <>
+              {/* Mobile View: Clean Shadcn Card List */}
+              <div className="space-y-3 sm:hidden">
+                {recentOrders.map((order) => (
+                  <div key={order.id} className="p-3.5 rounded-xl border border-slate-100 hover:border-slate-200 bg-slate-50/40 space-y-2">
+                    <div className="flex items-center justify-between gap-2">
+                      <span className="text-sm font-bold text-slate-900 truncate">{order.supplier}</span>
+                      <StatusBadge status={order.status} />
+                    </div>
+                    <div className="flex items-center justify-between text-xs text-slate-500">
+                      <span className="font-extrabold text-slate-900 tabular-nums">{order.amount}</span>
+                      <span>{order.date}</span>
+                    </div>
+                    <div className="pt-2 border-t border-slate-100 flex items-center justify-between">
+                      <span className="text-[11px] font-mono text-slate-400">{formatDashboardOrderId(order.id)}</span>
+                      <Link
+                        className="inline-flex items-center gap-1 text-xs font-bold text-brand-orange hover:text-brand-orange-dark transition-colors"
+                        to={`/dashboard/shop-owner/orders/${encodeURIComponent(order.id)}`}
+                      >
+                        {t('view') || 'View'} <FiChevronRight size={14} />
+                      </Link>
+                    </div>
+                  </div>
+                ))}
+              </div>
 
-                <tbody className="divide-y divide-slate-100">
-                  {recentOrders.map((order) => (
-                    <tr key={order.id} className="hover:bg-slate-50/60 transition-colors">
-                      <td className="py-3 px-3 border-b border-slate-100">
-                        <span className="text-sm font-semibold text-slate-900 whitespace-nowrap" title={order.supplier}>
-                          {order.supplier}
-                        </span>
-                      </td>
-                      <td className="py-3 px-3 text-xs font-bold text-slate-900 tabular-nums whitespace-nowrap border-b border-slate-100">
-                        {order.amount}
-                      </td>
-                      <td className="py-3 px-3 whitespace-nowrap border-b border-slate-100">
-                        <StatusBadge status={order.status} />
-                      </td>
-                      <td className="py-3 px-4 text-xs text-slate-500 whitespace-nowrap border-b border-slate-100">
-                        {order.date}
-                      </td>
-                      <td className="py-3 px-3 text-right whitespace-nowrap border-b border-slate-100">
-                        <Link 
-                          className="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-slate-200 hover:border-brand-orange hover:bg-brand-orange-light hover:text-brand-orange text-slate-500 transition-colors" 
-                          to={`/dashboard/shop-owner/orders/${encodeURIComponent(order.id)}`} 
-                          aria-label={`View ${order.id}`}
-                        >
-                          <FiChevronRight size={16} />
-                        </Link>
-                      </td>
+              {/* Tablet & Desktop View: Scroll-safe Table */}
+              <div className="hidden sm:block w-full max-w-full overflow-x-auto">
+                <table className="w-full text-left border-separate border-spacing-0">
+                  <thead>
+                    <tr className="text-xs font-bold text-slate-500 uppercase tracking-wider">
+                      <th className="py-2.5 px-3 bg-slate-50 rounded-l-xl font-bold w-[38%]">{t('supplier')}</th>
+                      <th className="py-2.5 px-3 bg-slate-50 font-bold w-[14%]">{t('amount')}</th>
+                      <th className="py-2.5 px-3 bg-slate-50 font-bold w-[24%]">{t('status')}</th>
+                      <th className="py-2.5 px-4 bg-slate-50 font-bold w-[18%]">{t('date')}</th>
+                      <th className="py-2.5 px-3 bg-slate-50 rounded-r-xl text-right font-bold w-[6%]">
+                        <span className="sr-only">{t('action') || 'Action'}</span>
+                      </th>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  </thead>
+
+                  <tbody className="divide-y divide-slate-100">
+                    {recentOrders.map((order) => (
+                      <tr key={order.id} className="hover:bg-slate-50/60 transition-colors">
+                        <td className="py-3 px-3 border-b border-slate-100">
+                          <span className="text-sm font-semibold text-slate-900 whitespace-nowrap" title={order.supplier}>
+                            {order.supplier}
+                          </span>
+                        </td>
+                        <td className="py-3 px-3 text-xs font-bold text-slate-900 tabular-nums whitespace-nowrap border-b border-slate-100">
+                          {order.amount}
+                        </td>
+                        <td className="py-3 px-3 whitespace-nowrap border-b border-slate-100">
+                          <StatusBadge status={order.status} />
+                        </td>
+                        <td className="py-3 px-4 text-xs text-slate-500 whitespace-nowrap border-b border-slate-100">
+                          {order.date}
+                        </td>
+                        <td className="py-3 px-3 text-right whitespace-nowrap border-b border-slate-100">
+                          <Link 
+                            className="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-slate-200 hover:border-brand-orange hover:bg-brand-orange-light hover:text-brand-orange text-slate-500 transition-colors" 
+                            to={`/dashboard/shop-owner/orders/${encodeURIComponent(order.id)}`} 
+                            aria-label={`View ${order.id}`}
+                          >
+                            <FiChevronRight size={16} />
+                          </Link>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
           ) : (
             <EmptyState title={t('noRecentOrders')} message={t('noRecentOrdersMessage')} />
           )}
         </section>
 
-        <section className="min-w-0 bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4">
+        <section className="min-w-0 w-full max-w-full bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 sm:p-6 space-y-4 overflow-hidden">
           <div className="flex items-center justify-between gap-4 pb-4 border-b border-slate-100">
             <div className="flex items-center gap-3 min-w-0">
               <span className="flex items-center justify-center w-9 h-9 rounded-xl bg-orange-50 text-brand-orange text-lg shrink-0">
@@ -202,7 +230,7 @@ export default function ShopOwnerDashboardPage() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center justify-between gap-2">
-                      <strong className="text-sm font-semibold text-slate-900 whitespace-nowrap" title={delivery.supplier}>{delivery.supplier}</strong>
+                      <strong className="text-sm font-semibold text-slate-900 whitespace-nowrap truncate" title={delivery.supplier}>{delivery.supplier}</strong>
                       <span className="shrink-0"><StatusBadge status={delivery.status} /></span>
                     </div>
                     <div className="flex items-center justify-between gap-2 text-xs text-slate-500 mt-1 font-mono">
@@ -226,7 +254,7 @@ export default function ShopOwnerDashboardPage() {
         </section>
       </div>
 
-      <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 border border-orange-200/70 shadow-xs w-full min-w-0">
+      <section className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 p-5 rounded-2xl bg-gradient-to-r from-orange-50 via-amber-50 to-orange-50 border border-orange-200/70 shadow-xs w-full min-w-0 max-w-full">
         <div className="flex items-start sm:items-center gap-3.5 min-w-0">
           <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-brand-orange text-white text-xl shrink-0 shadow-xs" aria-hidden="true">
             <HiSparkles />

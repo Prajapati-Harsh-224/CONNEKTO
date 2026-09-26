@@ -1,4 +1,10 @@
 {
+  "name": "connekto",
+  "scripts": {
+    "tunnel": "npx ngrok http 5173",
+    "tunnel:backend": "npx ngrok http 4000",
+    "tunnel:docker": "docker compose --profile tunnel up ngrok"
+  },
   "dependencies": {
     "react-router-dom": "^7.18.3"
   }

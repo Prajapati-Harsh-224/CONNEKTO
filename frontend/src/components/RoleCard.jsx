@@ -42,19 +42,16 @@ export default function RoleCard({ role, selected, onSelect }) {
       </div>
 
       <div className="flex flex-col flex-1 pt-3">
-        <div className="flex items-baseline justify-between gap-2 mb-1">
+        <div className="mb-1">
           <strong className="text-base sm:text-lg font-bold text-slate-900 font-serif">
             {role.title}
           </strong>
-          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full ${tone.badge}`}>
-            {role.value.replace('_', ' ')}
-          </span>
         </div>
 
         <p className="text-xs text-slate-500 leading-relaxed min-h-[2.4rem] mb-3">
           {role.description}
         </p>
-
+ 
         <div className="space-y-1.5 pt-2 border-t border-slate-100 mt-auto">
           {role.benefits.map((benefit) => (
             <div key={benefit} className="flex items-start gap-2 text-xs text-slate-700">
