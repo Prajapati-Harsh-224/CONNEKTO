@@ -98,8 +98,8 @@ const baseCategoryCatalog = [
 // ---------------------------------------------------------------------------
 // Category SVG icons
 // ---------------------------------------------------------------------------
-const CategoryIcon = ({ type }) => {
-  const iconProps = { size: 24, strokeWidth: 1.8, 'aria-hidden': true }
+const CategoryIcon = ({ type, className = 'w-[18px] h-[18px] sm:w-6 sm:h-6' }) => {
+  const iconProps = { className, strokeWidth: 1.8, 'aria-hidden': true }
   switch (type) {
     case 'all':
       return <TbLayoutGrid {...iconProps} />
@@ -305,8 +305,10 @@ export default function SupplierListPage() {
 
   const scrollCategories = (direction) => {
     if (categoryScrollRef.current) {
-      const offset = direction === 'left' ? -300 : 300
-      categoryScrollRef.current.scrollBy({ left: offset, behavior: 'smooth' })
+      const container = categoryScrollRef.current
+      const scrollAmount = container.clientWidth || 300
+      const offset = direction === 'left' ? -scrollAmount : scrollAmount
+      container.scrollBy({ left: offset, behavior: 'smooth' })
     }
   }
 
@@ -452,7 +454,7 @@ export default function SupplierListPage() {
 
         <div 
           ref={categoryScrollRef}
-          className="flex flex-nowrap gap-3 overflow-x-auto pb-3 pt-1 scroll-smooth w-full min-w-0 max-w-full"
+          className="flex flex-nowrap gap-2 sm:gap-3 overflow-x-auto pb-2.5 sm:pb-3 pt-1 scroll-smooth w-full min-w-0 max-w-full snap-x snap-mandatory"
           style={{ scrollbarWidth: 'none' }}
           role="list"
         >
@@ -464,21 +466,22 @@ export default function SupplierListPage() {
                 key={cat.id}
                 type="button"
                 role="listitem"
-                className={`aspect-square w-[130px] sm:w-[140px] shrink-0 flex flex-col items-center justify-center p-3 rounded-2xl border transition-all text-center cursor-pointer shadow-2xs hover:shadow-xs ${
+                title={cat.label}
+                className={`snap-start aspect-square sm:aspect-auto sm:min-h-[130px] sm:py-4 lg:aspect-square lg:min-h-0 lg:py-3 w-[calc((100%-24px)/4)] min-w-[calc((100%-24px)/4)] sm:w-[calc((100%-12px)/2)] sm:min-w-[calc((100%-12px)/2)] lg:w-[140px] lg:min-w-0 shrink-0 flex flex-col items-center justify-center p-1.5 sm:p-3 rounded-xl sm:rounded-2xl border transition-all text-center cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 sm:active:scale-100 ${
                   isActive 
-                    ? 'bg-brand-orange-light border-brand-orange/40 ring-2 ring-brand-orange/20' 
+                    ? 'bg-brand-orange-light border-brand-orange/40 ring-1.5 sm:ring-2 ring-brand-orange/20' 
                     : 'bg-white border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/50'
                 }`}
                 onClick={() => setSelectedCategory(isActive && cat.id !== 'all' ? 'all' : cat.id)}
                 aria-pressed={isActive}
               >
                 <span
-                  className="flex items-center justify-center w-11 h-11 sm:w-12 sm:h-12 rounded-2xl mb-2 text-xl shrink-0 shadow-2xs"
+                  className="flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl mb-1 sm:mb-2 text-base sm:text-xl shrink-0 shadow-2xs"
                   style={{ background: colors.bg, color: colors.color }}
                 >
-                  <CategoryIcon type={cat.icon} />
+                  <CategoryIcon type={cat.icon} className="w-[18px] h-[18px] sm:w-6 sm:h-6" />
                 </span>
-                <span className="text-xs font-bold text-slate-800 leading-snug text-center break-words max-w-full px-1">
+                <span className="text-[10px] sm:text-xs font-bold text-slate-800 leading-[12px] sm:leading-snug text-center line-clamp-2 break-words max-w-full px-0.5">
                   {cat.label}
                 </span>
               </button>

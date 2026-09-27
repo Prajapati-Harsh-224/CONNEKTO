@@ -1261,8 +1261,10 @@ def deactivate_product(product_id: str, user: User = Depends(require_user), db: 
     supplier = owned_supplier(user, db)
     product = db.scalar(select(Product).where(Product.id == product_id, Product.supplier_id == supplier.id)) if supplier else None
     if not product: return error("Product not found.", "NOT_FOUND", 404)
-    product.is_active = False; db.commit(); db.refresh(product)
-    return envelope({"product": product_json(product)}, "Product deactivated")
+    data = product_json(product)
+    db.delete(product)
+    db.commit()
+    return envelope({"product": data, "id": product_id}, "Product removed successfully")
 
 
 @app.get("/api/gruh-udyog/products")

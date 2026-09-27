@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react'
+import { FiTrash2 } from 'react-icons/fi'
 import { useLocale } from '../context/LocaleContext.jsx'
 import ProductImage from './ProductImage.jsx'
 import FormField from './FormField.jsx'
@@ -26,7 +27,10 @@ export default function ProductManagementForm({
   onChange,
   onSubmit,
   onCancel,
+  onDelete,
   isSubmitting,
+  isDeleting,
+  deleteLabel,
   submitLabel,
   categories = []
 }) {
@@ -175,18 +179,30 @@ export default function ProductManagementForm({
             </p>
           )}
 
-          <div className="flex flex-wrap items-center gap-3 pt-3">
+          <div className="flex flex-wrap items-center gap-3 pt-3 pb-4 sm:pb-0">
             <button 
               className="px-6 py-2.5 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white font-bold text-sm shadow-xs hover:shadow transition-all disabled:opacity-50 cursor-pointer" 
-              disabled={isSubmitting} 
+              disabled={isSubmitting || isDeleting} 
               type="submit"
             >
               {isSubmitting ? t('saving') : submitLabel}
             </button>
+            {onDelete && (
+              <button 
+                className="px-5 py-2.5 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-600 font-bold text-sm transition-all cursor-pointer flex items-center gap-1.5 disabled:opacity-50" 
+                onClick={onDelete} 
+                disabled={isSubmitting || isDeleting}
+                type="button"
+              >
+                <FiTrash2 className="w-4 h-4" />
+                <span>{isDeleting ? 'Removing...' : (deleteLabel || 'Remove Product')}</span>
+              </button>
+            )}
             {onCancel && (
               <button 
                 className="px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm transition-all cursor-pointer" 
                 onClick={onCancel} 
+                disabled={isSubmitting || isDeleting}
                 type="button"
               >
                 {t('cancel')}

@@ -15,6 +15,7 @@ import {
   FiImage,
   FiEdit2,
   FiEye,
+  FiTrash2,
 } from 'react-icons/fi'
 import LoadingState from '../components/LoadingState.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
@@ -23,6 +24,7 @@ import {
   createSupplierProduct,
   updateSupplierProduct,
   deactivateSupplierProduct,
+  deleteSupplierProduct,
 } from '../services/supplierProductService.js'
 
 const DEFAULT_CATEGORIES = [
@@ -88,8 +90,18 @@ export default function SupplierProductManagementPage() {
   const [viewingProduct, setViewingProduct] = useState(null)
   const [formError, setFormError] = useState('')
   const [isSaving, setIsSaving] = useState(false)
+  const [isDeleting, setIsDeleting] = useState(false)
   const [activeMenuId, setActiveMenuId] = useState(null)
   const [favorites, setFavorites] = useState({})
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640)
+
+  useEffect(() => {
+    function handleResize() {
+      setIsMobile(window.innerWidth < 640)
+    }
+    window.addEventListener('resize', handleResize)
+    return () => window.removeEventListener('resize', handleResize)
+  }, [])
 
   useEffect(() => {
     if (location.state?.feedback) {
@@ -165,6 +177,9 @@ export default function SupplierProductManagementPage() {
     const start = (page - 1) * pageSize
     return filteredProducts.slice(start, start + pageSize)
   }, [filteredProducts, page, pageSize])
+
+  // In mobile view, show all products on a single page without pagination slicing
+  const displayedProducts = isMobile ? filteredProducts : visibleProducts
 
   // Handlers for Add/Edit Modal
   function openAddModal() {
@@ -305,36 +320,73 @@ export default function SupplierProductManagementPage() {
     }
   }
 
+  async function handleRemoveProduct(product) {
+    if (!product || !product.id) return
+    const confirmed = window.confirm(`Are you sure you want to remove "${product.name}"? This will delete the product permanently from your catalog.`)
+    if (!confirmed) return
+
+    setActiveMenuId(null)
+    setIsDeleting(true)
+    try {
+      await deleteSupplierProduct(product.id)
+      setProducts((curr) => curr.filter((p) => p.id !== product.id))
+      setFeedback(`Product "${product.name}" removed successfully!`)
+      if (modalMode) closeModal()
+    } catch (err) {
+      setError(err.message || 'Failed to remove product.')
+      setFormError(err.message || 'Failed to remove product.')
+    } finally {
+      setIsDeleting(false)
+    }
+  }
+
   if (isLoading) return <LoadingState message={t('loadingYourProducts')} />
 
   return (
     <section className="space-y-5 sm:space-y-6 pb-12">
       {/* Top Header Row with Breadcrumbs, Title, Subtitle, and Add Product */}
-      <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-        <div>
-          <nav className="flex items-center gap-1.5 text-xs text-slate-400 mb-1 font-medium">
-            <span>{t('supplierWorkspace')}</span>
-            <span className="text-slate-300">›</span>
-            <span className="text-slate-600">{t('products')}</span>
-          </nav>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-slate-900 tracking-tight">{t('yourProducts')}</h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5">
-            {t('manageCatalogVisible')}
-          </p>
-        </div>
+      <div className="flex flex-col gap-2">
+        <nav className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
+          <span>{t('supplierWorkspace')}</span>
+          <span className="text-slate-300">›</span>
+          <span className="text-slate-600">{t('products')}</span>
+        </nav>
 
-        {/* Right Header Area: Add Product Button */}
-        <div className="flex items-center self-start lg:self-auto">
+        <div className="flex items-center justify-between gap-3 w-full">
+          <div>
+            <h1 className="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
+              {t('yourProducts')}
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-500 mt-0.5 hidden sm:block">
+              {t('manageCatalogVisible')}
+            </p>
+          </div>
+
+          {/* Add Product Button - hidden in mobile view, visible on tablet and desktop */}
           <button
             type="button"
             onClick={openAddModal}
-            className="px-5 py-2.5 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white text-xs sm:text-sm font-bold flex items-center gap-2 shadow-sm shadow-orange-900/10 transition-all cursor-pointer shrink-0"
+            className="hidden sm:flex px-5 py-2.5 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white text-xs sm:text-sm font-bold items-center gap-2 shadow-sm shadow-orange-900/10 transition-all cursor-pointer shrink-0"
           >
             <FiPlus className="w-4 h-4 stroke-[3]" />
             <span>{t('addProduct')}</span>
           </button>
         </div>
+
+        <p className="text-xs text-slate-500 sm:hidden">
+          {t('manageCatalogVisible')}
+        </p>
       </div>
+
+      {/* Floating '+' Button to Add Product in Mobile View */}
+      <button
+        type="button"
+        onClick={openAddModal}
+        aria-label={t('addProduct') || 'Add Product'}
+        className="sm:hidden fixed bottom-20 right-4 z-40 w-12 h-12 rounded-full bg-brand-orange hover:bg-brand-orange-dark text-white shadow-lg shadow-orange-900/30 flex items-center justify-center transition-transform active:scale-95 cursor-pointer"
+      >
+        <FiPlus className="w-6 h-6 stroke-[3]" />
+      </button>
 
       {/* Notifications */}
       {feedback && (
@@ -354,8 +406,8 @@ export default function SupplierProductManagementPage() {
         </div>
       )}
 
-      {/* Category Pills Row (Same Concept as Gruh Udyog, with Supplier Categories) */}
-      <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-2 px-2 scrollbar-none">
+      {/* Category Pills Row - All categories displayed on single page without horizontal scroll */}
+      <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pb-1 w-full" role="tablist">
         {categories.map((category) => {
           const isActive = selectedCategory === category
           return (
@@ -366,7 +418,7 @@ export default function SupplierProductManagementPage() {
                 setSelectedCategory(category)
                 setPage(1)
               }}
-              className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+              className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer select-none ${
                 isActive
                   ? 'bg-brand-orange text-white shadow-2xs'
                   : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300'
@@ -456,11 +508,11 @@ export default function SupplierProductManagementPage() {
       </div>
 
       {/* Products Display (Grid or List) */}
-      {visibleProducts.length > 0 ? (
+      {displayedProducts.length > 0 ? (
         viewMode === 'grid' ? (
           /* 4-Column Product Cards Grid (Matching Gruh Udyog Concept & Size) */
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
-            {visibleProducts.map((product) => {
+          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-5">
+            {displayedProducts.map((product) => {
               const isFav = Boolean(favorites[product.id])
               const isActive = product.isActive !== false
               const isMenuOpen = activeMenuId === product.id
@@ -468,13 +520,13 @@ export default function SupplierProductManagementPage() {
               return (
                 <article
                   key={product.id}
-                  className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden flex flex-col hover:shadow-md transition-all group relative"
+                  className="bg-white rounded-xl sm:rounded-2xl border border-slate-100 shadow-2xs hover:shadow-md transition-all group relative flex flex-col justify-between overflow-hidden"
                 >
-                  {/* Image Container with Fixed Height h-44 matching Gruh Udyog */}
-                  <div className="relative h-44 w-full bg-slate-50 overflow-hidden shrink-0">
+                  {/* Image Container */}
+                  <div className="relative aspect-square sm:aspect-auto sm:h-44 w-full bg-slate-50 overflow-hidden shrink-0">
                     {/* Status Pill Badge */}
                     <span
-                      className={`absolute top-3 left-3 px-2.5 py-0.5 rounded-full text-[11px] font-bold shadow-2xs z-10 ${
+                      className={`absolute top-1.5 left-1.5 sm:top-3 sm:left-3 px-1.5 sm:px-2.5 py-0.5 rounded-full text-[9px] sm:text-[11px] font-bold shadow-2xs z-10 ${
                         isActive
                           ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                           : 'bg-amber-50 text-amber-800 border border-amber-200'
@@ -487,11 +539,11 @@ export default function SupplierProductManagementPage() {
                     <button
                       type="button"
                       onClick={(e) => toggleFavorite(product.id, e)}
-                      className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black/25 hover:bg-black/40 backdrop-blur-xs flex items-center justify-center text-white transition-colors z-10 cursor-pointer"
+                      className="absolute top-1.5 right-1.5 sm:top-3 sm:right-3 w-5 h-5 sm:w-7 sm:h-7 rounded-full bg-black/25 hover:bg-black/40 backdrop-blur-xs flex items-center justify-center text-white transition-colors z-10 cursor-pointer"
                       aria-label="Save item"
                     >
                       <FiHeart
-                        className={`w-4 h-4 transition-colors ${
+                        className={`w-3 h-3 sm:w-4 sm:h-4 transition-colors ${
                           isFav ? 'fill-rose-500 text-rose-500' : 'text-white'
                         }`}
                       />
@@ -510,46 +562,47 @@ export default function SupplierProductManagementPage() {
                         }}
                       />
                     ) : (
-                      <div className="w-full h-full flex items-center justify-center bg-orange-50/50 text-4xl">
+                      <div className="w-full h-full flex items-center justify-center bg-orange-50/50 text-2xl sm:text-4xl">
                         📦
                       </div>
                     )}
                   </div>
 
                   {/* Card Body */}
-                  <div className="p-4 flex-1 flex flex-col justify-between">
+                  <div className="p-1.5 sm:p-4 flex-1 flex flex-col justify-between">
                     <div>
-                      <h3 className="text-sm sm:text-base font-bold text-slate-900 line-clamp-1 leading-tight group-hover:text-brand-orange transition-colors" title={product.name}>
+                      <h3 className="text-[11px] sm:text-base font-bold text-slate-900 line-clamp-2 sm:line-clamp-1 leading-tight group-hover:text-brand-orange transition-colors" title={product.name}>
                         {product.name}
                       </h3>
-                      <p className="text-xs text-slate-400 mt-0.5">{product.brand || 'General'} · {product.packSize || '1 unit'}</p>
+                      <p className="text-[9px] sm:text-xs text-slate-400 mt-0.5 truncate">{product.brand || 'General'} · {product.packSize || '1 unit'}</p>
 
-                      <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-1">
+                      <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 mt-1">
                         <FiMapPin className="w-3 h-3 text-slate-400 shrink-0" />
                         <span className="truncate">{product.category || 'General'}</span>
                       </div>
                     </div>
 
-                    <div className="mt-3 pt-3 border-t border-slate-100">
+                    <div className="mt-1.5 sm:mt-3 pt-1.5 sm:pt-3 border-t border-slate-100">
                       <div className="flex items-center justify-between relative">
-                        <div>
-                          <p className="text-base font-black text-slate-900 leading-none">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs sm:text-base font-black text-slate-900 leading-none">
                             ₹{Number(product.price).toLocaleString('en-IN')}
                           </p>
-                          <p className="text-[11px] text-slate-400 mt-0.5">
-                            1 Box = {product.minimumQuantity || 1} units · Stock: {product.availableStock ?? 0}
+                          <p className="text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate">
+                            <span className="sm:hidden">Box: {product.minimumQuantity || 1}u · Stk: {product.availableStock ?? 0}</span>
+                            <span className="hidden sm:inline">1 Box = {product.minimumQuantity || 1} units · Stock: {product.availableStock ?? 0}</span>
                           </p>
                         </div>
 
                         {/* Three Dots Context Menu */}
-                        <div className="relative">
+                        <div className="relative shrink-0">
                           <button
                             type="button"
                             onClick={() => setActiveMenuId(isMenuOpen ? null : product.id)}
-                            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+                            className="p-1 sm:p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
                             aria-label="Options"
                           >
-                            <FiMoreVertical className="w-4 h-4" />
+                            <FiMoreVertical className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
                           </button>
 
                           {isMenuOpen && (
@@ -563,10 +616,11 @@ export default function SupplierProductManagementPage() {
                               </button>
                               <button
                                 type="button"
-                                onClick={() => handleDeactivate(product)}
-                                className="w-full px-3 py-2 text-left text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer"
+                                onClick={() => handleRemoveProduct(product)}
+                                className="w-full px-3 py-2 text-left text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer flex items-center gap-1.5"
                               >
-                                {t('deactivate')}
+                                <FiTrash2 className="w-3.5 h-3.5" />
+                                <span>{t('removeProduct') || 'Remove Product'}</span>
                               </button>
                             </div>
                           )}
@@ -574,18 +628,18 @@ export default function SupplierProductManagementPage() {
                       </div>
 
                       {/* Edit & View Action Buttons */}
-                      <div className="flex items-center gap-2 mt-3.5">
+                      <div className="flex items-center gap-1.5 sm:gap-2 mt-2 sm:mt-3.5">
                         <button
                           type="button"
                           onClick={() => openEditModal(product)}
-                          className="flex-1 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition-colors cursor-pointer text-center"
+                          className="flex-1 py-1 sm:py-2 rounded-lg sm:rounded-xl bg-slate-100 hover:bg-slate-200 text-[10px] sm:text-xs font-semibold text-slate-700 transition-colors cursor-pointer text-center"
                         >
                           {t('edit')}
                         </button>
                         <button
                           type="button"
                           onClick={() => openViewModal(product)}
-                          className="flex-1 py-2 rounded-xl bg-orange-50 hover:bg-orange-100 text-xs font-semibold text-brand-orange transition-colors cursor-pointer text-center"
+                          className="flex-1 py-1 sm:py-2 rounded-lg sm:rounded-xl bg-orange-50 hover:bg-orange-100 text-[10px] sm:text-xs font-semibold text-brand-orange transition-colors cursor-pointer text-center"
                         >
                           {t('view') || 'View'}
                         </button>
@@ -598,51 +652,27 @@ export default function SupplierProductManagementPage() {
           </div>
         ) : (
           /* List View Layout */
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="w-full text-left border-collapse min-w-[650px]">
-                <thead>
-                  <tr className="text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 bg-white">
-                    <th className="py-3 px-4">{t('product') || 'Product'}</th>
-                    <th className="py-3 px-4">{t('category') || 'Category'}</th>
-                    <th className="py-3 px-4">{t('brand') || 'Brand'}</th>
-                    <th className="py-3 px-4">{t('packSize') || 'Pack Size'}</th>
-                    <th className="py-3 px-4">{t('price') || 'Price'}</th>
-                    <th className="py-3 px-4">Box Size / Stock</th>
-                    <th className="py-3 px-4">{t('status')}</th>
-                    <th className="py-3 px-4 text-right">{t('actions') || 'Actions'}</th>
-                  </tr>
-                </thead>
-                <tbody className="divide-y divide-slate-100">
-                  {visibleProducts.map((product) => {
-                    const isActive = product.isActive !== false
-                    return (
-                      <tr key={product.id} className="hover:bg-slate-50/70 transition-colors">
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={product.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=150&q=80'}
-                              alt={product.name}
-                              className="w-10 h-10 rounded-xl object-cover border border-slate-100 shrink-0"
-                            />
-                            <div>
-                              <p className="text-xs font-bold text-slate-900 leading-tight">{product.name}</p>
-                              <p className="text-[11px] text-slate-400 line-clamp-1">{product.description || product.brand}</p>
-                            </div>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4 text-xs text-slate-600">{product.category}</td>
-                        <td className="py-3 px-4 text-xs text-slate-600">{product.brand || '—'}</td>
-                        <td className="py-3 px-4 text-xs text-slate-500">{product.packSize}</td>
-                        <td className="py-3 px-4 text-xs font-bold text-slate-900">
-                          ₹{Number(product.price).toLocaleString('en-IN')}
-                        </td>
-                        <td className="py-3 px-4 text-xs text-slate-600">
-                          1 Box ({product.minimumQuantity || 1} units) / {product.availableStock ?? 0}
-                        </td>
-                        <td className="py-3 px-4">
+          <div>
+            {/* Mobile View: Clean compact list cards (no horizontal overflow) */}
+            <div className="space-y-2.5 sm:hidden">
+              {displayedProducts.map((product) => {
+                const isActive = product.isActive !== false
+                return (
+                  <div
+                    key={product.id}
+                    className="bg-white rounded-xl border border-slate-100 shadow-2xs p-3 flex flex-col gap-2.5"
+                  >
+                    <div className="flex items-start gap-3">
+                      <img
+                        src={product.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=150&q=80'}
+                        alt={product.name}
+                        className="w-14 h-14 rounded-xl object-cover border border-slate-100 shrink-0"
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center justify-between gap-1.5">
+                          <h4 className="text-xs font-bold text-slate-900 truncate">{product.name}</h4>
                           <span
-                            className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                            className={`shrink-0 px-2 py-0.5 rounded-full text-[9px] font-bold ${
                               isActive
                                 ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                                 : 'bg-amber-50 text-amber-800 border border-amber-200'
@@ -650,30 +680,137 @@ export default function SupplierProductManagementPage() {
                           >
                             {isActive ? t('active') : t('inactive')}
                           </span>
-                        </td>
-                        <td className="py-3 px-4 text-right">
-                          <div className="inline-flex items-center gap-2">
-                            <button
-                              type="button"
-                              onClick={() => openEditModal(product)}
-                              className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 cursor-pointer"
+                        </div>
+                        <p className="text-[10px] text-slate-400 mt-0.5 truncate">
+                          {product.brand || 'General'} · {product.category} · {product.packSize}
+                        </p>
+                        <div className="flex items-baseline justify-between gap-2 mt-1">
+                          <span className="text-xs font-black text-slate-900">
+                            ₹{Number(product.price).toLocaleString('en-IN')}
+                          </span>
+                          <span className="text-[10px] text-slate-500 truncate">
+                            Box: {product.minimumQuantity || 1}u · Stk: {product.availableStock ?? 0}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+
+                    <div className="flex items-center gap-1.5 pt-2 border-t border-slate-100">
+                      <button
+                        type="button"
+                        onClick={() => openEditModal(product)}
+                        className="flex-1 py-1.5 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 cursor-pointer text-center"
+                      >
+                        {t('edit')}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => openViewModal(product)}
+                        className="flex-1 py-1.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-xs font-semibold text-brand-orange cursor-pointer text-center"
+                      >
+                        {t('view') || 'View'}
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleRemoveProduct(product)}
+                        title={t('removeProduct') || 'Remove Product'}
+                        className="px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 text-xs font-semibold cursor-pointer flex items-center gap-1"
+                      >
+                        <FiTrash2 className="w-3.5 h-3.5" />
+                        <span>{t('remove') || 'Remove'}</span>
+                      </button>
+                    </div>
+                  </div>
+                )
+              })}
+            </div>
+
+            {/* Desktop / Tablet: Full data table */}
+            <div className="hidden sm:block bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[650px]">
+                  <thead>
+                    <tr className="text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 bg-white">
+                      <th className="py-3 px-4">{t('product') || 'Product'}</th>
+                      <th className="py-3 px-4">{t('category') || 'Category'}</th>
+                      <th className="py-3 px-4">{t('brand') || 'Brand'}</th>
+                      <th className="py-3 px-4">{t('packSize') || 'Pack Size'}</th>
+                      <th className="py-3 px-4">{t('price') || 'Price'}</th>
+                      <th className="py-3 px-4">Box Size / Stock</th>
+                      <th className="py-3 px-4">{t('status')}</th>
+                      <th className="py-3 px-4 text-right">{t('actions') || 'Actions'}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-100">
+                    {displayedProducts.map((product) => {
+                      const isActive = product.isActive !== false
+                      return (
+                        <tr key={product.id} className="hover:bg-slate-50/70 transition-colors">
+                          <td className="py-3 px-4">
+                            <div className="flex items-center gap-3">
+                              <img
+                                src={product.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=150&q=80'}
+                                alt={product.name}
+                                className="w-10 h-10 rounded-xl object-cover border border-slate-100 shrink-0"
+                              />
+                              <div>
+                                <p className="text-xs font-bold text-slate-900 leading-tight">{product.name}</p>
+                                <p className="text-[11px] text-slate-400 line-clamp-1">{product.description || product.brand}</p>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="py-3 px-4 text-xs text-slate-600">{product.category}</td>
+                          <td className="py-3 px-4 text-xs text-slate-600">{product.brand || '—'}</td>
+                          <td className="py-3 px-4 text-xs text-slate-500">{product.packSize}</td>
+                          <td className="py-3 px-4 text-xs font-bold text-slate-900">
+                            ₹{Number(product.price).toLocaleString('en-IN')}
+                          </td>
+                          <td className="py-3 px-4 text-xs text-slate-600">
+                            1 Box ({product.minimumQuantity || 1} units) / {product.availableStock ?? 0}
+                          </td>
+                          <td className="py-3 px-4">
+                            <span
+                              className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                isActive
+                                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                                  : 'bg-amber-50 text-amber-800 border border-amber-200'
+                              }`}
                             >
-                              {t('edit')}
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => openViewModal(product)}
-                              className="px-2.5 py-1 rounded-lg bg-orange-50 hover:bg-orange-100 text-xs font-semibold text-brand-orange cursor-pointer"
-                            >
-                              {t('view') || 'View'}
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    )
-                  })}
-                </tbody>
-              </table>
+                              {isActive ? t('active') : t('inactive')}
+                            </span>
+                          </td>
+                          <td className="py-3 px-4 text-right">
+                            <div className="inline-flex items-center gap-1.5">
+                              <button
+                                type="button"
+                                onClick={() => openEditModal(product)}
+                                className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 cursor-pointer"
+                              >
+                                {t('edit')}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => openViewModal(product)}
+                                className="px-2.5 py-1 rounded-lg bg-orange-50 hover:bg-orange-100 text-xs font-semibold text-brand-orange cursor-pointer"
+                              >
+                                {t('view') || 'View'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => handleRemoveProduct(product)}
+                                title={t('removeProduct') || 'Remove Product'}
+                                className="p-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-600 transition-colors cursor-pointer"
+                              >
+                                <FiTrash2 className="w-3.5 h-3.5" />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      )
+                    })}
+                  </tbody>
+                </table>
+              </div>
             </div>
           </div>
         )
@@ -700,9 +837,9 @@ export default function SupplierProductManagementPage() {
         </div>
       )}
 
-      {/* Pagination Footer */}
-      {filteredProducts.length > 0 && (
-        <div className="flex items-center justify-between pt-2 text-xs text-slate-500">
+      {/* Pagination Footer (Hidden in mobile view, shown on tablet/desktop) */}
+      {!isMobile && filteredProducts.length > 0 && (
+        <div className="hidden sm:flex items-center justify-between pt-2 text-xs text-slate-500">
           <span>
             Showing {(page - 1) * pageSize + 1}-{Math.min(page * pageSize, filteredProducts.length)} of{' '}
             {filteredProducts.length} products
@@ -747,17 +884,17 @@ export default function SupplierProductManagementPage() {
 
       {/* Add / Edit Product Modal Concept */}
       {(modalMode === 'add' || modalMode === 'edit') && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-200">
-          <div className="bg-white rounded-2xl border border-slate-100 shadow-xl max-w-xl w-full max-h-[90vh] overflow-y-auto p-5 sm:p-6 space-y-4">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 pb-20 sm:pb-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
+          <div className="bg-white rounded-2xl border border-slate-100 shadow-2xl max-w-xl w-full max-h-[82vh] sm:max-h-[88vh] flex flex-col overflow-hidden">
             {/* Modal Header */}
-            <div className="flex items-center justify-between pb-3 border-b border-slate-100">
+            <div className="flex items-center justify-between p-4 sm:p-5 pb-3 border-b border-slate-100 shrink-0">
               <div className="flex items-center gap-2.5">
-                <div className="w-9 h-9 rounded-xl bg-orange-50 text-brand-orange flex items-center justify-center">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 text-brand-orange flex items-center justify-center shrink-0">
                   <FiPackage className="w-4 h-4" />
                 </div>
                 <div>
                   <h2 className="text-base font-bold text-slate-900">
-                    {modalMode === 'add' ? t('addProduct') : t('edit')}
+                    {modalMode === 'add' ? (t('addAProduct') || 'Add a Product') : (t('updateProduct') || 'Edit Product')}
                   </h2>
                   <p className="text-[11px] text-slate-400">
                     Fill in details to showcase your product to retailers.
@@ -774,13 +911,14 @@ export default function SupplierProductManagementPage() {
             </div>
 
             {formError && (
-              <div className="p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold">
+              <div className="mx-4 sm:mx-5 mt-3 p-3 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-xs font-semibold shrink-0">
                 {formError}
               </div>
             )}
 
             {/* Form */}
-            <form onSubmit={handleSaveProduct} className="space-y-3.5">
+            <form onSubmit={handleSaveProduct} className="flex-1 flex flex-col min-h-0 overflow-hidden">
+              <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-3.5">
               {/* Product Name & Brand */}
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div>
@@ -971,43 +1109,61 @@ export default function SupplierProductManagementPage() {
                   className="w-full px-3.5 py-2 bg-slate-50 border border-slate-200 rounded-xl text-xs font-medium text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange focus:bg-white cursor-pointer"
                 >
                   <option value="true">{t('active')}</option>
-                  <option value="false">{t('inactive')}</option>
                 </select>
               </div>
+            </div>
 
-              {/* Modal Buttons */}
-              <div className="flex items-center justify-end gap-2.5 pt-3 border-t border-slate-100">
-                <button
-                  type="button"
-                  onClick={closeModal}
-                  disabled={isSaving}
-                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
-                >
-                  {t('cancel')}
-                </button>
-                <button
-                  type="submit"
-                  disabled={isSaving}
-                  className="px-5 py-2 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-60"
-                >
-                  {isSaving ? (
-                    <span>Saving...</span>
-                  ) : (
-                    <>
-                      <FiCheck className="w-4 h-4" />
-                      <span>{modalMode === 'add' ? 'Create Product' : 'Save Changes'}</span>
-                    </>
-                  )}
-                </button>
+            {/* Pinned Modal Footer - always visible above mobile bar */}
+            <div className="shrink-0 p-3.5 sm:p-4 border-t border-slate-100 bg-white z-10">
+              <div className="flex items-center justify-between gap-2">
+                {modalMode === 'edit' && editingProduct ? (
+                  <button
+                    type="button"
+                    onClick={() => handleRemoveProduct(editingProduct)}
+                    disabled={isSaving || isDeleting}
+                    className="px-3 sm:px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer disabled:opacity-50"
+                  >
+                    <FiTrash2 className="w-4 h-4" />
+                    <span>{isDeleting ? 'Removing...' : (t('removeProduct') || 'Remove Product')}</span>
+                  </button>
+                ) : (
+                  <div />
+                )}
+
+                <div className="flex items-center gap-2">
+                  <button
+                    type="button"
+                    onClick={closeModal}
+                    disabled={isSaving || isDeleting}
+                    className="px-3.5 sm:px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                  >
+                    {t('cancel')}
+                  </button>
+                  <button
+                    type="submit"
+                    disabled={isSaving || isDeleting}
+                    className="px-4 sm:px-5 py-2 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold flex items-center gap-1.5 shadow-sm transition-all cursor-pointer disabled:opacity-60"
+                  >
+                    {isSaving ? (
+                      <span>Saving...</span>
+                    ) : (
+                      <>
+                        <FiCheck className="w-4 h-4" />
+                        <span>{t('saveChanges') || 'Save Changes'}</span>
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
-            </form>
-          </div>
+            </div>
+          </form>
         </div>
-      )}
+      </div>
+    )}
 
       {/* Quick View Product Modal */}
       {modalMode === 'view' && viewingProduct && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-xs animate-in fade-in duration-200">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 pb-20 sm:pb-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200">
           <div className="bg-white rounded-2xl border border-slate-100 shadow-xl max-w-lg w-full overflow-hidden p-6 space-y-4">
             <div className="flex items-start justify-between pb-3 border-b border-slate-100">
               <div className="flex items-center gap-3">
@@ -1071,26 +1227,42 @@ export default function SupplierProductManagementPage() {
               </div>
             )}
 
-            <div className="flex items-center justify-end gap-2.5 pt-2">
-              <button
-                type="button"
-                onClick={closeModal}
-                className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
-              >
-                Close
-              </button>
+            <div className="flex items-center justify-between gap-2.5 pt-2 border-t border-slate-100">
               <button
                 type="button"
                 onClick={() => {
                   const p = viewingProduct
                   closeModal()
-                  openEditModal(p)
+                  handleRemoveProduct(p)
                 }}
-                className="px-4 py-2 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                disabled={isDeleting}
+                className="px-3.5 py-2 rounded-xl bg-rose-50 hover:bg-rose-100 text-rose-600 border border-rose-200 text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
               >
-                <FiEdit2 className="w-3.5 h-3.5" />
-                <span>{t('edit')}</span>
+                <FiTrash2 className="w-3.5 h-3.5" />
+                <span>{t('removeProduct') || 'Remove Product'}</span>
               </button>
+
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={closeModal}
+                  className="px-4 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                >
+                  Close
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const p = viewingProduct
+                    closeModal()
+                    openEditModal(p)
+                  }}
+                  className="px-4 py-2 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold flex items-center gap-1.5 transition-colors cursor-pointer"
+                >
+                  <FiEdit2 className="w-3.5 h-3.5" />
+                  <span>{t('edit')}</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>

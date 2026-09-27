@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FiPackage, FiClock, FiCheckCircle } from 'react-icons/fi'
+import { FiPackage, FiClock, FiCheckCircle, FiBox } from 'react-icons/fi'
 import LoadingState from '../components/LoadingState.jsx'
 import MetricCard from '../components/MetricCard.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
@@ -48,6 +48,49 @@ export default function SupplierDashboardPage() {
       .finally(() => setIsLoading(false))
   }, [])
 
+const fallbackSupplierOrders = [
+  {
+    id: 'ord-8a9b2c1d',
+    shopOwner: 'Krishna Kirana Store',
+    location: 'Satellite, Ahmedabad',
+    items: 4,
+    amountLabel: '₹4,850',
+    status: 'Pending',
+    dateLabel: '27 Sep, 09:15 AM',
+    orderIdDisplay: 'ORD-8A9B2C1D',
+  },
+  {
+    id: 'ord-3e4f5a6b',
+    shopOwner: 'Shree Ganesh Supermarket',
+    location: 'Vastrapur, Ahmedabad',
+    items: 6,
+    amountLabel: '₹12,400',
+    status: 'Preparing',
+    dateLabel: '27 Sep, 08:30 AM',
+    orderIdDisplay: 'ORD-3E4F5A6B',
+  },
+  {
+    id: 'ord-7c8d9e0f',
+    shopOwner: 'A-One Provision Store',
+    location: 'Navrangpura, Ahmedabad',
+    items: 2,
+    amountLabel: '₹2,350',
+    status: 'Out for Delivery',
+    dateLabel: '26 Sep, 05:45 PM',
+    orderIdDisplay: 'ORD-7C8D9E0F',
+  },
+  {
+    id: 'ord-1a2b3c4d',
+    shopOwner: 'Radhe Mart',
+    location: 'Bodakdev, Ahmedabad',
+    items: 8,
+    amountLabel: '₹18,900',
+    status: 'Delivered',
+    dateLabel: '26 Sep, 02:15 PM',
+    orderIdDisplay: 'ORD-1A2B3C4D',
+  },
+]
+
   const recentOrders = useMemo(() => (dashboard?.recentOrders || []).map((order) => {
     const rawDate = order.createdAt ? new Date(order.createdAt) : null
     const dateLabel = rawDate && !Number.isNaN(rawDate.getTime())
@@ -71,6 +114,19 @@ export default function SupplierDashboardPage() {
       orderIdDisplay: formatDashboardOrderId(order.id),
     }
   }), [dashboard])
+
+  const displayOrders = useMemo(() => {
+    if (recentOrders.length > 0) return recentOrders
+    if (dashboard?.isDemoData) return fallbackSupplierOrders
+    return []
+  }, [recentOrders, dashboard])
+
+  const metricActionMap = {
+    'New orders': '/dashboard/supplier/orders',
+    'Pending orders': '/dashboard/supplier/orders',
+    'Completed orders': '/dashboard/supplier/orders',
+    "Today's Revenue": '/dashboard/supplier/analytics',
+  }
 
   const firstName = user?.name?.split(' ')[0] || dashboard?.businessName?.split(' ')[0] || 'there'
 
@@ -98,16 +154,17 @@ export default function SupplierDashboardPage() {
   )
 
   return (
-    <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8">
-      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+    <section className="p-3.5 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-4 sm:space-y-8 w-full min-w-0">
+      <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-2 border-b border-slate-100">
         <div>
           <p className="text-xs sm:text-sm font-bold text-brand-orange uppercase tracking-wider">{getDynamicGreeting()}</p>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight mt-0.5">{dashboard.businessName}</h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('manageOrdersProductsCustomers')}</p>
+          <h1 className="text-xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight mt-0.5">{dashboard.businessName}</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5 sm:mt-1">{t('manageOrdersProductsCustomers')}</p>
         </div>
       </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-5">
+      {/* 2-Column Metrics on Mobile, 4-Column on Desktop */}
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4 lg:gap-5 w-full min-w-0">
         {dashboard.metrics.map((metric) => {
           const metricLabelKeyMap = {
             'New orders': 'newOrders',
@@ -128,7 +185,7 @@ export default function SupplierDashboardPage() {
             <MetricCard
               key={metric.label}
               accent={metric.accent}
-              actionTo={metric.actionTo}
+              actionTo={metric.actionTo || metricActionMap[metric.label] || '/dashboard/supplier/orders'}
               detail={detail}
               icon={metric.icon || getMetricIcon(metric.label)}
               label={label}
@@ -138,22 +195,118 @@ export default function SupplierDashboardPage() {
         })}
       </div>
 
-      <div className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6">
-        <div className="flex items-center justify-between gap-4 pb-5 border-b border-slate-100">
+      {/* Mobile Quick Actions */}
+      <div className="grid grid-cols-2 sm:hidden gap-2.5">
+        <button
+          type="button"
+          onClick={() => navigate('/dashboard/supplier/orders')}
+          className="p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex items-center gap-2.5 text-left active:bg-slate-50 transition-colors cursor-pointer"
+        >
+          <span className="w-8 h-8 rounded-lg bg-orange-50 text-brand-orange flex items-center justify-center shrink-0">
+            <FiPackage size={16} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <span className="text-xs font-bold text-slate-800 block truncate">{t('orders') || 'Orders'}</span>
+            <span className="text-[10px] text-slate-400 block truncate">{t('viewAllOrders') || 'Manage orders'}</span>
+          </div>
+        </button>
+
+        <button
+          type="button"
+          onClick={() => navigate('/dashboard/supplier/products')}
+          className="p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex items-center gap-2.5 text-left active:bg-slate-50 transition-colors cursor-pointer"
+        >
+          <span className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+            <FiBox size={16} />
+          </span>
+          <div className="min-w-0 flex-1">
+            <span className="text-xs font-bold text-slate-800 block truncate">{t('products') || 'Products'}</span>
+            <span className="text-[10px] text-slate-400 block truncate">{t('catalog') || 'Catalog'}</span>
+          </div>
+        </button>
+      </div>
+
+      {/* Recent Orders Container */}
+      <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-xs p-3.5 sm:p-6 w-full min-w-0">
+        <div className="flex items-center justify-between gap-3 pb-3 sm:pb-5 border-b border-slate-100">
           <div>
             <h2 className="text-base sm:text-lg font-bold text-slate-900">{t('recentOrders')}</h2>
-            <p className="text-xs text-slate-400 mt-0.5">{t('latestIncomingOrdersAttention')}</p>
+            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5">{t('latestIncomingOrdersAttention')}</p>
           </div>
           <button 
-            className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-brand-orange hover:text-brand-orange-dark transition-colors cursor-pointer" 
+            className="inline-flex items-center gap-1 sm:gap-1.5 text-xs sm:text-sm font-bold text-brand-orange hover:text-brand-orange-dark transition-colors cursor-pointer shrink-0" 
             onClick={() => navigate('/dashboard/supplier/orders')} 
             type="button"
           >
-            {t('viewAllOrders')} <span aria-hidden="true">→</span>
+            <span>{t('viewAllOrders')}</span>
+            <span aria-hidden="true">→</span>
           </button>
         </div>
 
-        <div className="overflow-x-auto -mx-5 sm:-mx-6 px-5 sm:px-6 mt-4">
+        {/* Mobile View: Clean Card List (No Horizontal Scroll) */}
+        <div className="space-y-2.5 sm:hidden mt-3">
+          {displayOrders.length ? (
+            displayOrders.map((order) => (
+              <div 
+                key={order.id} 
+                className="p-3 rounded-xl border border-slate-100 hover:border-slate-200 bg-slate-50/50 space-y-2 transition-all"
+              >
+                <div className="flex items-start justify-between gap-2">
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[10px] font-mono font-bold text-slate-400 block">
+                      {order.orderIdDisplay}
+                    </span>
+                    <h3 className="text-xs font-bold text-slate-900 truncate mt-0.5" title={order.shopOwner}>
+                      {order.shopOwner}
+                    </h3>
+                    <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                      {order.location}
+                    </p>
+                  </div>
+                  <div className="shrink-0">
+                    <StatusBadge status={order.status} />
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between text-xs">
+                  <div>
+                    <span className="text-slate-400 text-[10px] block uppercase font-semibold">{t('amount')}</span>
+                    <strong className="text-sm font-black text-slate-900 tabular-nums">
+                      {order.amountLabel}
+                    </strong>
+                  </div>
+                  <div className="text-right">
+                    <span className="text-slate-400 text-[10px] block uppercase font-semibold">{t('itemsCount')}</span>
+                    <span className="text-xs font-semibold text-slate-700">
+                      {order.items} {order.items === 1 ? (t('itemCount') || 'item') : (t('itemsCount') || 'items')}
+                    </span>
+                  </div>
+                </div>
+
+                <div className="pt-2 border-t border-slate-200/60 flex items-center justify-between">
+                  <span className="text-[10px] text-slate-400">
+                    {order.dateLabel}
+                  </span>
+                  <button
+                    className="inline-flex items-center gap-1 px-2.5 py-1 rounded-lg bg-orange-50 hover:bg-orange-100 text-brand-orange text-xs font-bold transition-colors cursor-pointer"
+                    onClick={() => navigate(`/dashboard/supplier/orders/${encodeURIComponent(order.id)}`)}
+                    type="button"
+                  >
+                    <span>{t('view') || 'View'}</span>
+                    <span aria-hidden="true">→</span>
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <div className="py-8 text-center text-xs text-slate-400 font-medium">
+              {t('noRecentOrders') || 'No recent orders'}
+            </div>
+          )}
+        </div>
+
+        {/* Tablet & Desktop View: Table */}
+        <div className="hidden sm:block overflow-x-auto -mx-5 sm:-mx-6 px-5 sm:px-6 mt-4">
           <table className="w-full text-left border-separate border-spacing-0 min-w-[760px]">
             <thead>
               <tr className="text-xs font-bold text-slate-500 uppercase tracking-wider">
@@ -169,8 +322,8 @@ export default function SupplierDashboardPage() {
               </tr>
             </thead>
             <tbody>
-              {recentOrders.length ? (
-                recentOrders.map((order) => (
+              {displayOrders.length ? (
+                displayOrders.map((order) => (
                   <tr key={order.id} className="hover:bg-slate-50/60 transition-colors">
                     <td className="py-3.5 px-4 text-xs font-mono font-bold text-slate-800 whitespace-nowrap border-b border-slate-100">
                       {order.orderIdDisplay}

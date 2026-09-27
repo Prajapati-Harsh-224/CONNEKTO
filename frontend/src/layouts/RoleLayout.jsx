@@ -17,6 +17,7 @@ export default function RoleLayout({ role: routeRole }) {
   const [unreadCount, setUnreadCount] = useState(0)
   const location = useLocation()
   const mainRef = useRef(null)
+  const notifButtonRef = useRef(null)
 
   useEffect(() => {
     window.scrollTo(0, 0)
@@ -68,6 +69,8 @@ export default function RoleLayout({ role: routeRole }) {
 
           <div className="relative">
             <button
+              ref={notifButtonRef}
+              data-notification-trigger="true"
               className="relative p-2 rounded-xl text-slate-600 hover:text-slate-900 hover:bg-slate-100 transition-colors cursor-pointer"
               type="button"
               aria-label={t('notifications') || 'Notifications'}
@@ -81,6 +84,7 @@ export default function RoleLayout({ role: routeRole }) {
               isOpen={isNotifOpen}
               onClose={() => setIsNotifOpen(false)}
               onUnreadChange={setUnreadCount}
+              triggerRef={notifButtonRef}
             />
           </div>
 

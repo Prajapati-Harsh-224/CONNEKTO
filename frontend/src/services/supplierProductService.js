@@ -109,8 +109,18 @@ export async function deactivateSupplierProduct(productId) {
   try {
     return await apiRequest(`/supplier/products/${encodeURIComponent(productId)}`, { method: 'DELETE' })
   } catch (error) {
-    const nextProducts = readLocalProducts().map((item) => item.id === productId ? { ...item, isActive: false } : item)
+    const nextProducts = readLocalProducts().filter((item) => item.id !== productId)
     writeLocalProducts(nextProducts)
-    return { data: { product: nextProducts.find((item) => item.id === productId) } }
+    return { data: { id: productId, message: 'Product removed' } }
+  }
+}
+
+export async function deleteSupplierProduct(productId) {
+  try {
+    return await apiRequest(`/supplier/products/${encodeURIComponent(productId)}`, { method: 'DELETE' })
+  } catch (error) {
+    const nextProducts = readLocalProducts().filter((item) => item.id !== productId)
+    writeLocalProducts(nextProducts)
+    return { data: { id: productId, message: 'Product removed' } }
   }
 }

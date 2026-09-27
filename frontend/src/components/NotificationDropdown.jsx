@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom'
 import { apiRequest } from '../services/api.js'
 import { useLocale } from '../context/LocaleContext.jsx'
 
-export default function NotificationDropdown({ role, isOpen, onClose, onUnreadChange }) {
+export default function NotificationDropdown({ role, isOpen, onClose, onUnreadChange, triggerRef }) {
   const { t } = useLocale()
   const [notifications, setNotifications] = useState([])
   const [loading, setLoading] = useState(false)
@@ -18,17 +18,31 @@ export default function NotificationDropdown({ role, isOpen, onClose, onUnreadCh
 
   useEffect(() => {
     function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target) &&
+        (!triggerRef?.current || !triggerRef.current.contains(event.target)) &&
+        !event.target.closest?.('[data-notification-trigger]')
+      ) {
         onClose()
       }
     }
+
+    function handleKeyDown(event) {
+      if (event.key === 'Escape') {
+        onClose()
+      }
+    }
+
     if (isOpen) {
       document.addEventListener('mousedown', handleClickOutside)
+      document.addEventListener('keydown', handleKeyDown)
     }
     return () => {
       document.removeEventListener('mousedown', handleClickOutside)
+      document.removeEventListener('keydown', handleKeyDown)
     }
-  }, [isOpen, onClose])
+  }, [isOpen, onClose, triggerRef])
 
   useEffect(() => {
     let isMounted = true

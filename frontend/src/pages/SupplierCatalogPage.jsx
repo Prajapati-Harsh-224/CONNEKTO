@@ -211,7 +211,7 @@ function SupplierReviewsSection({ supplier }) {
 export default function SupplierCatalogPage() {
   const { supplierId } = useParams()
   const { t } = useLocale()
-  const [activeTab, setActiveTab] = useState('products')
+  const [activeTab] = useState('products')
   const [supplier, setSupplier] = useState(null)
   const [products, setProducts] = useState([])
   const [isLoading, setIsLoading] = useState(true)
@@ -463,28 +463,11 @@ export default function SupplierCatalogPage() {
 
       {/* Navigation Tabs */}
       <nav className="flex items-center gap-2 border-b border-slate-200" aria-label="Supplier sections">
-        <button
-          className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-colors cursor-pointer ${
-            activeTab === 'products'
-              ? 'border-brand-orange text-brand-orange'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
-          }`}
-          onClick={() => setActiveTab('products')}
-          type="button"
+        <div
+          className="px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 border-brand-orange text-brand-orange"
         >
           {t('products')} ({products.length})
-        </button>
-        <button
-          className={`px-4 py-2.5 text-xs sm:text-sm font-bold border-b-2 transition-colors cursor-pointer ${
-            activeTab === 'reviews'
-              ? 'border-brand-orange text-brand-orange'
-              : 'border-transparent text-slate-500 hover:text-slate-800'
-          }`}
-          onClick={() => setActiveTab('reviews')}
-          type="button"
-        >
-          Reviews
-        </button>
+        </div>
       </nav>
 
       {activeTab === 'products' ? (
@@ -506,8 +489,8 @@ export default function SupplierCatalogPage() {
             </div>
           )}
 
-          {/* Category Pills Row (Same Concept as Gruh Udyog, with Supplier Categories) */}
-          <div className="flex items-center gap-2 overflow-x-auto pb-1 -mx-2 px-2 scrollbar-none">
+          {/* Category Pills Row - All categories displayed on single page without horizontal scroll */}
+          <div className="flex flex-wrap items-center gap-1.5 sm:gap-2 pb-1 w-full" role="tablist">
             {categories.map((category) => {
               const isActive = selectedCategory === category
               return (
@@ -518,7 +501,7 @@ export default function SupplierCatalogPage() {
                     setSelectedCategory(category)
                     setPage(1)
                   }}
-                  className={`px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer ${
+                  className={`px-3 sm:px-4 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all cursor-pointer select-none ${
                     isActive
                       ? 'bg-brand-orange text-white shadow-2xs'
                       : 'bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 hover:border-slate-300'
@@ -612,8 +595,8 @@ export default function SupplierCatalogPage() {
           {/* Products Display (Grid or List) */}
           {visibleProducts.length > 0 ? (
             viewMode === 'grid' ? (
-              /* 4-Column Product Cards Grid (Matching Gruh Udyog Concept & Size) */
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+              // Product Cards Grid: 3-column on mobile and tablet, 4-column on desktop
+              <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-5">
                 {visibleProducts.map((product) => {
                   const isFav = Boolean(favorites[product.id])
                   const availableStock = Number(product.availableStock ?? 0)
@@ -631,15 +614,15 @@ export default function SupplierCatalogPage() {
                   return (
                     <article
                       key={product.id}
-                      className={`bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden flex flex-col hover:shadow-md transition-all group relative ${
+                      className={`bg-white rounded-xl sm:rounded-2xl border border-slate-100 shadow-2xs hover:shadow-md transition-all group relative flex flex-col justify-between overflow-hidden ${
                         !isAvailable ? 'opacity-70 bg-slate-50/50' : ''
                       }`}
                     >
-                      {/* Image Container with Fixed Height h-44 matching Gruh Udyog */}
-                      <div className="relative h-44 w-full bg-slate-50 overflow-hidden shrink-0">
+                      {/* Image Container */}
+                      <div className="relative aspect-square sm:aspect-auto sm:h-44 w-full bg-slate-50 overflow-hidden shrink-0">
                         {/* Status Pill Badge */}
                         <span
-                          className={`absolute top-3 left-3 px-2.5 py-0.5 rounded-full text-[11px] font-bold shadow-2xs z-10 ${
+                          className={`absolute top-1.5 left-1.5 sm:top-3 sm:left-3 px-1.5 sm:px-2.5 py-0.5 rounded-full text-[9px] sm:text-[11px] font-bold shadow-2xs z-10 ${
                             isAvailable
                               ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                               : 'bg-amber-50 text-amber-800 border border-amber-200'
@@ -652,11 +635,11 @@ export default function SupplierCatalogPage() {
                         <button
                           type="button"
                           onClick={(e) => toggleFavorite(product.id, e)}
-                          className="absolute top-3 right-3 w-7 h-7 rounded-full bg-black/25 hover:bg-black/40 backdrop-blur-xs flex items-center justify-center text-white transition-colors z-10 cursor-pointer"
+                          className="absolute top-1.5 right-1.5 sm:top-3 sm:right-3 w-5 h-5 sm:w-7 sm:h-7 rounded-full bg-black/25 hover:bg-black/40 backdrop-blur-xs flex items-center justify-center text-white transition-colors z-10 cursor-pointer"
                           aria-label={`Save ${product.name}`}
                         >
                           <FiHeart
-                            className={`w-4 h-4 transition-colors ${
+                            className={`w-3 h-3 sm:w-4 sm:h-4 transition-colors ${
                               isFav ? 'fill-rose-500 text-rose-500' : 'text-white'
                             }`}
                           />
@@ -675,47 +658,48 @@ export default function SupplierCatalogPage() {
                             }}
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center bg-orange-50/50 text-4xl">
+                          <div className="w-full h-full flex items-center justify-center bg-orange-50/50 text-2xl sm:text-4xl">
                             📦
                           </div>
                         )}
                       </div>
 
                       {/* Card Body */}
-                      <div className="p-4 flex-1 flex flex-col justify-between">
+                      <div className="p-1.5 sm:p-4 flex-1 flex flex-col justify-between">
                         <div>
                           <h3
-                            className="text-sm sm:text-base font-bold text-slate-900 line-clamp-1 leading-tight group-hover:text-brand-orange transition-colors cursor-pointer"
+                            className="text-[11px] sm:text-base font-bold text-slate-900 line-clamp-2 sm:line-clamp-1 leading-tight group-hover:text-brand-orange transition-colors cursor-pointer"
                             onClick={() => setViewingProduct(product)}
                             title={product.name}
                           >
                             {product.name}
                           </h3>
-                          <p className="text-xs text-slate-400 mt-0.5">{product.brand || 'General'} · {product.packSize || '1 unit'}</p>
+                          <p className="text-[9px] sm:text-xs text-slate-400 mt-0.5 truncate">{product.brand || 'General'} · {product.packSize || '1 unit'}</p>
 
-                          <div className="flex items-center gap-1.5 text-xs text-slate-500 mt-1">
+                          <div className="hidden sm:flex items-center gap-1.5 text-xs text-slate-500 mt-1">
                             <FiMapPin className="w-3 h-3 text-slate-400 shrink-0" />
                             <span className="truncate">{product.category || 'General'}</span>
                           </div>
                         </div>
 
-                        <div className="mt-3 pt-3 border-t border-slate-100">
+                        <div className="mt-1.5 sm:mt-3 pt-1.5 sm:pt-3 border-t border-slate-100">
                           <div>
-                            <div className="text-base font-black text-slate-900 leading-none">
+                            <div className="text-xs sm:text-base font-black text-slate-900 leading-none">
                               {formatPrice(unitPrice)}{' '}
-                              <small className="text-[11px] text-slate-400 font-normal">/ {getItemUnitLabel(product, 1)}</small>
+                              <small className="text-[9px] sm:text-[11px] text-slate-400 font-normal">/ {getItemUnitLabel(product, 1)}</small>
                             </div>
-                            <div className="text-xs text-emerald-700 font-semibold mt-1 truncate">
-                              1 Box = {unitsPerBox} {getItemUnitLabel(product, unitsPerBox)} ({formatPrice(boxPrice)}/box)
+                            <div className="text-[9px] sm:text-xs text-emerald-700 font-semibold mt-0.5 sm:mt-1 truncate">
+                              <span className="sm:hidden">Box: {formatPrice(boxPrice)}</span>
+                              <span className="hidden sm:inline">1 Box = {unitsPerBox} {getItemUnitLabel(product, unitsPerBox)} ({formatPrice(boxPrice)}/box)</span>
                             </div>
                           </div>
 
                           {/* Action Buttons: Add to Cart or Incrementer */}
-                          <div className="mt-3.5 flex items-center gap-2">
+                          <div className="mt-2 sm:mt-3.5 flex items-center gap-1 sm:gap-2">
                             <button
                               type="button"
                               onClick={() => setViewingProduct(product)}
-                              className="p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
+                              className="hidden sm:flex p-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 transition-colors cursor-pointer"
                               title="Quick view"
                             >
                               <FiEye className="w-4 h-4" />
@@ -723,42 +707,43 @@ export default function SupplierCatalogPage() {
 
                             {!isAvailable ? (
                               <button
-                                className="flex-1 py-2 rounded-xl bg-slate-100 text-slate-400 text-xs font-bold cursor-not-allowed border border-slate-200 text-center"
+                                className="flex-1 py-1 sm:py-2 rounded-lg sm:rounded-xl bg-slate-100 text-slate-400 text-[10px] sm:text-xs font-bold cursor-not-allowed border border-slate-200 text-center truncate"
                                 disabled
                                 type="button"
                               >
                                 {t('unavailable')}
                               </button>
                             ) : cartBoxes > 0 ? (
-                              <div className="flex-1 flex items-center justify-between p-1 rounded-xl bg-orange-50 border border-brand-orange/30">
+                              <div className="flex-1 flex items-center justify-between p-0.5 sm:p-1 rounded-lg sm:rounded-xl bg-orange-50 border border-brand-orange/30">
                                 <button
-                                  className="flex items-center justify-center w-7 h-7 rounded-lg bg-white text-brand-orange font-bold text-sm shadow-xs hover:bg-orange-100 transition-colors cursor-pointer"
+                                  className="flex items-center justify-center w-5 h-5 sm:w-7 sm:h-7 rounded-md sm:rounded-lg bg-white text-brand-orange font-bold text-xs sm:text-sm shadow-xs hover:bg-orange-100 transition-colors cursor-pointer"
                                   type="button"
                                   onClick={() => handleDecrement(product)}
                                   aria-label={`Decrease quantity of ${product.name}`}
                                 >
-                                  <FiMinus className="w-3 h-3" />
+                                  <FiMinus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                 </button>
-                                <span className="text-xs font-bold text-slate-900">
-                                  {cartBoxes} {cartBoxes === 1 ? 'Box' : 'Boxes'}
+                                <span className="text-[10px] sm:text-xs font-bold text-slate-900 px-0.5">
+                                  {cartBoxes} <span className="hidden sm:inline">{cartBoxes === 1 ? 'Box' : 'Boxes'}</span>
                                 </span>
                                 <button
-                                  className="flex items-center justify-center w-7 h-7 rounded-lg bg-white text-brand-orange font-bold text-sm shadow-xs hover:bg-orange-100 transition-colors cursor-pointer"
+                                  className="flex items-center justify-center w-5 h-5 sm:w-7 sm:h-7 rounded-md sm:rounded-lg bg-white text-brand-orange font-bold text-xs sm:text-sm shadow-xs hover:bg-orange-100 transition-colors cursor-pointer"
                                   type="button"
                                   onClick={() => handleIncrement(product)}
                                   aria-label={`Increase quantity of ${product.name}`}
                                 >
-                                  <FiPlus className="w-3 h-3" />
+                                  <FiPlus className="w-2.5 h-2.5 sm:w-3 sm:h-3" />
                                 </button>
                               </div>
                             ) : (
                               <button
-                                className="flex-1 py-2 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1.5"
+                                className="flex-1 py-1 sm:py-2 rounded-lg sm:rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white text-[10px] sm:text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center justify-center gap-1 sm:gap-1.5 active:scale-95"
                                 type="button"
                                 onClick={() => handleAdd(product)}
                               >
-                                <FiPlus className="w-3.5 h-3.5 stroke-[3]" />
-                                <span>{t('addToCart')}</span>
+                                <FiPlus className="w-3 h-3 sm:w-3.5 sm:h-3.5 stroke-[3]" />
+                                <span className="hidden sm:inline">{t('addToCart')}</span>
+                                <span className="sm:hidden">Add</span>
                               </button>
                             )}
                           </div>

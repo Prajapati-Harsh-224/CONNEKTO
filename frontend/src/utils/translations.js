@@ -38,6 +38,8 @@ const english = {
   signOut: 'Sign out',
   products: 'Products',
   product: 'Product',
+  removeProduct: 'Remove Product',
+  saveChanges: 'Save Changes',
   customer: 'Customer',
   customers: 'Customers',
   customersDescription: 'Keep track of the retailers ordering from your business.',

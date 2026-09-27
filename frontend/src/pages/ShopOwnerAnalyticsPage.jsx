@@ -451,18 +451,18 @@ export default function ShopOwnerAnalyticsPage() {
         </div>
 
         {data.topProducts.length ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4">
+          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-3 xl:grid-cols-5 gap-2 sm:gap-3 md:gap-4">
             {data.topProducts.map((product) => (
-              <article className="p-3.5 rounded-xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50/50 transition-all flex flex-col justify-between space-y-2" key={product.name}>
+              <article className="p-2 sm:p-3 md:p-3.5 rounded-xl border border-slate-100 hover:border-slate-200 hover:bg-slate-50/50 transition-all flex flex-col justify-between space-y-1.5 sm:space-y-2" key={product.name}>
                 <div className="aspect-square rounded-lg bg-slate-50 overflow-hidden flex items-center justify-center">
                   <ProductImage className="w-full h-full object-cover" alt={`${product.name} product`} fallbackText={product.imageLabel || product.name.slice(0, 1)} src={product.imageUrl || product.imageLabel || ''} />
                 </div>
                 <div>
-                  <strong className="text-xs sm:text-sm font-bold text-slate-900 block truncate" title={product.name}>{product.name}</strong>
-                  <span className="text-[11px] text-slate-400 block truncate">{product.packSize || t('productPackNotAvailable')}</span>
-                  <div className="flex items-center justify-between pt-2 mt-2 border-t border-slate-100">
-                    <b className="text-xs font-black text-brand-orange">{product.quantity} {t('units')}</b>
-                    <small className="text-[10px] uppercase font-bold text-slate-400 truncate">{product.category}</small>
+                  <strong className="text-[11px] sm:text-xs md:text-sm font-bold text-slate-900 block truncate" title={product.name}>{product.name}</strong>
+                  <span className="text-[9px] sm:text-[10px] md:text-[11px] text-slate-400 block truncate">{product.packSize || t('productPackNotAvailable')}</span>
+                  <div className="flex items-center justify-between pt-1.5 sm:pt-2 mt-1.5 sm:mt-2 border-t border-slate-100">
+                    <b className="text-[10px] sm:text-xs font-black text-brand-orange truncate">{product.quantity} {t('units')}</b>
+                    <small className="text-[9px] sm:text-[10px] uppercase font-bold text-slate-400 truncate ml-1">{product.category}</small>
                   </div>
                 </div>
               </article>

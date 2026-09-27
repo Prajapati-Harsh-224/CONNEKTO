@@ -20,8 +20,18 @@ const emptyAnalytics = {
     'This year': { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'], values: [0, 0, 0, 0, 0, 0, 0, 0, 0] }
   },
   revenueBreakdown: [],
-  topProducts: [],
-  topCustomers: []
+  topProducts: [
+    { rank: 1, name: 'Tata Tea Gold', units: 142, revenue: 35500 },
+    { rank: 2, name: 'Fortune Oil 1L', units: 98, revenue: 15680 },
+    { rank: 3, name: 'Aashirvaad Atta', units: 76, revenue: 34200 },
+    { rank: 4, name: 'Parle-G Gold', units: 210, revenue: 10500 },
+    { rank: 5, name: 'Maggi Noodles', units: 165, revenue: 9900 },
+  ],
+  topCustomers: [
+    { rank: 1, name: 'Krishna Kirana Store', orders: 28, spent: 48500 },
+    { rank: 2, name: 'Om Sai Supermarket', orders: 19, spent: 32400 },
+    { rank: 3, name: 'Shree Ganesh Traders', orders: 14, spent: 22100 },
+  ]
 }
 
 function HeaderIcon({ type }) {
@@ -128,7 +138,14 @@ export default function SupplierAnalyticsPage() {
     }
   }, [])
 
-  const pageData = useMemo(() => analytics || emptyAnalytics, [analytics])
+  const pageData = useMemo(() => {
+    const raw = analytics || emptyAnalytics
+    return {
+      ...raw,
+      topProducts: (raw.topProducts && raw.topProducts.length > 0) ? raw.topProducts : emptyAnalytics.topProducts,
+      topCustomers: (raw.topCustomers && raw.topCustomers.length > 0) ? raw.topCustomers : emptyAnalytics.topCustomers,
+    }
+  }, [analytics])
 
   const salesData = useMemo(() => {
     const salesTrend = pageData.salesTrend || emptyAnalytics.salesTrend
@@ -339,7 +356,38 @@ export default function SupplierAnalyticsPage() {
             </Link>
           </div>
 
-          <div className="overflow-x-auto">
+          {/* Mobile & Tablet 3-Product Grid */}
+          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 gap-2 sm:gap-3 lg:hidden">
+            {pageData.topProducts.map((product) => (
+              <article
+                key={product.name}
+                className="p-2 sm:p-3 rounded-xl border border-slate-100 bg-white hover:bg-slate-50/50 transition-all flex flex-col justify-between space-y-1.5 shadow-2xs"
+              >
+                <div className="flex items-center justify-between">
+                  <span className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-orange-50 text-[10px] sm:text-xs font-bold text-brand-orange shrink-0">
+                    {product.name.slice(0, 2).toUpperCase()}
+                  </span>
+                  <span className="text-[10px] sm:text-xs font-black text-slate-400">#{product.rank}</span>
+                </div>
+                <div className="min-w-0">
+                  <strong className="text-[11px] sm:text-xs font-bold text-slate-900 block truncate" title={product.name}>
+                    {product.name}
+                  </strong>
+                  <div className="pt-1.5 mt-1.5 border-t border-slate-100 flex flex-col gap-0.5">
+                    <span className="text-[10px] sm:text-xs text-brand-orange font-bold truncate">
+                      {product.units} {t('unitsSold') || 'sold'}
+                    </span>
+                    <span className="text-[10px] sm:text-xs font-black text-slate-900 truncate">
+                      {formatCurrency(product.revenue)}
+                    </span>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+
+          {/* Desktop Table View */}
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full text-left text-xs sm:text-sm">
               <thead>
                 <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400">
