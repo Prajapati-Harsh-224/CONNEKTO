@@ -4,6 +4,16 @@ import { translations } from '../utils/translations.js'
 
 const LocaleContext = createContext(null)
 
+function formatVariableKey(key) {
+  if (typeof key !== 'string' || !key) return ''
+  if (key.includes(' ') || key.includes('-')) return key
+  const unCamel = key
+    .replace(/([a-z0-9])([A-Z])/g, '$1 $2')
+    .replace(/[_-]+/g, ' ')
+    .trim()
+  return unCamel.charAt(0).toUpperCase() + unCamel.slice(1)
+}
+
 export function LocaleProvider({ children }) {
   const [locale, setLocaleState] = useState(getStoredLocale)
 
@@ -13,7 +23,7 @@ export function LocaleProvider({ children }) {
   }
 
   function translate(key, values = {}) {
-    const template = translations[locale]?.[key] || translations.en?.[key] || key
+    const template = translations[locale]?.[key] || translations.en?.[key] || formatVariableKey(key)
     const safeValues = values && typeof values === 'object' ? values : {}
     return Object.entries(safeValues).reduce((result, [token, value]) => result.replaceAll(`{${token}}`, String(value)), template)
   }

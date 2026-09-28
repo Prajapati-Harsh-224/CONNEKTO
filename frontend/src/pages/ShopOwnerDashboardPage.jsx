@@ -101,7 +101,7 @@ export default function ShopOwnerDashboardPage() {
         </div>
       </header>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 w-full min-w-0">
+      <div className="grid grid-cols-3 sm:grid-cols-2 lg:grid-cols-3 gap-2 sm:gap-4 lg:gap-5 w-full min-w-0">
         {summaryCards.map((card) => (
           <MetricCard
             key={card.label}
@@ -136,7 +136,7 @@ export default function ShopOwnerDashboardPage() {
                 {recentOrders.map((order) => (
                   <div key={order.id} className="p-3.5 rounded-xl border border-slate-100 hover:border-slate-200 bg-slate-50/40 space-y-2">
                     <div className="flex items-center justify-between gap-2">
-                      <span className="text-sm font-bold text-slate-900 truncate">{order.supplier}</span>
+                      <span className="text-sm font-bold text-slate-900 break-words leading-snug">{order.supplier}</span>
                       <StatusBadge status={order.status} />
                     </div>
                     <div className="flex items-center justify-between text-xs text-slate-500">
@@ -156,16 +156,16 @@ export default function ShopOwnerDashboardPage() {
                 ))}
               </div>
 
-              {/* Tablet & Desktop View: Scroll-safe Table */}
-              <div className="hidden sm:block w-full max-w-full overflow-x-auto">
-                <table className="w-full text-left border-separate border-spacing-0">
+              {/* Tablet & Desktop View: Table */}
+              <div className="hidden sm:block w-full max-w-full">
+                <table className="w-full table-fixed text-left border-separate border-spacing-0">
                   <thead>
                     <tr className="text-xs font-bold text-slate-500 uppercase tracking-wider">
-                      <th className="py-2.5 px-3 bg-slate-50 rounded-l-xl font-bold w-[38%]">{t('supplier')}</th>
-                      <th className="py-2.5 px-3 bg-slate-50 font-bold w-[14%]">{t('amount')}</th>
-                      <th className="py-2.5 px-3 bg-slate-50 font-bold w-[24%]">{t('status')}</th>
-                      <th className="py-2.5 px-4 bg-slate-50 font-bold w-[18%]">{t('date')}</th>
-                      <th className="py-2.5 px-3 bg-slate-50 rounded-r-xl text-right font-bold w-[6%]">
+                      <th className="py-2.5 px-3 bg-slate-50 rounded-l-xl font-bold w-[40%]">{t('supplier')}</th>
+                      <th className="py-2.5 px-2 bg-slate-50 font-bold w-[15%]">{t('amount')}</th>
+                      <th className="py-2.5 px-2 bg-slate-50 font-bold w-[22%]">{t('status')}</th>
+                      <th className="py-2.5 px-2 bg-slate-50 font-bold w-[15%]">{t('date')}</th>
+                      <th className="py-2.5 px-2 bg-slate-50 rounded-r-xl text-right font-bold w-[8%]">
                         <span className="sr-only">{t('action') || 'Action'}</span>
                       </th>
                     </tr>
@@ -175,20 +175,20 @@ export default function ShopOwnerDashboardPage() {
                     {recentOrders.map((order) => (
                       <tr key={order.id} className="hover:bg-slate-50/60 transition-colors">
                         <td className="py-3 px-3 border-b border-slate-100">
-                          <span className="text-sm font-semibold text-slate-900 whitespace-nowrap" title={order.supplier}>
+                          <span className="text-sm font-semibold text-slate-900 break-words leading-snug">
                             {order.supplier}
                           </span>
                         </td>
-                        <td className="py-3 px-3 text-xs font-bold text-slate-900 tabular-nums whitespace-nowrap border-b border-slate-100">
+                        <td className="py-3 px-2 text-xs font-bold text-slate-900 tabular-nums whitespace-nowrap border-b border-slate-100">
                           {order.amount}
                         </td>
-                        <td className="py-3 px-3 whitespace-nowrap border-b border-slate-100">
+                        <td className="py-3 px-2 whitespace-nowrap border-b border-slate-100">
                           <StatusBadge status={order.status} />
                         </td>
-                        <td className="py-3 px-4 text-xs text-slate-500 whitespace-nowrap border-b border-slate-100">
+                        <td className="py-3 px-2 text-xs text-slate-500 whitespace-nowrap border-b border-slate-100">
                           {order.date}
                         </td>
-                        <td className="py-3 px-3 text-right whitespace-nowrap border-b border-slate-100">
+                        <td className="py-3 px-2 text-right whitespace-nowrap border-b border-slate-100">
                           <Link 
                             className="inline-flex items-center justify-center w-7 h-7 rounded-lg border border-slate-200 hover:border-brand-orange hover:bg-brand-orange-light hover:text-brand-orange text-slate-500 transition-colors" 
                             to={`/dashboard/shop-owner/orders/${encodeURIComponent(order.id)}`} 

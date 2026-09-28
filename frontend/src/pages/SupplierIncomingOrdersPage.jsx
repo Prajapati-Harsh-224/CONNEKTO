@@ -4,7 +4,7 @@ import EmptyState from '../components/EmptyState.jsx'
 import LoadingState from '../components/LoadingState.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
-import { getSupplierOrders, updateSupplierOrderStatus } from '../services/supplierOrderService.js'
+import { getSupplierOrders } from '../services/supplierOrderService.js'
 
 const pageSize = 8
 
@@ -80,8 +80,6 @@ export default function SupplierIncomingOrdersPage() {
   const customerOptions = useMemo(() => ['All Customers', ...new Set(orders.map((order) => order.customer).filter(Boolean))], [orders])
   const translatedCustomerOptions = useMemo(() => [{ label: t('allCustomers'), value: 'All Customers' }, ...customerOptions.slice(1).map((customer) => ({ label: customer, value: customer }))], [customerOptions, t])
   const [page, setPage] = useState(1)
-  const [selectedIds, setSelectedIds] = useState([])
-  const [isUpdating, setIsUpdating] = useState(false)
 
 const fallbackSupplierOrders = [
   {
@@ -225,17 +223,6 @@ const fallbackSupplierOrders = [
   const totalPages = Math.max(1, Math.ceil(filteredOrders.length / pageSize))
   const visibleOrders = filteredOrders.slice((page - 1) * pageSize, page * pageSize)
   const displayedOrders = isMobile ? filteredOrders : visibleOrders
-  const targetOrders = isMobile ? filteredOrders : visibleOrders
-  const allVisibleSelected = targetOrders.length > 0 && targetOrders.every((order) => selectedIds.includes(order.id))
-
-  function handleSelectAll(checked) {
-    const target = isMobile ? filteredOrders : visibleOrders
-    setSelectedIds(checked ? target.map((order) => order.id) : [])
-  }
-
-  function toggleSelection(orderId) {
-    setSelectedIds((current) => current.includes(orderId) ? current.filter((id) => id !== orderId) : [...current, orderId])
-  }
 
   function clearFilters() {
     setSearch('')
@@ -243,40 +230,6 @@ const fallbackSupplierOrders = [
     setCustomerFilter('All Customers')
     setDateFilter('Select Date Range')
     setActiveTab('All Orders')
-  }
-
-  async function applyBulkStatus(nextStatus) {
-    if (!selectedIds.length) return
-    setIsUpdating(true)
-    try {
-      const selectedOrders = orders.filter((order) => selectedIds.includes(order.id))
-      const responses = await Promise.all(selectedOrders.map((order) => updateSupplierOrderStatus(order.id, nextStatus)))
-      const updatedStatuses = new Map(responses.map((response) => [response.data.order.id, response.data.order.status]))
-      setOrders((current) => current.map((order) => updatedStatuses.has(order.id) ? { ...order, status: updatedStatuses.get(order.id) } : order))
-      setSelectedIds([])
-    } catch (requestError) {
-      setError(requestError.message)
-    } finally {
-      setIsUpdating(false)
-    }
-  }
-
-  function exportOrders() {
-    const rowsToExport = selectedIds.length ? filteredOrders.filter((order) => selectedIds.includes(order.id)) : filteredOrders
-    const rows = [
-      ['Order ID', 'Customer', 'Area', 'Status', 'Amount', 'Date'].join(','),
-      ...rowsToExport.map((order) => [order.id, order.customer, order.area, order.status, order.amount, formatDateTime(order.date)].map((value) => `"${String(value).replaceAll('"', '""')}"`).join(',')),
-    ].join('\n')
-
-    const blob = new Blob([rows], { type: 'text/csv;charset=utf-8;' })
-    const url = URL.createObjectURL(blob)
-    const link = document.createElement('a')
-    link.href = url
-    link.download = 'supplier-orders.csv'
-    document.body.appendChild(link)
-    link.click()
-    document.body.removeChild(link)
-    URL.revokeObjectURL(url)
   }
 
   if (isLoading) return <LoadingState message={t('loadingIncomingOrders')} />
@@ -309,40 +262,9 @@ const fallbackSupplierOrders = [
         <span className="font-semibold text-slate-800">{t('orders')}</span>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
-        <div>
-          <h1 className="text-xl sm:text-3xl font-bold font-serif text-brand-navy">{t('orders')}</h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-0.5 sm:mt-1">{t('manageOrdersProductsCustomers')}</p>
-        </div>
-
-        <div className="flex items-center gap-2 sm:gap-2.5 w-full sm:w-auto">
-          <button
-            className="flex-1 sm:flex-initial px-3.5 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white hover:bg-slate-50 border border-slate-200 shadow-2xs transition-colors cursor-pointer text-center"
-            onClick={exportOrders}
-            type="button"
-          >
-            {t('export')}
-          </button>
-          <div className="flex-1 sm:flex-initial">
-            <select
-              className="w-full px-3 py-2 rounded-xl text-xs font-semibold text-slate-700 bg-white border border-slate-200 shadow-2xs outline-none cursor-pointer disabled:opacity-40 disabled:cursor-not-allowed"
-              defaultValue=""
-              disabled={!selectedIds.length || isUpdating}
-              onChange={(event) => {
-                const value = event.target.value
-                if (value) applyBulkStatus(value)
-                event.target.value = ''
-              }}
-            >
-              <option value="">{t('bulkActions')}</option>
-              <option value="Accepted">{t('markAccepted')}</option>
-              <option value="Preparing">{t('markPreparing')}</option>
-              <option value="Out for Delivery">{t('markOutForDelivery')}</option>
-              <option value="Delivered">{t('markDelivered')}</option>
-              <option value="Cancelled">{t('cancelOrder')}</option>
-            </select>
-          </div>
-        </div>
+      <div>
+        <h1 className="text-xl sm:text-3xl font-bold font-serif text-brand-navy">{t('orders')}</h1>
+        <p className="text-xs sm:text-sm text-slate-500 mt-0.5 sm:mt-1">{t('manageOrdersProductsCustomers')}</p>
       </div>
 
       <div className="flex flex-wrap items-center gap-1 sm:gap-1.5 md:gap-2 pb-2 border-b border-slate-200 w-full" role="tablist">
@@ -412,36 +334,6 @@ const fallbackSupplierOrders = [
         </div>
       </div>
 
-      {/* Mobile Bulk Selection Banner */}
-      {selectedIds.length > 0 && (
-        <div className="sm:hidden p-3 rounded-xl bg-emerald-50 border border-emerald-200 flex items-center justify-between text-xs text-emerald-900 font-semibold shadow-2xs">
-          <span>{selectedIds.length} order{selectedIds.length > 1 ? 's' : ''} selected</span>
-          <button
-            type="button"
-            onClick={() => setSelectedIds([])}
-            className="text-xs text-emerald-700 font-bold underline cursor-pointer"
-          >
-            Clear
-          </button>
-        </div>
-      )}
-
-      {/* Mobile Selection & Count Toolbar */}
-      <div className="sm:hidden flex items-center justify-between px-1 text-xs text-slate-500">
-        <label className="flex items-center gap-2 cursor-pointer font-medium select-none">
-          <input
-            checked={allVisibleSelected}
-            onChange={(event) => handleSelectAll(event.target.checked)}
-            type="checkbox"
-            className="rounded text-emerald-600 focus:ring-emerald-500"
-          />
-          <span>Select all ({displayedOrders.length})</span>
-        </label>
-        <span className="text-[11px] text-slate-400">
-          Total: {filteredOrders.length}
-        </span>
-      </div>
-
       {/* Mobile View: Clean Card List */}
       <div className="space-y-3 sm:hidden w-full min-w-0">
         {displayedOrders.length ? (
@@ -452,40 +344,25 @@ const fallbackSupplierOrders = [
               const boxes = Number(item.boxes) || (unitsPerBox > 1 ? Math.floor(Number(item.quantity) / unitsPerBox) : Number(item.quantity)) || 1
               return sum + boxes
             }, 0)
-            const isChecked = selectedIds.includes(order.id)
 
             return (
               <div
                 key={order.id}
-                className={`p-3.5 rounded-xl border transition-all space-y-2.5 ${
-                  isChecked
-                    ? 'border-emerald-500 bg-emerald-50/40 ring-1 ring-emerald-500/30'
-                    : 'border-slate-200/80 bg-white hover:border-slate-300 shadow-2xs'
-                }`}
+                className="p-3.5 rounded-xl border border-slate-200/80 bg-white hover:border-slate-300 shadow-2xs transition-all space-y-2.5"
               >
                 <div className="flex items-start justify-between gap-2">
-                  <div className="flex items-start gap-2.5 min-w-0 flex-1">
-                    <label className="flex items-center cursor-pointer pt-0.5" onClick={(e) => e.stopPropagation()}>
-                      <input
-                        checked={isChecked}
-                        onChange={() => toggleSelection(order.id)}
-                        type="checkbox"
-                        className="rounded text-emerald-600 focus:ring-emerald-500"
-                      />
-                    </label>
-                    <div className="min-w-0 flex-1">
-                      <span className="text-[11px] font-mono font-bold text-slate-900 block truncate">
-                        {formatOrderId(order.id)}
-                      </span>
-                      <strong className="text-xs font-bold text-slate-900 truncate block mt-0.5" title={order.customer}>
-                        {order.customer}
-                      </strong>
-                      {order.area && (
-                        <p className="text-[10px] text-slate-400 truncate mt-0.5">
-                          {order.area}
-                        </p>
-                      )}
-                    </div>
+                  <div className="min-w-0 flex-1">
+                    <span className="text-[11px] font-mono font-bold text-slate-900 block truncate">
+                      {formatOrderId(order.id)}
+                    </span>
+                    <strong className="text-xs font-bold text-slate-900 truncate block mt-0.5" title={order.customer}>
+                      {order.customer}
+                    </strong>
+                    {order.area && (
+                      <p className="text-[10px] text-slate-400 truncate mt-0.5">
+                        {order.area}
+                      </p>
+                    )}
                   </div>
                   <div className="shrink-0">
                     <StatusBadge status={order.status} />
@@ -553,18 +430,13 @@ const fallbackSupplierOrders = [
           <table className="w-full text-left border-collapse min-w-[850px]">
             <thead>
               <tr className="border-b border-slate-100 bg-slate-50/80 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-                <th className="py-3 px-5 w-12">
-                  <label className="flex items-center cursor-pointer">
-                    <input checked={allVisibleSelected} onChange={(event) => handleSelectAll(event.target.checked)} type="checkbox" className="rounded text-emerald-600 focus:ring-emerald-500" />
-                  </label>
-                </th>
-                <th className="py-3 px-4 font-bold w-[14%]">{t('orderId')}</th>
-                <th className="py-3 px-4 font-bold w-[24%]">{t('customerShop')}</th>
-                <th className="py-3 px-4 font-bold w-[10%]">{t('itemsCount')}</th>
-                <th className="py-3 px-4 font-bold w-[11%]">{t('amount')}</th>
+                <th className="py-3 px-5 font-bold w-[15%]">{t('orderId')}</th>
+                <th className="py-3 px-4 font-bold w-[25%]">{t('customerShop')}</th>
+                <th className="py-3 px-4 font-bold w-[11%]">{t('itemsCount')}</th>
+                <th className="py-3 px-4 font-bold w-[12%]">{t('amount')}</th>
                 <th className="py-3 px-4 font-bold w-[14%]">{t('status')}</th>
-                <th className="py-3 px-4 font-bold w-[17%]">{t('dateTime')}</th>
-                <th className="py-3 px-5 text-right font-bold w-[10%]">{t('action')}</th>
+                <th className="py-3 px-4 font-bold w-[15%]">{t('dateTime')}</th>
+                <th className="py-3 px-5 text-right font-bold w-[8%]">{t('action')}</th>
               </tr>
             </thead>
 
@@ -580,12 +452,7 @@ const fallbackSupplierOrders = [
 
                   return (
                     <tr className="hover:bg-slate-50/70 transition-colors text-xs" key={order.id}>
-                      <td className="py-3.5 px-5">
-                        <label className="flex items-center cursor-pointer">
-                          <input checked={selectedIds.includes(order.id)} onChange={() => toggleSelection(order.id)} type="checkbox" className="rounded text-emerald-600 focus:ring-emerald-500" />
-                        </label>
-                      </td>
-                      <td className="py-3.5 px-4 font-bold text-slate-900 font-mono text-[11px] whitespace-nowrap">
+                      <td className="py-3.5 px-5 font-bold text-slate-900 font-mono text-[11px] whitespace-nowrap">
                         {formatOrderId(order.id)}
                       </td>
                       <td className="py-3.5 px-4 min-w-0">
@@ -620,7 +487,7 @@ const fallbackSupplierOrders = [
             ) : (
               <tbody>
                 <tr>
-                  <td colSpan={8} className="py-12">
+                  <td colSpan={7} className="py-12">
                     <EmptyState title={t('noOrdersFound')} message={t('noOrdersFoundMessage')} />
                   </td>
                 </tr>

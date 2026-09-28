@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { FiPackage, FiClock, FiCheckCircle, FiBox } from 'react-icons/fi'
+import { FiPackage, FiClock, FiCheckCircle } from 'react-icons/fi'
 import LoadingState from '../components/LoadingState.jsx'
 import MetricCard from '../components/MetricCard.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
@@ -171,15 +171,22 @@ const fallbackSupplierOrders = [
             'Pending orders': 'pendingOrders',
             'Completed orders': 'completedOrders',
             "Today's Revenue": 'todayRevenue',
+            "Today's revenue": 'todayRevenue',
           }
           const metricDetailKeyMap = {
             'Received this week': 'receivedThisWeek',
             'Awaiting fulfilment': 'awaitingFulfilment',
+            'Awaiting fulfillment': 'awaitingFulfilment',
             'Delivered successfully': 'deliveredSuccessfully',
             'Revenue received today': 'revenueReceivedToday',
           }
-          const label = metricLabelKeyMap[metric.label] ? t(metricLabelKeyMap[metric.label]) : metric.label
-          const detail = metricDetailKeyMap[metric.detail] ? t(metricDetailKeyMap[metric.detail]) : metric.detail
+          const labelKey = metricLabelKeyMap[metric.label]
+          const translatedLabel = labelKey ? t(labelKey) : null
+          const label = translatedLabel && translatedLabel !== labelKey ? translatedLabel : (metric.label || '')
+
+          const detailKey = metricDetailKeyMap[metric.detail]
+          const translatedDetail = detailKey ? t(detailKey) : null
+          const detail = translatedDetail && translatedDetail !== detailKey ? translatedDetail : (metric.detail || '')
 
           return (
             <MetricCard
@@ -195,36 +202,6 @@ const fallbackSupplierOrders = [
         })}
       </div>
 
-      {/* Mobile Quick Actions */}
-      <div className="grid grid-cols-2 sm:hidden gap-2.5">
-        <button
-          type="button"
-          onClick={() => navigate('/dashboard/supplier/orders')}
-          className="p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex items-center gap-2.5 text-left active:bg-slate-50 transition-colors cursor-pointer"
-        >
-          <span className="w-8 h-8 rounded-lg bg-orange-50 text-brand-orange flex items-center justify-center shrink-0">
-            <FiPackage size={16} />
-          </span>
-          <div className="min-w-0 flex-1">
-            <span className="text-xs font-bold text-slate-800 block truncate">{t('orders') || 'Orders'}</span>
-            <span className="text-[10px] text-slate-400 block truncate">{t('viewAllOrders') || 'Manage orders'}</span>
-          </div>
-        </button>
-
-        <button
-          type="button"
-          onClick={() => navigate('/dashboard/supplier/products')}
-          className="p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs flex items-center gap-2.5 text-left active:bg-slate-50 transition-colors cursor-pointer"
-        >
-          <span className="w-8 h-8 rounded-lg bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-            <FiBox size={16} />
-          </span>
-          <div className="min-w-0 flex-1">
-            <span className="text-xs font-bold text-slate-800 block truncate">{t('products') || 'Products'}</span>
-            <span className="text-[10px] text-slate-400 block truncate">{t('catalog') || 'Catalog'}</span>
-          </div>
-        </button>
-      </div>
 
       {/* Recent Orders Container */}
       <div className="bg-white rounded-xl sm:rounded-2xl border border-slate-200/80 shadow-xs p-3.5 sm:p-6 w-full min-w-0">

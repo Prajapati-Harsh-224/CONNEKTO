@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
+import { FiX } from 'react-icons/fi'
 import EmptyState from '../components/EmptyState.jsx'
 import LoadingState from '../components/LoadingState.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
@@ -25,6 +26,87 @@ function getInitials(value) {
   return String(value || 'S').split(' ').filter(Boolean).slice(0, 2).map((part) => part[0]).join('').toUpperCase() || 'S'
 }
 
+function CustomerDetailCard({ customer, onClose }) {
+  const { t } = useLocale()
+  if (!customer) return null
+
+  const handleCall = () => {
+    if (!customer.phone) return
+    window.location.href = `tel:${String(customer.phone).replace(/\s+/g, '')}`
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between gap-3 pb-3 border-b border-slate-100 pr-1">
+        <div className="flex items-center gap-3 min-w-0">
+          <span className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm shrink-0">
+            {getInitials(customer.name)}
+          </span>
+          <div className="min-w-0">
+            <h2 className="text-base font-bold text-slate-900 leading-tight truncate">{customer.name}</h2>
+            <p className="text-xs text-slate-400 mt-0.5 truncate">{customer.category}</p>
+          </div>
+        </div>
+        {onClose && (
+          <button
+            type="button"
+            onClick={onClose}
+            className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0"
+            aria-label={t('close') || 'Close'}
+          >
+            <FiX className="w-5 h-5" />
+          </button>
+        )}
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 bg-slate-50 rounded-xl p-3 text-center">
+        <div>
+          <span className="text-[11px] text-slate-400 font-medium block">{t('orders')}</span>
+          <strong className="text-base font-bold text-slate-900 tabular-nums">{customer.totalOrders}</strong>
+        </div>
+        <div>
+          <span className="text-[11px] text-slate-400 font-medium block">{t('totalSpent')}</span>
+          <strong className="text-base font-bold text-slate-900 tabular-nums">{formatCurrency(customer.totalSpent)}</strong>
+        </div>
+      </div>
+
+      <div className="space-y-2.5 text-xs divide-y divide-slate-50">
+        <div className="pt-2 flex justify-between items-center">
+          <span className="text-slate-400">{t('shopOwner')}</span>
+          <strong className="font-semibold text-slate-800">{customer.shopOwner}</strong>
+        </div>
+        <div className="pt-2 flex justify-between items-center">
+          <span className="text-slate-400">{t('phoneNumber')}</span>
+          <strong className="font-semibold text-slate-800">{customer.phone || '—'}</strong>
+        </div>
+        <div className="pt-2 flex justify-between items-center">
+          <span className="text-slate-400">{t('area')}</span>
+          <strong className="font-semibold text-slate-800">{customer.location}</strong>
+        </div>
+        <div className="pt-2 flex justify-between items-center">
+          <span className="text-slate-400">{t('orderDate')}</span>
+          <strong className="font-semibold text-slate-800">{formatDate(customer.lastOrder)}</strong>
+        </div>
+        <div className="pt-2 flex justify-between items-center">
+          <span className="text-slate-400">{t('status')}</span>
+          <StatusBadge status={customer.status} />
+        </div>
+      </div>
+
+      <div className="pt-2">
+        <button
+          className="w-full py-2.5 px-4 rounded-xl text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 transition-colors border border-emerald-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
+          disabled={!customer.phone}
+          onClick={handleCall}
+          type="button"
+        >
+          {t('callCustomer') || 'Call Customer'}
+        </button>
+      </div>
+    </div>
+  )
+}
+
 export default function SupplierCustomersPage() {
   const { t } = useLocale()
   const [customers, setCustomers] = useState([])
@@ -34,6 +116,7 @@ export default function SupplierCustomersPage() {
   const [locationFilter, setLocationFilter] = useState('All cities')
   const [page, setPage] = useState(1)
   const [selectedCustomerId, setSelectedCustomerId] = useState(null)
+  const [isMobileDetailOpen, setIsMobileDetailOpen] = useState(false)
 
   useEffect(() => {
     let isMounted = true
@@ -145,37 +228,37 @@ export default function SupplierCustomersPage() {
         <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('customersDescription')}</p>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3.5">
-        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-base shrink-0">◎</div>
-          <div className="flex flex-col">
-            <span className="text-xs text-slate-500 font-medium">{t('totalCustomers')}</span>
-            <strong className="text-xl font-bold text-slate-900 tabular-nums">{stats.totalCustomers}</strong>
-            <small className="text-[11px] text-slate-500 mt-0.5">{t('activeThisMonth', { count: stats.activeCustomers })}</small>
+      <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-100 shadow-xs flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-sm sm:text-base shrink-0">◎</div>
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="text-[11px] sm:text-xs text-slate-500 font-medium truncate">{t('totalCustomers')}</span>
+            <strong className="text-base sm:text-xl font-bold text-slate-900 tabular-nums">{stats.totalCustomers}</strong>
+            <small className="text-[10px] sm:text-[11px] text-slate-500 mt-0.5 truncate">{t('activeThisMonth', { count: stats.activeCustomers })}</small>
           </div>
         </div>
-        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-base shrink-0">↗</div>
-          <div className="flex flex-col">
-            <span className="text-xs text-slate-500 font-medium">{t('orderVolume')}</span>
-            <strong className="text-xl font-bold text-slate-900 tabular-nums">{stats.totalOrders}</strong>
-            <small className="text-[11px] text-slate-400 mt-0.5">{t('acrossAllActiveStores')}</small>
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-100 shadow-xs flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-blue-50 text-blue-700 flex items-center justify-center font-bold text-sm sm:text-base shrink-0">↗</div>
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="text-[11px] sm:text-xs text-slate-500 font-medium truncate">{t('orderVolume')}</span>
+            <strong className="text-base sm:text-xl font-bold text-slate-900 tabular-nums">{stats.totalOrders}</strong>
+            <small className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 truncate">{t('acrossAllActiveStores')}</small>
           </div>
         </div>
-        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold text-base shrink-0">₹</div>
-          <div className="flex flex-col">
-            <span className="text-xs text-slate-500 font-medium">{t('averageSpend')}</span>
-            <strong className="text-xl font-bold text-slate-900 tabular-nums">{formatCurrency(stats.avgOrderValue)}</strong>
-            <small className="text-[11px] text-slate-400 mt-0.5">{t('perCustomer')}</small>
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-100 shadow-xs flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-amber-50 text-amber-700 flex items-center justify-center font-bold text-sm sm:text-base shrink-0">₹</div>
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="text-[11px] sm:text-xs text-slate-500 font-medium truncate">{t('averageSpend')}</span>
+            <strong className="text-base sm:text-xl font-bold text-slate-900 tabular-nums">{formatCurrency(stats.avgOrderValue)}</strong>
+            <small className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 truncate">{t('perCustomer')}</small>
           </div>
         </div>
-        <div className="bg-white rounded-2xl p-4 border border-slate-100 shadow-xs flex items-center gap-3.5">
-          <div className="w-10 h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center font-bold text-base shrink-0">✓</div>
-          <div className="flex flex-col">
-            <span className="text-xs text-slate-500 font-medium">{t('activeCustomers')}</span>
-            <strong className="text-xl font-bold text-slate-900 tabular-nums">{stats.activeCustomers}</strong>
-            <small className="text-[11px] text-slate-400 mt-0.5">{t('currentlyActive')}</small>
+        <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-100 shadow-xs flex items-center gap-2.5 sm:gap-3.5 min-w-0">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-purple-50 text-purple-700 flex items-center justify-center font-bold text-sm sm:text-base shrink-0">✓</div>
+          <div className="flex flex-col min-w-0 flex-1">
+            <span className="text-[11px] sm:text-xs text-slate-500 font-medium truncate">{t('activeCustomers')}</span>
+            <strong className="text-base sm:text-xl font-bold text-slate-900 tabular-nums">{stats.activeCustomers}</strong>
+            <small className="text-[10px] sm:text-[11px] text-slate-400 mt-0.5 truncate">{t('currentlyActive')}</small>
           </div>
         </div>
       </div>
@@ -247,11 +330,15 @@ export default function SupplierCustomersPage() {
                         ? 'bg-emerald-50/50 border-l-4 border-l-emerald-600'
                         : 'hover:bg-slate-50/70'
                     }`}
-                    onClick={() => setSelectedCustomerId(customer.id)}
+                    onClick={() => {
+                      setSelectedCustomerId(customer.id)
+                      setIsMobileDetailOpen(true)
+                    }}
                     onKeyDown={(event) => {
                       if (event.key === 'Enter' || event.key === ' ') {
                         event.preventDefault()
                         setSelectedCustomerId(customer.id)
+                        setIsMobileDetailOpen(true)
                       }
                     }}
                     role="button"
@@ -274,7 +361,7 @@ export default function SupplierCustomersPage() {
                 ))}
               </div>
 
-              <div className="flex flex-col sm:flex-row items-center justify-between gap-3 px-5 py-3.5 bg-slate-50/50 border-t border-slate-100 text-xs text-slate-500">
+              <div className="hidden sm:flex items-center justify-between gap-3 px-5 py-3.5 bg-slate-50/50 border-t border-slate-100 text-xs text-slate-500">
                 <span>
                   {t('showingCustomers', {
                     start: filteredCustomers.length ? (currentPage - 1) * pageSize + 1 : 0,
@@ -321,65 +408,33 @@ export default function SupplierCustomersPage() {
           )}
         </div>
 
+        {/* Desktop Sidebar Card */}
         {selectedCustomer && (
-          <aside className="bg-white rounded-2xl border border-slate-100 shadow-xs p-5 space-y-4 sticky top-20">
-            <div className="flex items-center gap-3 pb-3 border-b border-slate-100">
-              <span className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center font-bold text-sm shrink-0">
-                {getInitials(selectedCustomer.name)}
-              </span>
-              <div>
-                <h2 className="text-base font-bold text-slate-900 leading-tight">{selectedCustomer.name}</h2>
-                <p className="text-xs text-slate-400 mt-0.5">{selectedCustomer.category}</p>
-              </div>
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 bg-slate-50 rounded-xl p-3 text-center">
-              <div>
-                <span className="text-[11px] text-slate-400 font-medium block">{t('orders')}</span>
-                <strong className="text-base font-bold text-slate-900 tabular-nums">{selectedCustomer.totalOrders}</strong>
-              </div>
-              <div>
-                <span className="text-[11px] text-slate-400 font-medium block">{t('totalSpent')}</span>
-                <strong className="text-base font-bold text-slate-900 tabular-nums">{formatCurrency(selectedCustomer.totalSpent)}</strong>
-              </div>
-            </div>
-
-            <div className="space-y-2.5 text-xs divide-y divide-slate-50">
-              <div className="pt-2 flex justify-between items-center">
-                <span className="text-slate-400">{t('shopOwner')}</span>
-                <strong className="font-semibold text-slate-800">{selectedCustomer.shopOwner}</strong>
-              </div>
-              <div className="pt-2 flex justify-between items-center">
-                <span className="text-slate-400">{t('phoneNumber')}</span>
-                <strong className="font-semibold text-slate-800">{selectedCustomer.phone || '—'}</strong>
-              </div>
-              <div className="pt-2 flex justify-between items-center">
-                <span className="text-slate-400">{t('area')}</span>
-                <strong className="font-semibold text-slate-800">{selectedCustomer.location}</strong>
-              </div>
-              <div className="pt-2 flex justify-between items-center">
-                <span className="text-slate-400">{t('orderDate')}</span>
-                <strong className="font-semibold text-slate-800">{formatDate(selectedCustomer.lastOrder)}</strong>
-              </div>
-              <div className="pt-2 flex justify-between items-center">
-                <span className="text-slate-400">{t('status')}</span>
-                <StatusBadge status={selectedCustomer.status} />
-              </div>
-            </div>
-
-            <div className="pt-2">
-              <button
-                className="w-full py-2.5 px-4 rounded-xl text-xs font-semibold text-emerald-800 bg-emerald-50 hover:bg-emerald-100 transition-colors border border-emerald-200 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed"
-                disabled={!selectedCustomer.phone}
-                onClick={() => callCustomer(selectedCustomer.phone)}
-                type="button"
-              >
-                {t('callCustomer')}
-              </button>
-            </div>
+          <aside className="hidden lg:block bg-white rounded-2xl border border-slate-100 shadow-xs p-5 sticky top-20">
+            <CustomerDetailCard
+              customer={selectedCustomer}
+            />
           </aside>
         )}
       </div>
+
+      {/* Mobile Modal Card (opens like Edit Product Card with top right cross) */}
+      {isMobileDetailOpen && selectedCustomer && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200 lg:hidden"
+          onClick={() => setIsMobileDetailOpen(false)}
+        >
+          <div
+            className="bg-white rounded-2xl border border-slate-100 shadow-2xl max-w-sm w-full p-5 relative animate-in zoom-in-95 duration-150 max-h-[90vh] overflow-y-auto"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <CustomerDetailCard
+              customer={selectedCustomer}
+              onClose={() => setIsMobileDetailOpen(false)}
+            />
+          </div>
+        </div>
+      )}
     </section>
   )
 }

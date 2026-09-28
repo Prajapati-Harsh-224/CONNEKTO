@@ -254,7 +254,6 @@ function SupplierCard({ supplier, isFavorite, onToggleFavorite }) {
               <h3 className="text-base sm:text-lg font-bold text-slate-900 truncate">{supplier.name}</h3>
               {supplier.isVerified && <VerifiedBadge label={t('verifiedSupplier')} />}
             </div>
-            <span className="text-xs font-semibold text-brand-orange">{supplier.type}</span>
             {(supplier.serviceAreas?.length > 0 || supplier.location) && (
               <div className="flex items-center gap-1 text-xs text-slate-500 mt-1 truncate">
                 <span>📍</span>
@@ -279,7 +278,7 @@ function SupplierCard({ supplier, isFavorite, onToggleFavorite }) {
 
       <div className="pt-4 mt-4 border-t border-slate-100">
         <Link
-          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-brand-orange-light hover:bg-brand-orange hover:text-white text-brand-orange font-bold text-xs sm:text-sm transition-all border border-brand-orange/20 shadow-xs"
+          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white font-bold text-xs sm:text-sm transition-all shadow-xs active:scale-[0.99]"
           to={`/dashboard/shop-owner/suppliers/${supplier.id}/products`}
           aria-label={`${t('viewProducts')} ${supplier.name}`}
         >
