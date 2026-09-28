@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { FiCheckCircle, FiClock, FiPackage, FiTruck, FiXCircle } from 'react-icons/fi'
+import { FiCheckCircle, FiClock, FiPackage, FiTruck, FiX, FiXCircle } from 'react-icons/fi'
 import { Link } from 'react-router-dom'
 import EmptyState from '../components/EmptyState.jsx'
 import LoadingState from '../components/LoadingState.jsx'
@@ -99,9 +99,30 @@ export default function ShopOwnerOrdersPage() {
   const [timeFilter, setTimeFilter] = useState('All Time')
   const [sortBy, setSortBy] = useState('newest')
   const [selectedOrderId, setSelectedOrderId] = useState('')
+  const [isMobileDetailsOpen, setIsMobileDetailsOpen] = useState(false)
   const [currentTime] = useState(Date.now)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    function handleKeyDown(e) {
+      if (e.key === 'Escape' && isMobileDetailsOpen) {
+        setIsMobileDetailsOpen(false)
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => window.removeEventListener('keydown', handleKeyDown)
+  }, [isMobileDetailsOpen])
+
+  useEffect(() => {
+    if (isMobileDetailsOpen) {
+      const originalOverflow = document.body.style.overflow
+      document.body.style.overflow = 'hidden'
+      return () => {
+        document.body.style.overflow = originalOverflow
+      }
+    }
+  }, [isMobileDetailsOpen])
 
   useEffect(() => {
     getOrders()
@@ -300,7 +321,10 @@ export default function ShopOwnerOrdersPage() {
                   return (
                     <div
                       key={order.id}
-                      onClick={() => setSelectedOrderId(order.id)}
+                      onClick={() => {
+                        setSelectedOrderId(order.id)
+                        setIsMobileDetailsOpen(true)
+                      }}
                       className={`p-3.5 rounded-xl border transition-all cursor-pointer space-y-2.5 ${
                         isSelected
                           ? 'border-brand-orange bg-orange-50/50 shadow-xs ring-1 ring-brand-orange/30'
@@ -332,8 +356,23 @@ export default function ShopOwnerOrdersPage() {
                       </div>
 
                       <div className="flex items-center justify-between text-[11px] text-slate-500 pt-1.5 border-t border-slate-100">
-                        <span>{totalBoxes} Boxes ({items.length} items)</span>
+                        <span>{totalBoxes} Boxes ({items.length} {items.length === 1 ? t('itemCount') : t('itemsCount')})</span>
                         <span>{formatOrderDate(order.createdAt)}</span>
+                      </div>
+
+                      <div className="pt-1">
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            setSelectedOrderId(order.id)
+                            setIsMobileDetailsOpen(true)
+                          }}
+                          className="w-full py-1.5 rounded-lg bg-orange-50 hover:bg-orange-100 text-brand-orange text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5"
+                        >
+                          <span>{t('ordersDetails') || 'Order Details'}</span>
+                          <span aria-hidden="true">→</span>
+                        </button>
                       </div>
                     </div>
                   )
@@ -365,9 +404,15 @@ export default function ShopOwnerOrdersPage() {
                             isSelected ? 'bg-orange-50/90 font-semibold' : 'hover:bg-slate-50/70'
                           }`}
                           key={order.id}
-                          onClick={() => setSelectedOrderId(order.id)}
+                          onClick={() => {
+                            setSelectedOrderId(order.id)
+                            setIsMobileDetailsOpen(true)
+                          }}
                           onKeyDown={(event) => {
-                            if (event.key === 'Enter' || event.key === ' ') setSelectedOrderId(order.id)
+                            if (event.key === 'Enter' || event.key === ' ') {
+                              setSelectedOrderId(order.id)
+                              setIsMobileDetailsOpen(true)
+                            }
                           }}
                           role="button"
                           tabIndex="0"
@@ -432,8 +477,9 @@ export default function ShopOwnerOrdersPage() {
           )}
         </div>
 
+        {/* Desktop View: Order Details Sidebar Card */}
         {selectedOrder && (
-          <aside className="w-full min-w-0 bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 sm:p-5 space-y-4 xl:sticky xl:top-20">
+          <aside className="hidden xl:block w-full min-w-0 bg-white rounded-2xl border border-slate-200/80 shadow-xs p-4 sm:p-5 space-y-4 xl:sticky xl:top-20">
             <div className="flex items-center justify-between pb-3 border-b border-slate-100">
               <h2 className="text-base font-bold text-slate-900">{t('ordersDetails')}</h2>
             </div>
@@ -525,6 +571,153 @@ export default function ShopOwnerOrdersPage() {
           </aside>
         )}
       </div>
+
+      {/* Mobile / Tablet Order Details Modal Card (modal dialog like edit product in supplier side) */}
+      {isMobileDetailsOpen && selectedOrder && (
+        <div
+          className="xl:hidden fixed inset-0 z-[60] flex items-center justify-center p-3 sm:p-4 pb-20 sm:pb-4 bg-slate-900/50 backdrop-blur-xs animate-in fade-in duration-200"
+          onClick={() => setIsMobileDetailsOpen(false)}
+        >
+          <div
+            className="bg-white rounded-2xl border border-slate-100 shadow-2xl max-w-lg w-full max-h-[82vh] sm:max-h-[88vh] flex flex-col overflow-hidden animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="order-details-modal-title"
+          >
+            {/* Modal Header */}
+            <div className="flex items-center justify-between p-4 sm:p-5 pb-3 border-b border-slate-100 shrink-0">
+              <div className="flex items-center gap-2.5 min-w-0">
+                <div className="w-9 h-9 rounded-xl bg-orange-50 text-brand-orange flex items-center justify-center shrink-0">
+                  <FiPackage className="w-4 h-4" />
+                </div>
+                <div className="min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 id="order-details-modal-title" className="text-base font-bold text-slate-900 truncate">
+                      {t('ordersDetails')}
+                    </h2>
+                    <StatusBadge status={selectedOrder.status} />
+                  </div>
+                  <p className="text-[11px] font-mono text-slate-400 truncate">
+                    {formatOrderId(selectedOrder.id)} · {formatOrderDate(selectedOrder.createdAt)}
+                  </p>
+                </div>
+              </div>
+              <button
+                type="button"
+                onClick={() => setIsMobileDetailsOpen(false)}
+                className="p-1.5 rounded-lg text-slate-400 hover:text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer shrink-0 ml-2"
+                aria-label="Close"
+              >
+                <FiX className="w-5 h-5" />
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div className="flex-1 overflow-y-auto p-4 sm:p-5 space-y-4">
+              {/* Supplier info card */}
+              <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
+                <span className="flex items-center justify-center w-10 h-10 rounded-xl bg-orange-100 text-xs font-bold text-brand-orange shrink-0">
+                  {getInitials(selectedOrder.supplierName)}
+                </span>
+                <div className="flex flex-col min-w-0">
+                  <span className="text-[10px] uppercase font-bold tracking-wider text-slate-400">{t('supplier')}</span>
+                  <strong className="text-sm font-semibold text-slate-900 truncate">{selectedOrder.supplierName}</strong>
+                  <small className="text-xs text-slate-400 truncate">{selectedSupplier?.location || '—'}</small>
+                </div>
+              </div>
+
+              {/* Items List */}
+              <div className="space-y-2.5">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400">
+                    {t('ordersItems')} ({selectedItems.length})
+                  </h3>
+                  <span className="text-xs text-slate-500 font-medium">
+                    {selectedItems.reduce((sum, itm) => sum + Number(itm.boxes || (itm.quantity ? Math.floor(itm.quantity / (itm.unitsPerBoxSnapshot || itm.unitsPerBox || 1)) : 1)), 0)} Boxes
+                  </span>
+                </div>
+
+                <div className="space-y-2 max-h-52 overflow-y-auto pr-1">
+                  {selectedItems.map((item) => {
+                    const upb = Math.max(1, Number(item.unitsPerBoxSnapshot || item.unitsPerBox || 1))
+                    const boxes = Number(item.boxes) || Math.max(1, Math.floor(Number(item.quantity || upb) / upb))
+                    const unitLabel = getItemUnitLabel(item, item.quantity)
+                    return (
+                      <div className="flex items-center justify-between gap-3 text-xs p-2.5 rounded-xl bg-slate-50/70 border border-slate-100" key={item.productId}>
+                        <div className="flex items-center gap-2.5 min-w-0">
+                          <ProductImage
+                            alt=""
+                            aria-hidden="true"
+                            className="w-9 h-9 rounded-lg object-cover bg-white border border-slate-200/60 shrink-0"
+                            fallbackText={productName(item).slice(0, 1)}
+                            src={item.imageUrl || item.imageLabel || ''}
+                          />
+                          <div className="flex flex-col min-w-0">
+                            <strong className="text-slate-800 truncate font-semibold">{productName(item)}</strong>
+                            <small className="text-slate-400">
+                              {boxes} {boxes === 1 ? 'Box' : 'Boxes'} ({item.quantity} {unitLabel})
+                            </small>
+                          </div>
+                        </div>
+                        <strong className="font-bold text-slate-900 shrink-0 tabular-nums">
+                          {formatPrice(priceValue(item.lineTotal) || priceValue(item.unitPriceSnapshot) * Number(item.quantity))}
+                        </strong>
+                      </div>
+                    )
+                  })}
+                </div>
+              </div>
+
+              {/* Price Breakdown */}
+              <div className="space-y-2 p-3.5 rounded-xl bg-slate-50 border border-slate-100 text-xs">
+                <div className="flex items-center justify-between text-slate-500">
+                  <span>{t('ordersItemTotal')}</span>
+                  <span className="font-semibold text-slate-700">{formatPrice(priceValue(selectedOrder.subtotal))}</span>
+                </div>
+                <div className="flex items-center justify-between text-slate-500">
+                  <span>{t('ordersDeliveryFee')}</span>
+                  <span className="font-semibold text-slate-700">{formatPrice(0)}</span>
+                </div>
+                <div className="flex items-center justify-between text-sm font-black text-slate-900 pt-2 border-t border-slate-200/80">
+                  <span>{t('ordersTotalAmount')}</span>
+                  <span className="text-brand-orange">{formatPrice(priceValue(selectedOrder.subtotal))}</span>
+                </div>
+              </div>
+
+              {/* Order Meta */}
+              <div className="grid grid-cols-2 gap-2 text-xs p-3 rounded-xl bg-slate-50/70 border border-slate-100">
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">{t('ordersPlaced')}</span>
+                  <span className="font-semibold text-slate-700 mt-0.5 block truncate">{formatOrderDate(selectedOrder.createdAt)}</span>
+                </div>
+                <div>
+                  <span className="text-slate-400 block text-[10px] uppercase font-bold tracking-wider">{t('payment')}</span>
+                  <span className="font-semibold text-slate-700 mt-0.5 block truncate">{displayPaymentMethod(selectedOrder.paymentMethod, t)}</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div className="p-3.5 sm:p-4 border-t border-slate-100 flex items-center justify-between gap-2.5 bg-slate-50/50 shrink-0">
+              <button
+                type="button"
+                onClick={() => setIsMobileDetailsOpen(false)}
+                className="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-semibold text-slate-700 hover:bg-slate-100 transition-colors cursor-pointer"
+              >
+                {t('cancel') || 'Close'}
+              </button>
+              <Link
+                className="flex-1 text-center py-2.5 px-4 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white font-semibold text-xs transition-colors shadow-xs"
+                to={`/dashboard/shop-owner/orders/${encodeURIComponent(selectedOrder.id)}`}
+                onClick={() => setIsMobileDetailsOpen(false)}
+              >
+                {t('ordersViewFullDetails')} →
+              </Link>
+            </div>
+          </div>
+        </div>
+      )}
     </section>
   )
 }

@@ -755,66 +755,82 @@ export default function SupplierCatalogPage() {
               </div>
             ) : (
               /* List View Layout */
-              <div className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
-                <div className="overflow-x-auto">
-                  <table className="w-full text-left border-collapse min-w-[700px]">
-                    <thead>
-                      <tr className="text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 bg-white">
-                        <th className="py-3 px-4">{t('product') || 'Product'}</th>
-                        <th className="py-3 px-4">{t('category') || 'Category'}</th>
-                        <th className="py-3 px-4">{t('brand') || 'Brand'}</th>
-                        <th className="py-3 px-4">{t('packSize') || 'Pack Size'}</th>
-                        <th className="py-3 px-4">Price / Box</th>
-                        <th className="py-3 px-4">{t('status')}</th>
-                        <th className="py-3 px-4 text-right">Order / Cart</th>
-                      </tr>
-                    </thead>
-                    <tbody className="divide-y divide-slate-100">
-                      {visibleProducts.map((product) => {
-                        const availableStock = Number(product.availableStock ?? 0)
-                        const isAvailable = product.isActive !== false && (product.availableStock == null || availableStock > 0)
-                        const unitsPerBox = Number(product.unitsPerBox || product.minimumQuantity || 1)
-                        const unitPrice = Number(product.price || 0)
-                        const boxPrice = unitPrice * unitsPerBox
+              <div>
+                {/* Mobile & Tablet Responsive List Cards (< lg) */}
+                <div className="lg:hidden space-y-3">
+                  {visibleProducts.map((product) => {
+                    const isFav = Boolean(favorites[product.id])
+                    const availableStock = Number(product.availableStock ?? 0)
+                    const isAvailable = product.isActive !== false && (product.availableStock == null || availableStock > 0)
+                    const unitsPerBox = Number(product.unitsPerBox || product.minimumQuantity || 1)
+                    const unitPrice = Number(product.price || 0)
+                    const boxPrice = unitPrice * unitsPerBox
 
-                        const cartItem = cart.find((item) => item.productId === product.id && item.supplierId === supplier.id)
-                        const cartBoxes = cartItem
-                          ? Number(cartItem.boxes || Math.max(1, Math.round(Number(cartItem.quantity || unitsPerBox) / unitsPerBox)))
-                          : 0
+                    const cartItem = cart.find((item) => item.productId === product.id && item.supplierId === supplier.id)
+                    const cartBoxes = cartItem
+                      ? Number(cartItem.boxQuantity || cartItem.boxes || Math.max(1, Math.round(Number(cartItem.quantity || unitsPerBox) / unitsPerBox)))
+                      : 0
 
-                        return (
-                          <tr key={product.id} className="hover:bg-slate-50/70 transition-colors">
-                            <td className="py-3 px-4">
-                              <div className="flex items-center gap-3">
-                                <img
-                                  src={product.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=150&q=80'}
-                                  alt={product.name}
-                                  className="w-10 h-10 rounded-xl object-cover border border-slate-100 shrink-0 cursor-pointer"
-                                  onClick={() => setViewingProduct(product)}
-                                />
-                                <div>
-                                  <p
-                                    className="text-xs font-bold text-slate-900 leading-tight hover:text-brand-orange cursor-pointer"
-                                    onClick={() => setViewingProduct(product)}
-                                  >
-                                    {product.name}
-                                  </p>
-                                  <p className="text-[11px] text-slate-400 line-clamp-1">{product.description || product.brand}</p>
-                                </div>
+                    return (
+                      <article
+                        key={product.id}
+                        className={`bg-white rounded-2xl border border-slate-200/80 shadow-2xs hover:shadow-sm transition-all p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 relative overflow-hidden group ${
+                          !isAvailable ? 'opacity-75 bg-slate-50/50' : ''
+                        }`}
+                      >
+                        {/* Top / Left Section: Image and Details */}
+                        <div className="flex items-start gap-3 sm:gap-4 min-w-0 flex-1">
+                          {/* Image */}
+                          <div className="relative w-18 h-18 sm:w-22 sm:h-22 rounded-xl overflow-hidden bg-slate-50 border border-slate-100 shrink-0 cursor-pointer">
+                            {product.imageUrl ? (
+                              <img
+                                src={product.imageUrl}
+                                alt={product.name}
+                                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                                onClick={() => setViewingProduct(product)}
+                                onError={(e) => {
+                                  e.currentTarget.onerror = null
+                                  e.currentTarget.src =
+                                    'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=300&q=80'
+                                }}
+                              />
+                            ) : (
+                              <div
+                                className="w-full h-full flex items-center justify-center bg-orange-50/50 text-2xl sm:text-3xl"
+                                onClick={() => setViewingProduct(product)}
+                              >
+                                📦
                               </div>
-                            </td>
-                            <td className="py-3 px-4 text-xs text-slate-600">{product.category}</td>
-                            <td className="py-3 px-4 text-xs text-slate-600">{product.brand || '—'}</td>
-                            <td className="py-3 px-4 text-xs text-slate-500">{product.packSize}</td>
-                            <td className="py-3 px-4 text-xs">
-                              <strong className="text-slate-900">{formatPrice(unitPrice)} <small className="text-[11px] text-slate-400 font-normal">/ {getItemUnitLabel(product, 1)}</small></strong>
-                              <span className="text-[11px] text-slate-500 block">
-                                {formatPrice(boxPrice)} / box ({unitsPerBox} {getItemUnitLabel(product, unitsPerBox)})
+                            )}
+
+                            {/* Wishlist Heart */}
+                            <button
+                              type="button"
+                              onClick={(e) => toggleFavorite(product.id, e)}
+                              className="absolute top-1 right-1 w-6 h-6 rounded-full bg-black/25 hover:bg-black/40 backdrop-blur-xs flex items-center justify-center text-white transition-colors z-10 cursor-pointer"
+                              aria-label={`Save ${product.name}`}
+                            >
+                              <FiHeart
+                                className={`w-3.5 h-3.5 transition-colors ${
+                                  isFav ? 'fill-rose-500 text-rose-500' : 'text-white'
+                                }`}
+                              />
+                            </button>
+                          </div>
+
+                          {/* Info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-1.5 flex-wrap">
+                              <span className="px-2 py-0.5 rounded-md bg-slate-100 text-[10px] font-semibold text-slate-600 truncate">
+                                {product.category || 'General'}
                               </span>
-                            </td>
-                            <td className="py-3 px-4">
+                              {product.brand && (
+                                <span className="px-2 py-0.5 rounded-md bg-orange-50 text-[10px] font-semibold text-brand-orange truncate">
+                                  {product.brand}
+                                </span>
+                              )}
                               <span
-                                className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                className={`hidden sm:inline-block px-2 py-0.5 rounded-full text-[10px] font-bold ${
                                   isAvailable
                                     ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
                                     : 'bg-amber-50 text-amber-800 border border-amber-200'
@@ -822,52 +838,237 @@ export default function SupplierCatalogPage() {
                               >
                                 {isAvailable ? 'In Stock' : 'Out of Stock'}
                               </span>
-                            </td>
-                            <td className="py-3 px-4 text-right">
-                              <div className="inline-flex items-center gap-2">
+                            </div>
+
+                            <h4
+                              onClick={() => setViewingProduct(product)}
+                              className="text-xs sm:text-sm md:text-base font-bold text-slate-900 truncate leading-snug mt-1 hover:text-brand-orange transition-colors cursor-pointer"
+                              title={product.name}
+                            >
+                              {product.name}
+                            </h4>
+
+                            <p className="text-[11px] sm:text-xs text-slate-400 mt-0.5 truncate">
+                              {product.packSize ? `Pack: ${product.packSize}` : ''}
+                              {product.packSize && unitsPerBox > 1 ? ' · ' : ''}
+                              {unitsPerBox > 1 ? `1 Box = ${unitsPerBox} ${getItemUnitLabel(product, unitsPerBox)}` : ''}
+                            </p>
+
+                            {/* Mobile inline price */}
+                            <div className="sm:hidden mt-1.5 flex items-baseline gap-2">
+                              <span className="text-xs font-black text-slate-900">
+                                {formatPrice(unitPrice)}
+                                <small className="text-[10px] font-normal text-slate-400">/{getItemUnitLabel(product, 1)}</small>
+                              </span>
+                              <span className="text-[11px] font-semibold text-emerald-700">
+                                {formatPrice(boxPrice)}/box
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+
+                        {/* Tablet Mid-Right Section: Pricing breakdown */}
+                        <div className="hidden sm:flex flex-col items-end text-right shrink-0 px-2 min-w-[150px]">
+                          <div className="text-sm md:text-base font-black text-slate-900 leading-tight">
+                            {formatPrice(unitPrice)}{' '}
+                            <small className="text-xs font-normal text-slate-400">/ {getItemUnitLabel(product, 1)}</small>
+                          </div>
+                          <div className="text-xs font-bold text-emerald-700 mt-0.5">
+                            {formatPrice(boxPrice)} / box
+                          </div>
+                          <div className="text-[11px] text-slate-400 mt-0.5">
+                            ({unitsPerBox} {getItemUnitLabel(product, unitsPerBox)}/box)
+                          </div>
+                        </div>
+
+                        {/* Actions: Mobile Footer Row / Tablet Right Controls */}
+                        <div className="flex sm:flex-col items-center sm:items-end justify-between sm:justify-center gap-2 pt-2 sm:pt-0 border-t sm:border-t-0 sm:border-l sm:border-slate-100 sm:pl-4 border-slate-100 shrink-0">
+                          {/* Mobile status pill */}
+                          <div className="sm:hidden">
+                            <span
+                              className={`px-2 py-0.5 rounded-full text-[10px] font-bold ${
+                                isAvailable
+                                  ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                                  : 'bg-amber-50 text-amber-800 border border-amber-200'
+                              }`}
+                            >
+                              {isAvailable ? 'In Stock' : 'Out of Stock'}
+                            </span>
+                          </div>
+
+                          <div className="flex items-center gap-2 w-auto">
+                            <button
+                              type="button"
+                              onClick={() => setViewingProduct(product)}
+                              className="py-1.5 px-2.5 sm:px-3 rounded-xl bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 transition-colors cursor-pointer flex items-center gap-1"
+                              title="Quick view"
+                            >
+                              <FiEye className="w-3.5 h-3.5 text-slate-500" />
+                              <span>{t('view') || 'View'}</span>
+                            </button>
+
+                            {!isAvailable ? (
+                              <button
+                                type="button"
+                                disabled
+                                className="py-1.5 px-3 rounded-xl bg-slate-100 text-slate-400 text-xs font-semibold cursor-not-allowed border border-slate-200 text-center"
+                              >
+                                {t('unavailable') || 'Unavailable'}
+                              </button>
+                            ) : cartBoxes > 0 ? (
+                              <div className="flex items-center gap-1 p-1 rounded-xl bg-orange-50 border border-brand-orange/30">
                                 <button
                                   type="button"
-                                  onClick={() => setViewingProduct(product)}
-                                  className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 cursor-pointer"
+                                  onClick={() => handleDecrement(product)}
+                                  className="w-6 h-6 rounded-lg bg-white text-brand-orange font-bold text-xs flex items-center justify-center hover:bg-orange-100 shadow-2xs transition-colors cursor-pointer"
+                                  aria-label={`Decrease ${product.name}`}
                                 >
-                                  {t('view') || 'View'}
+                                  <FiMinus className="w-3 h-3" />
                                 </button>
-                                {isAvailable && (
-                                  cartBoxes > 0 ? (
-                                    <div className="inline-flex items-center gap-1.5 p-1 rounded-lg bg-orange-50 border border-brand-orange/30">
-                                      <button
-                                        type="button"
-                                        onClick={() => handleDecrement(product)}
-                                        className="w-6 h-6 rounded bg-white text-brand-orange font-bold text-xs flex items-center justify-center hover:bg-orange-100 cursor-pointer"
-                                      >
-                                        -
-                                      </button>
-                                      <span className="text-xs font-bold text-slate-800 px-1">{cartBoxes}</span>
-                                      <button
-                                        type="button"
-                                        onClick={() => handleIncrement(product)}
-                                        className="w-6 h-6 rounded bg-white text-brand-orange font-bold text-xs flex items-center justify-center hover:bg-orange-100 cursor-pointer"
-                                      >
-                                        +
-                                      </button>
-                                    </div>
-                                  ) : (
-                                    <button
-                                      type="button"
-                                      onClick={() => handleAdd(product)}
-                                      className="px-3 py-1 rounded-lg bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold cursor-pointer"
-                                    >
-                                      + Add
-                                    </button>
-                                  )
-                                )}
+                                <span className="text-xs font-bold text-slate-900 px-1.5 min-w-[20px] text-center">
+                                  {cartBoxes} <span className="hidden sm:inline text-[10px] text-slate-500 font-normal">Box</span>
+                                </span>
+                                <button
+                                  type="button"
+                                  onClick={() => handleIncrement(product)}
+                                  className="w-6 h-6 rounded-lg bg-white text-brand-orange font-bold text-xs flex items-center justify-center hover:bg-orange-100 shadow-2xs transition-colors cursor-pointer"
+                                  aria-label={`Increase ${product.name}`}
+                                >
+                                  <FiPlus className="w-3 h-3" />
+                                </button>
                               </div>
-                            </td>
-                          </tr>
-                        )
-                      })}
-                    </tbody>
-                  </table>
+                            ) : (
+                              <button
+                                type="button"
+                                onClick={() => handleAdd(product)}
+                                className="py-1.5 px-3 sm:px-4 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold transition-all shadow-xs cursor-pointer flex items-center gap-1.5 active:scale-95"
+                              >
+                                <FiPlus className="w-3.5 h-3.5 stroke-[3]" />
+                                <span>{t('addToCart') || '+ Add'}</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                      </article>
+                    )
+                  })}
+                </div>
+
+                {/* Desktop Full Table View (>= lg) */}
+                <div className="hidden lg:block bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-left border-collapse min-w-[700px]">
+                      <thead>
+                        <tr className="text-[11px] font-bold uppercase tracking-wider text-slate-400 border-b border-slate-100 bg-white">
+                          <th className="py-3 px-4">{t('product') || 'Product'}</th>
+                          <th className="py-3 px-4">{t('category') || 'Category'}</th>
+                          <th className="py-3 px-4">{t('brand') || 'Brand'}</th>
+                          <th className="py-3 px-4">{t('packSize') || 'Pack Size'}</th>
+                          <th className="py-3 px-4">Price / Box</th>
+                          <th className="py-3 px-4">{t('status')}</th>
+                          <th className="py-3 px-4 text-right">Order / Cart</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-slate-100">
+                        {visibleProducts.map((product) => {
+                          const availableStock = Number(product.availableStock ?? 0)
+                          const isAvailable = product.isActive !== false && (product.availableStock == null || availableStock > 0)
+                          const unitsPerBox = Number(product.unitsPerBox || product.minimumQuantity || 1)
+                          const unitPrice = Number(product.price || 0)
+                          const boxPrice = unitPrice * unitsPerBox
+
+                          const cartItem = cart.find((item) => item.productId === product.id && item.supplierId === supplier.id)
+                          const cartBoxes = cartItem
+                            ? Number(cartItem.boxQuantity || cartItem.boxes || Math.max(1, Math.round(Number(cartItem.quantity || unitsPerBox) / unitsPerBox)))
+                            : 0
+
+                          return (
+                            <tr key={product.id} className="hover:bg-slate-50/70 transition-colors">
+                              <td className="py-3 px-4">
+                                <div className="flex items-center gap-3">
+                                  <img
+                                    src={product.imageUrl || 'https://images.unsplash.com/photo-1542838132-92c53300491e?auto=format&fit=crop&w=150&q=80'}
+                                    alt={product.name}
+                                    className="w-10 h-10 rounded-xl object-cover border border-slate-100 shrink-0 cursor-pointer"
+                                    onClick={() => setViewingProduct(product)}
+                                  />
+                                  <div>
+                                    <p
+                                      className="text-xs font-bold text-slate-900 leading-tight hover:text-brand-orange cursor-pointer"
+                                      onClick={() => setViewingProduct(product)}
+                                    >
+                                      {product.name}
+                                    </p>
+                                    <p className="text-[11px] text-slate-400 line-clamp-1">{product.description || product.brand}</p>
+                                  </div>
+                                </div>
+                              </td>
+                              <td className="py-3 px-4 text-xs text-slate-600">{product.category}</td>
+                              <td className="py-3 px-4 text-xs text-slate-600">{product.brand || '—'}</td>
+                              <td className="py-3 px-4 text-xs text-slate-500">{product.packSize}</td>
+                              <td className="py-3 px-4 text-xs">
+                                <strong className="text-slate-900">{formatPrice(unitPrice)} <small className="text-[11px] text-slate-400 font-normal">/ {getItemUnitLabel(product, 1)}</small></strong>
+                                <span className="text-[11px] text-slate-500 block">
+                                  {formatPrice(boxPrice)} / box ({unitsPerBox} {getItemUnitLabel(product, unitsPerBox)})
+                                </span>
+                              </td>
+                              <td className="py-3 px-4">
+                                <span
+                                  className={`px-2.5 py-0.5 rounded-full text-[10px] font-bold ${
+                                    isAvailable
+                                      ? 'bg-emerald-50 text-emerald-800 border border-emerald-200'
+                                      : 'bg-amber-50 text-amber-800 border border-amber-200'
+                                  }`}
+                                >
+                                  {isAvailable ? 'In Stock' : 'Out of Stock'}
+                                </span>
+                              </td>
+                              <td className="py-3 px-4 text-right">
+                                <div className="inline-flex items-center gap-2">
+                                  <button
+                                    type="button"
+                                    onClick={() => setViewingProduct(product)}
+                                    className="px-2.5 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-xs font-semibold text-slate-700 cursor-pointer"
+                                  >
+                                    {t('view') || 'View'}
+                                  </button>
+                                  {isAvailable && (
+                                    cartBoxes > 0 ? (
+                                      <div className="inline-flex items-center gap-1.5 p-1 rounded-lg bg-orange-50 border border-brand-orange/30">
+                                        <button
+                                          type="button"
+                                          onClick={() => handleDecrement(product)}
+                                          className="w-6 h-6 rounded bg-white text-brand-orange font-bold text-xs flex items-center justify-center hover:bg-orange-100 cursor-pointer"
+                                        >
+                                          -
+                                        </button>
+                                        <span className="text-xs font-bold text-slate-800 px-1">{cartBoxes}</span>
+                                        <button
+                                          type="button"
+                                          onClick={() => handleIncrement(product)}
+                                          className="w-6 h-6 rounded bg-white text-brand-orange font-bold text-xs flex items-center justify-center hover:bg-orange-100 cursor-pointer"
+                                        >
+                                          +
+                                        </button>
+                                      </div>
+                                    ) : (
+                                      <button
+                                        type="button"
+                                        onClick={() => handleAdd(product)}
+                                        className="px-3 py-1 rounded-lg bg-brand-orange hover:bg-brand-orange-dark text-white text-xs font-bold cursor-pointer"
+                                      >
+                                        + Add
+                                      </button>
+                                    )
+                                  )}
+                                </div>
+                              </td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
             )

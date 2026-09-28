@@ -49,8 +49,8 @@ export default function ShopOwnerOrderDetailPage() {
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
           <span className="text-xs font-bold uppercase tracking-wider text-brand-orange">{t('supplierOrder')}</span>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight mt-0.5 font-mono">{order.id}</h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1 font-semibold">{order.supplierName}</p>
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight mt-0.5">{order.supplierName}</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-1 font-semibold font-mono">{order.id}</p>
         </div>
         <StatusBadge status={order.status} />
       </div>
