@@ -8,30 +8,18 @@ import { useLocale } from '../context/LocaleContext.jsx'
 const formatCurrency = (value) => `₹${Number(value || 0).toLocaleString('en-IN')}`
 
 const dateOptions = ['This Month', 'Last 3 months', 'This year']
-const salesPeriodOptions = ['Last 6 months', 'Last 3 months', 'This year']
-const revenueOptions = ['This Month']
 
 const emptyAnalytics = {
   isDemoData: false,
   metrics: { sales: 0, orders: 0, customers: 0, productsSold: 0 },
   salesTrend: {
-    'Last 6 months': { labels: ['Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'], values: [0, 0, 0, 0, 0, 0] },
-    'Last 3 months': { labels: ['Jul', 'Aug', 'Sep'], values: [0, 0, 0] },
-    'This year': { labels: ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep'], values: [0, 0, 0, 0, 0, 0, 0, 0, 0] }
+    'Last 6 months': { labels: [], values: [], months: [] },
+    'Last 3 months': { labels: [], values: [], months: [] },
+    'This year': { labels: [], values: [], months: [] }
   },
   revenueBreakdown: [],
-  topProducts: [
-    { rank: 1, name: 'Tata Tea Gold', units: 142, revenue: 35500 },
-    { rank: 2, name: 'Fortune Oil 1L', units: 98, revenue: 15680 },
-    { rank: 3, name: 'Aashirvaad Atta', units: 76, revenue: 34200 },
-    { rank: 4, name: 'Parle-G Gold', units: 210, revenue: 10500 },
-    { rank: 5, name: 'Maggi Noodles', units: 165, revenue: 9900 },
-  ],
-  topCustomers: [
-    { rank: 1, name: 'Krishna Kirana Store', orders: 28, spent: 48500 },
-    { rank: 2, name: 'Om Sai Supermarket', orders: 19, spent: 32400 },
-    { rank: 3, name: 'Shree Ganesh Traders', orders: 14, spent: 22100 },
-  ]
+  topProducts: [],
+  topCustomers: []
 }
 
 function HeaderIcon({ type }) {
@@ -112,8 +100,7 @@ export default function SupplierAnalyticsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
   const [dateFilter, setDateFilter] = useState('This Month')
-  const [salesPeriod, setSalesPeriod] = useState('Last 6 months')
-  const [revenuePeriod, setRevenuePeriod] = useState('This Month')
+  const salesPeriod = 'Last 6 months'
 
   useEffect(() => {
     let isMounted = true
@@ -139,18 +126,13 @@ export default function SupplierAnalyticsPage() {
   }, [])
 
   const pageData = useMemo(() => {
-    const raw = analytics || emptyAnalytics
-    return {
-      ...raw,
-      topProducts: (raw.topProducts && raw.topProducts.length > 0) ? raw.topProducts : emptyAnalytics.topProducts,
-      topCustomers: (raw.topCustomers && raw.topCustomers.length > 0) ? raw.topCustomers : emptyAnalytics.topCustomers,
-    }
+    return analytics || emptyAnalytics
   }, [analytics])
 
   const salesData = useMemo(() => {
     const salesTrend = pageData.salesTrend || emptyAnalytics.salesTrend
-    return salesTrend[salesPeriod] || salesTrend['Last 6 months'] || { labels: [], values: [] }
-  }, [pageData, salesPeriod])
+    return salesTrend[dateFilter] || salesTrend[salesPeriod] || salesTrend['Last 6 months'] || { labels: [], values: [] }
+  }, [pageData, dateFilter, salesPeriod])
 
   const revenueSegments = useMemo(() => {
     const breakdown = pageData.revenueBreakdown || []
@@ -210,17 +192,17 @@ export default function SupplierAnalyticsPage() {
         <span className="text-slate-700">{t('analytics')}</span>
       </div>
 
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
+      <div className="flex flex-row items-center justify-between gap-3 pb-3 sm:pb-4 border-b border-slate-100">
         <div>
-          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">{t('analytics')}</h1>
-          <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('businessPerformance')}</p>
+          <h1 className="text-xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">{t('analytics')}</h1>
+          <p className="text-xs sm:text-sm text-slate-500 mt-0.5 sm:mt-1">{t('businessPerformance')}</p>
         </div>
 
-        <label className="relative inline-flex items-center bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-xs cursor-pointer focus-within:ring-2 focus-within:ring-brand-orange/20 focus-within:border-brand-orange">
-          <span className="text-slate-400 mr-2 text-sm" aria-hidden="true"><HeaderIcon type="calendar" /></span>
+        <label className="relative inline-flex items-center shrink-0 bg-white border border-slate-200 rounded-lg sm:rounded-xl px-2.5 py-1.5 sm:px-3 sm:py-2 shadow-xs cursor-pointer focus-within:ring-2 focus-within:ring-brand-orange/20 focus-within:border-brand-orange">
+          <span className="text-slate-400 mr-1.5 sm:mr-2 text-xs sm:text-sm" aria-hidden="true"><HeaderIcon type="calendar" /></span>
           <select 
             aria-label={t('selectAnalyticsPeriod')} 
-            className="bg-transparent text-xs sm:text-sm font-semibold text-slate-700 focus:outline-hidden pr-6 cursor-pointer" 
+            className="bg-transparent text-xs sm:text-sm font-semibold text-slate-700 focus:outline-hidden cursor-pointer" 
             onChange={(event) => setDateFilter(event.target.value)} 
             value={dateFilter}
           >
@@ -228,29 +210,28 @@ export default function SupplierAnalyticsPage() {
               <option key={option} value={option}>{periodLabelMap[option] ? t(periodLabelMap[option]) : option}</option>
             ))}
           </select>
-          <span className="text-slate-400 ml-auto pointer-events-none text-xs"><HeaderIcon type="chevron" /></span>
         </label>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5">
+      <div className="grid grid-cols-2 gap-3 sm:gap-5">
         {metrics.map((metric) => {
           const accent = metricAccents[metric.accent] || metricAccents.blue
           return (
             <article 
-              className="flex items-center justify-between gap-3 p-4 sm:p-5 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md transition-all" 
+              className="flex items-center justify-between gap-2.5 sm:gap-3 p-3 sm:p-5 rounded-xl sm:rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md transition-all" 
               key={metric.title}
             >
-              <div className="flex items-center gap-3.5 min-w-0">
-                <div className={`flex items-center justify-center w-11 h-11 rounded-xl border text-xl font-bold shrink-0 ${accent.icon}`}>
+              <div className="flex items-center gap-2 sm:gap-3.5 min-w-0">
+                <div className={`flex items-center justify-center w-8 h-8 sm:w-11 sm:h-11 rounded-lg sm:rounded-xl border text-sm sm:text-xl font-bold shrink-0 ${accent.icon}`}>
                   <HeaderIcon type={metric.icon} />
                 </div>
                 <div className="flex flex-col min-w-0">
-                  <span className="text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">{metric.title}</span>
-                  <strong className="text-xl sm:text-2xl font-extrabold text-slate-900 tracking-tight leading-tight">{metric.value}</strong>
-                  <small className="text-xs text-slate-400 font-medium truncate">{metric.delta}</small>
+                  <span className="text-[10px] sm:text-xs font-semibold text-slate-500 uppercase tracking-wider truncate">{metric.title}</span>
+                  <strong className="text-base sm:text-2xl font-extrabold text-slate-900 tracking-tight leading-tight">{metric.value}</strong>
+                  <small className="text-[10px] sm:text-xs text-slate-400 font-medium truncate">{metric.delta}</small>
                 </div>
               </div>
-              <span className="text-slate-300 shrink-0" aria-hidden="true"><HeaderIcon type="arrow" /></span>
+              <span className="text-slate-300 shrink-0 hidden sm:inline" aria-hidden="true"><HeaderIcon type="arrow" /></span>
             </article>
           )
         })}
@@ -268,20 +249,6 @@ export default function SupplierAnalyticsPage() {
                 <p className="text-xs text-slate-400">{t('salesTrendDescription')}</p>
               </div>
             </div>
-
-            <label className="relative inline-flex items-center bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 cursor-pointer">
-              <select 
-                aria-label={t('selectSalesPeriod')} 
-                className="bg-transparent text-xs font-semibold text-slate-700 focus:outline-hidden pr-4 cursor-pointer"
-                onChange={(event) => setSalesPeriod(event.target.value)} 
-                value={salesPeriod}
-              >
-                {salesPeriodOptions.map((option) => (
-                  <option key={option} value={option}>{periodLabelMap[option] ? t(periodLabelMap[option]) : option}</option>
-                ))}
-              </select>
-              <span className="text-slate-400 pointer-events-none text-xs"><HeaderIcon type="chevron" /></span>
-            </label>
           </div>
 
           <div className="w-full overflow-hidden">
@@ -300,42 +267,37 @@ export default function SupplierAnalyticsPage() {
                 <p className="text-xs text-slate-400">{t('revenueBreakdownDescription')}</p>
               </div>
             </div>
-
-            <label className="relative inline-flex items-center bg-slate-50 border border-slate-200 rounded-xl px-2.5 py-1.5 cursor-pointer">
-              <select 
-                aria-label={t('selectRevenuePeriod')} 
-                className="bg-transparent text-xs font-semibold text-slate-700 focus:outline-hidden pr-4 cursor-pointer"
-                onChange={(event) => setRevenuePeriod(event.target.value)} 
-                value={revenuePeriod}
-              >
-                {revenueOptions.map((option) => (
-                  <option key={option} value={option}>{periodLabelMap[option] ? t(periodLabelMap[option]) : option}</option>
-                ))}
-              </select>
-              <span className="text-slate-400 pointer-events-none text-xs"><HeaderIcon type="chevron" /></span>
-            </label>
           </div>
 
-          <div className="flex flex-col sm:flex-row items-center justify-around gap-6 pt-2">
-            <div className="relative w-44 h-44 rounded-full flex items-center justify-center shadow-xs shrink-0" style={donutStyle}>
-              <div className="w-28 h-28 rounded-full bg-white flex flex-col items-center justify-center shadow-inner">
-                <strong className="text-lg font-black text-slate-900 leading-tight">₹1.24L</strong>
-                <span className="text-[11px] font-semibold text-slate-400 uppercase tracking-wider">{t('totalSales')}</span>
+          {revenueSegments.length > 0 ? (
+            <div className="flex flex-col sm:flex-row items-center justify-around gap-6 pt-2">
+              <div className="relative w-44 h-44 rounded-full flex items-center justify-center shadow-xs shrink-0" style={donutStyle}>
+                <div className="w-28 h-28 rounded-full bg-white flex flex-col items-center justify-center shadow-inner text-center px-2">
+                  <strong className="text-base sm:text-lg font-black text-slate-900 leading-tight truncate max-w-full">
+                    {formatCurrency(pageData.orderValue ?? pageData.metrics?.sales ?? 0)}
+                  </strong>
+                  <span className="text-[10px] font-semibold text-slate-400 uppercase tracking-wider mt-0.5">{t('totalSales')}</span>
+                </div>
+              </div>
+
+              <div className="w-full sm:w-auto space-y-2.5 flex-1 max-w-xs">
+                {revenueSegments.map((segment) => (
+                  <div className="flex items-center justify-between gap-3 text-xs sm:text-sm" key={segment.name}>
+                    <span className="flex items-center gap-2 font-medium text-slate-700 truncate">
+                      <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: segment.color }} />
+                      <span className="truncate">{segment.name}</span>
+                    </span>
+                    <strong className="font-bold text-slate-900">{segment.value}%</strong>
+                  </div>
+                ))}
               </div>
             </div>
-
-            <div className="w-full sm:w-auto space-y-2.5 flex-1 max-w-xs">
-              {revenueSegments.map((segment) => (
-                <div className="flex items-center justify-between gap-3 text-xs sm:text-sm" key={segment.name}>
-                  <span className="flex items-center gap-2 font-medium text-slate-700 truncate">
-                    <span className="w-2.5 h-2.5 rounded-full shrink-0" style={{ background: segment.color }} />
-                    <span className="truncate">{segment.name}</span>
-                  </span>
-                  <strong className="font-bold text-slate-900">{segment.value}%</strong>
-                </div>
-              ))}
+          ) : (
+            <div className="py-12 text-center text-slate-400">
+              <p className="text-xs sm:text-sm font-semibold">{t('noRevenueData') || 'No revenue breakdown available yet'}</p>
+              <p className="text-[11px] sm:text-xs text-slate-400 mt-1">{t('revenueBreakdownEmpty') || 'Category distribution will appear once orders are placed.'}</p>
             </div>
-          </div>
+          )}
         </article>
       </div>
 
@@ -356,66 +318,75 @@ export default function SupplierAnalyticsPage() {
             </Link>
           </div>
 
-          {/* Mobile & Tablet 3-Product Grid */}
-          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 gap-2 sm:gap-3 lg:hidden">
-            {pageData.topProducts.map((product) => (
-              <article
-                key={product.name}
-                className="p-2 sm:p-3 rounded-xl border border-slate-100 bg-white hover:bg-slate-50/50 transition-all flex flex-col justify-between space-y-1.5 shadow-2xs"
-              >
-                <div className="flex items-center justify-between">
-                  <span className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-orange-50 text-[10px] sm:text-xs font-bold text-brand-orange shrink-0">
-                    {product.name.slice(0, 2).toUpperCase()}
-                  </span>
-                  <span className="text-[10px] sm:text-xs font-black text-slate-400">#{product.rank}</span>
-                </div>
-                <div className="min-w-0">
-                  <strong className="text-[11px] sm:text-xs font-bold text-slate-900 block truncate" title={product.name}>
-                    {product.name}
-                  </strong>
-                  <div className="pt-1.5 mt-1.5 border-t border-slate-100 flex flex-col gap-0.5">
-                    <span className="text-[10px] sm:text-xs text-brand-orange font-bold truncate">
-                      {product.units} {t('unitsSold') || 'sold'}
-                    </span>
-                    <span className="text-[10px] sm:text-xs font-black text-slate-900 truncate">
-                      {formatCurrency(product.revenue)}
-                    </span>
-                  </div>
-                </div>
-              </article>
-            ))}
-          </div>
-
-          {/* Desktop Table View */}
-          <div className="hidden lg:block overflow-x-auto">
-            <table className="w-full text-left text-xs sm:text-sm">
-              <thead>
-                <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  <th className="pb-3 pr-2">#</th>
-                  <th className="pb-3 px-2">{t('product')}</th>
-                  <th className="pb-3 px-2">{t('unitsSold')}</th>
-                  <th className="pb-3 pl-2 text-right">{t('revenue')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
+          {pageData.topProducts && pageData.topProducts.length > 0 ? (
+            <>
+              {/* Mobile & Tablet 3-Product Grid */}
+              <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 gap-2 sm:gap-3 lg:hidden">
                 {pageData.topProducts.map((product) => (
-                  <tr className="hover:bg-slate-50/60 transition-colors" key={product.name}>
-                    <td className="py-3 pr-2 font-bold text-slate-400">{product.rank}</td>
-                    <td className="py-3 px-2">
-                      <div className="flex items-center gap-2.5">
-                        <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-orange-50 text-[10px] font-bold text-brand-orange shrink-0">
-                          {product.name.slice(0, 2).toUpperCase()}
+                  <article
+                    key={product.name}
+                    className="p-2 sm:p-3 rounded-xl border border-slate-100 bg-white hover:bg-slate-50/50 transition-all flex flex-col justify-between space-y-1.5 shadow-2xs"
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="flex items-center justify-center w-7 h-7 sm:w-8 sm:h-8 rounded-lg bg-orange-50 text-[10px] sm:text-xs font-bold text-brand-orange shrink-0">
+                        {product.name.slice(0, 2).toUpperCase()}
+                      </span>
+                      <span className="text-[10px] sm:text-xs font-black text-slate-400">#{product.rank}</span>
+                    </div>
+                    <div className="min-w-0">
+                      <strong className="text-[11px] sm:text-xs font-bold text-slate-900 block truncate" title={product.name}>
+                        {product.name}
+                      </strong>
+                      <div className="pt-1.5 mt-1.5 border-t border-slate-100 flex flex-col gap-0.5">
+                        <span className="text-[10px] sm:text-xs text-brand-orange font-bold truncate">
+                          {product.units} {t('unitsSold') || 'sold'}
                         </span>
-                        <span className="font-semibold text-slate-800 truncate max-w-[140px] sm:max-w-none">{product.name}</span>
+                        <span className="text-[10px] sm:text-xs font-black text-slate-900 truncate">
+                          {formatCurrency(product.revenue)}
+                        </span>
                       </div>
-                    </td>
-                    <td className="py-3 px-2 text-slate-600 font-medium">{product.units}</td>
-                    <td className="py-3 pl-2 text-right font-bold text-slate-900">{formatCurrency(product.revenue)}</td>
-                  </tr>
+                    </div>
+                  </article>
                 ))}
-              </tbody>
-            </table>
-          </div>
+              </div>
+
+              {/* Desktop Table View */}
+              <div className="hidden lg:block overflow-x-auto">
+                <table className="w-full text-left text-xs sm:text-sm">
+                  <thead>
+                    <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                      <th className="pb-3 pr-2">#</th>
+                      <th className="pb-3 px-2">{t('product')}</th>
+                      <th className="pb-3 px-2">{t('unitsSold')}</th>
+                      <th className="pb-3 pl-2 text-right">{t('revenue')}</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-slate-50">
+                    {pageData.topProducts.map((product) => (
+                      <tr className="hover:bg-slate-50/60 transition-colors" key={product.name}>
+                        <td className="py-3 pr-2 font-bold text-slate-400">{product.rank}</td>
+                        <td className="py-3 px-2">
+                          <div className="flex items-center gap-2.5">
+                            <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-orange-50 text-[10px] font-bold text-brand-orange shrink-0">
+                              {product.name.slice(0, 2).toUpperCase()}
+                            </span>
+                            <span className="font-semibold text-slate-800 truncate max-w-[140px] sm:max-w-none">{product.name}</span>
+                          </div>
+                        </td>
+                        <td className="py-3 px-2 text-slate-600 font-medium">{product.units}</td>
+                        <td className="py-3 pl-2 text-right font-bold text-slate-900">{formatCurrency(product.revenue)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            </>
+          ) : (
+            <div className="py-10 text-center text-slate-400">
+              <p className="text-xs sm:text-sm font-semibold">{t('noProductData') || 'No product sales recorded yet'}</p>
+              <p className="text-[11px] sm:text-xs text-slate-400 mt-1">{t('requestedProductsWillAppear') || 'Sales data will appear here once orders are placed.'}</p>
+            </div>
+          )}
         </article>
 
         <article className="bg-white rounded-2xl border border-slate-200/80 shadow-xs p-5 sm:p-6 space-y-4">
@@ -434,35 +405,42 @@ export default function SupplierAnalyticsPage() {
             </Link>
           </div>
 
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-xs sm:text-sm">
-              <thead>
-                <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400">
-                  <th className="pb-3 pr-2">#</th>
-                  <th className="pb-3 px-2">{t('customerShop')}</th>
-                  <th className="pb-3 px-2">{t('orders')}</th>
-                  <th className="pb-3 pl-2 text-right">{t('totalSpent')}</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-slate-50">
-                {pageData.topCustomers.map((customer) => (
-                  <tr className="hover:bg-slate-50/60 transition-colors" key={customer.name}>
-                    <td className="py-3 pr-2 font-bold text-slate-400">{customer.rank}</td>
-                    <td className="py-3 px-2">
-                      <div className="flex items-center gap-2.5">
-                        <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-blue-50 text-[10px] font-bold text-blue-600 shrink-0">
-                          {customer.name.split(' ').map((word) => word[0]).slice(0, 2).join('').toUpperCase()}
-                        </span>
-                        <span className="font-semibold text-slate-800 truncate max-w-[140px] sm:max-w-none">{customer.name}</span>
-                      </div>
-                    </td>
-                    <td className="py-3 px-2 text-slate-600 font-medium">{customer.orders}</td>
-                    <td className="py-3 pl-2 text-right font-bold text-slate-900">{formatCurrency(customer.totalSpent)}</td>
+          {pageData.topCustomers && pageData.topCustomers.length > 0 ? (
+            <div className="overflow-x-auto">
+              <table className="w-full text-left text-xs sm:text-sm">
+                <thead>
+                  <tr className="border-b border-slate-100 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                    <th className="pb-3 pr-2">#</th>
+                    <th className="pb-3 px-2">{t('customerShop')}</th>
+                    <th className="pb-3 px-2">{t('orders')}</th>
+                    <th className="pb-3 pl-2 text-right">{t('totalSpent')}</th>
                   </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
+                </thead>
+                <tbody className="divide-y divide-slate-50">
+                  {pageData.topCustomers.map((customer) => (
+                    <tr className="hover:bg-slate-50/60 transition-colors" key={customer.name}>
+                      <td className="py-3 pr-2 font-bold text-slate-400">{customer.rank}</td>
+                      <td className="py-3 px-2">
+                        <div className="flex items-center gap-2.5">
+                          <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-blue-50 text-[10px] font-bold text-blue-600 shrink-0">
+                            {customer.name.split(' ').map((word) => word[0]).slice(0, 2).join('').toUpperCase()}
+                          </span>
+                          <span className="font-semibold text-slate-800 truncate max-w-[140px] sm:max-w-none">{customer.name}</span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-2 text-slate-600 font-medium">{customer.orders}</td>
+                      <td className="py-3 pl-2 text-right font-bold text-slate-900">{formatCurrency(customer.totalSpent)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          ) : (
+            <div className="py-10 text-center text-slate-400">
+              <p className="text-xs sm:text-sm font-semibold">{t('noCustomers') || 'No customer orders recorded yet'}</p>
+              <p className="text-[11px] sm:text-xs text-slate-400 mt-1">{t('customerTotalsAppear') || 'Customer activity will appear here once orders are fulfilled.'}</p>
+            </div>
+          )}
         </article>
       </div>
     </section>

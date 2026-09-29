@@ -511,19 +511,29 @@ export default function SupplierProductManagementPage() {
       {displayedProducts.length > 0 ? (
         viewMode === 'grid' ? (
           /* 4-Column Product Cards Grid (Matching Gruh Udyog Concept & Size) */
-          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-5">
-            {displayedProducts.map((product) => {
+          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-5 relative">
+            {activeMenuId && (
+              <div
+                className="fixed inset-0 z-20 cursor-default"
+                onClick={() => setActiveMenuId(null)}
+                aria-hidden="true"
+              />
+            )}
+            {displayedProducts.map((product, index) => {
               const isFav = Boolean(favorites[product.id])
               const isActive = product.isActive !== false
               const isMenuOpen = activeMenuId === product.id
+              const isFirstCol = index % 3 === 0
 
               return (
                 <article
                   key={product.id}
-                  className="bg-white rounded-xl sm:rounded-2xl border border-slate-100 shadow-2xs hover:shadow-md transition-all group relative flex flex-col justify-between overflow-hidden"
+                  className={`bg-white rounded-xl sm:rounded-2xl border border-slate-100 shadow-2xs hover:shadow-md transition-all group relative flex flex-col justify-between ${
+                    isMenuOpen ? 'z-30' : 'z-0'
+                  }`}
                 >
                   {/* Image Container */}
-                  <div className="relative aspect-square sm:aspect-auto sm:h-44 w-full bg-slate-50 overflow-hidden shrink-0">
+                  <div className="relative aspect-square sm:aspect-auto sm:h-44 w-full bg-slate-50 overflow-hidden shrink-0 rounded-t-xl sm:rounded-t-2xl">
                     {/* Status Pill Badge */}
                     <span
                       className={`absolute top-1.5 left-1.5 sm:top-3 sm:left-3 px-1.5 sm:px-2.5 py-0.5 rounded-full text-[9px] sm:text-[11px] font-bold shadow-2xs z-10 ${
@@ -606,20 +616,24 @@ export default function SupplierProductManagementPage() {
                           </button>
 
                           {isMenuOpen && (
-                            <div className="absolute right-0 bottom-full mb-1.5 w-36 bg-white rounded-xl border border-slate-200 shadow-lg py-1 z-20">
+                            <div
+                              className={`absolute bottom-full mb-1.5 w-36 bg-white rounded-xl border border-slate-200 shadow-xl py-1 z-30 ${
+                                isFirstCol ? '-right-10 sm:right-0' : 'right-0'
+                              }`}
+                            >
                               <button
                                 type="button"
                                 onClick={() => handleToggleStatus(product)}
-                                className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer"
+                                className="w-full px-3 py-2 text-left text-xs font-medium text-slate-700 hover:bg-slate-50 transition-colors cursor-pointer whitespace-nowrap"
                               >
                                 {isActive ? 'Mark Inactive' : 'Mark Active'}
                               </button>
                               <button
                                 type="button"
                                 onClick={() => handleRemoveProduct(product)}
-                                className="w-full px-3 py-2 text-left text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer flex items-center gap-1.5"
+                                className="w-full px-3 py-2 text-left text-xs font-medium text-rose-600 hover:bg-rose-50 transition-colors cursor-pointer flex items-center gap-1.5 whitespace-nowrap"
                               >
-                                <FiTrash2 className="w-3.5 h-3.5" />
+                                <FiTrash2 className="w-3.5 h-3.5 shrink-0" />
                                 <span>{t('removeProduct') || 'Remove Product'}</span>
                               </button>
                             </div>

@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
-import { FiCalendar, FiChevronDown, FiTrendingUp, FiTruck, FiBox, FiArrowRight } from 'react-icons/fi'
+import { FiCalendar, FiTrendingUp, FiTruck, FiBox, FiArrowRight } from 'react-icons/fi'
 import { HiSparkles } from 'react-icons/hi2'
 import EmptyState from '../components/EmptyState.jsx'
 import LoadingState from '../components/LoadingState.jsx'
@@ -353,7 +353,7 @@ export default function ShopOwnerAnalyticsPage() {
         <label className="relative inline-flex items-center bg-white border border-slate-200 rounded-xl px-3 py-2 shadow-xs cursor-pointer focus-within:ring-2 focus-within:ring-brand-orange/20 focus-within:border-brand-orange">
           <span className="text-slate-400 mr-2 text-sm" aria-hidden="true"><FiCalendar /></span>
           <select
-            className="bg-transparent text-xs sm:text-sm font-semibold text-slate-700 focus:outline-hidden pr-6 cursor-pointer"
+            className="bg-transparent text-xs sm:text-sm font-semibold text-slate-700 focus:outline-hidden cursor-pointer"
             value={period}
             onChange={(event) => setPeriod(event.target.value)}
           >
@@ -361,7 +361,6 @@ export default function ShopOwnerAnalyticsPage() {
             <option>Last 3 months</option>
             <option>Last 6 months</option>
           </select>
-          <span className="text-slate-400 ml-auto pointer-events-none text-xs"><FiChevronDown /></span>
         </label>
       </div>
 

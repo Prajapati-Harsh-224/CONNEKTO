@@ -48,49 +48,6 @@ export default function SupplierDashboardPage() {
       .finally(() => setIsLoading(false))
   }, [])
 
-const fallbackSupplierOrders = [
-  {
-    id: 'ord-8a9b2c1d',
-    shopOwner: 'Krishna Kirana Store',
-    location: 'Satellite, Ahmedabad',
-    items: 4,
-    amountLabel: '₹4,850',
-    status: 'Pending',
-    dateLabel: '27 Sep, 09:15 AM',
-    orderIdDisplay: 'ORD-8A9B2C1D',
-  },
-  {
-    id: 'ord-3e4f5a6b',
-    shopOwner: 'Shree Ganesh Supermarket',
-    location: 'Vastrapur, Ahmedabad',
-    items: 6,
-    amountLabel: '₹12,400',
-    status: 'Preparing',
-    dateLabel: '27 Sep, 08:30 AM',
-    orderIdDisplay: 'ORD-3E4F5A6B',
-  },
-  {
-    id: 'ord-7c8d9e0f',
-    shopOwner: 'A-One Provision Store',
-    location: 'Navrangpura, Ahmedabad',
-    items: 2,
-    amountLabel: '₹2,350',
-    status: 'Out for Delivery',
-    dateLabel: '26 Sep, 05:45 PM',
-    orderIdDisplay: 'ORD-7C8D9E0F',
-  },
-  {
-    id: 'ord-1a2b3c4d',
-    shopOwner: 'Radhe Mart',
-    location: 'Bodakdev, Ahmedabad',
-    items: 8,
-    amountLabel: '₹18,900',
-    status: 'Delivered',
-    dateLabel: '26 Sep, 02:15 PM',
-    orderIdDisplay: 'ORD-1A2B3C4D',
-  },
-]
-
   const recentOrders = useMemo(() => (dashboard?.recentOrders || []).map((order) => {
     const rawDate = order.createdAt ? new Date(order.createdAt) : null
     const dateLabel = rawDate && !Number.isNaN(rawDate.getTime())
@@ -115,11 +72,7 @@ const fallbackSupplierOrders = [
     }
   }), [dashboard])
 
-  const displayOrders = useMemo(() => {
-    if (recentOrders.length > 0) return recentOrders
-    if (dashboard?.isDemoData) return fallbackSupplierOrders
-    return []
-  }, [recentOrders, dashboard])
+  const displayOrders = recentOrders
 
   const metricActionMap = {
     'New orders': '/dashboard/supplier/orders',

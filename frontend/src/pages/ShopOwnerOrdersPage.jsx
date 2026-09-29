@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { FiCheckCircle, FiClock, FiPackage, FiTruck, FiXCircle } from 'react-icons/fi'
+import { FiCheckCircle, FiClock, FiPackage, FiTruck, FiXCircle, FiSearch } from 'react-icons/fi'
 import { Link, useNavigate } from 'react-router-dom'
 import EmptyState from '../components/EmptyState.jsx'
 import LoadingState from '../components/LoadingState.jsx'
@@ -247,7 +247,7 @@ export default function ShopOwnerOrdersPage() {
         <div className="min-w-0 bg-white rounded-2xl border border-slate-200/80 shadow-xs p-3 sm:p-3.5 md:p-4 space-y-3.5">
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2.5 flex-wrap w-full min-w-0">
             <label className="relative flex items-center bg-slate-50 border border-slate-200 rounded-xl px-3 py-2 flex-1 min-w-0 w-full sm:w-auto focus-within:ring-2 focus-within:ring-brand-orange/20 focus-within:border-brand-orange transition-all">
-              <span className="text-slate-400 mr-2 text-sm" aria-hidden="true">⌕</span>
+              <FiSearch className="w-4 h-4 text-slate-400 mr-2 shrink-0 pointer-events-none" />
               <input
                 className="w-full bg-transparent text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden"
                 onChange={(event) => setQuery(event.target.value)}

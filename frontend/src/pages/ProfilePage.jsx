@@ -14,10 +14,12 @@ import {
   FiPlus,
   FiTag,
   FiCheckCircle,
+  FiGlobe,
 } from 'react-icons/fi'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
-import { updateProfile } from '../services/authService.js'
+import { supportedLocales } from '../utils/translations.js'
+import { updateProfile, getCurrentUser } from '../services/authService.js'
 
 const roleKeys = {
   'shop-owner': 'shopOwner',
@@ -50,7 +52,7 @@ const POPULAR_AREAS = [
 export default function ProfilePage({ role }) {
   const navigate = useNavigate()
   const { user, signOut, updateUser } = useAuth()
-  const { t } = useLocale()
+  const { locale, setLocale, t } = useLocale()
   const roleLabel = t(roleKeys[role] || 'profile')
   const isShopOwner = role === 'shop-owner'
   const isSupplierLike = role === 'supplier' || role === 'gruh-udyog'
@@ -70,10 +72,27 @@ export default function ProfilePage({ role }) {
   const [formCategories, setFormCategories] = useState([])
   const [formShopName, setFormShopName] = useState('')
   const [formShopAddress, setFormShopAddress] = useState('')
+  const [formLocale, setFormLocale] = useState(locale)
 
   // Multi-category dropdown open state
   const [isCategoryDropdownOpen, setIsCategoryDropdownOpen] = useState(false)
   const categoryDropdownRef = useRef(null)
+
+  // Fetch freshest profile data directly from backend on mount
+  useEffect(() => {
+    let isMounted = true
+    getCurrentUser()
+      .then((res) => {
+        const freshUser = res?.data?.user
+        if (isMounted && freshUser) {
+          updateUser(freshUser)
+        }
+      })
+      .catch(() => {})
+    return () => {
+      isMounted = false
+    }
+  }, [])
 
   // Initialize form from current user
   const initForm = () => {
@@ -108,15 +127,20 @@ export default function ProfilePage({ role }) {
             .map((c) => c.trim())
             .filter(Boolean)
         : []
-    setFormCategories(supplierCats.length > 0 ? supplierCats : ['FMCG'])
+    setFormCategories(supplierCats)
 
     // Shop info
-    setFormShopName(user.shop?.name || '')
+    setFormShopName(user.shop?.name || user.supplier?.name || '')
     setFormShopAddress(user.shop?.address || '')
+    setFormLocale(locale)
     setFormAreaInput('')
     setErrorMessage('')
     setFieldErrors({})
   }
+
+  useEffect(() => {
+    initForm()
+  }, [user, locale])
 
   // Click outside listener for category dropdown
   useEffect(() => {
@@ -204,7 +228,7 @@ export default function ProfilePage({ role }) {
           : (finalServiceAreas[0] || formAreaInput.trim() || undefined),
         serviceAreas: finalServiceAreas.length > 0 ? finalServiceAreas : undefined,
         categories: formCategories.length > 0 ? formCategories : undefined,
-        shopName: isShopOwner ? formShopName.trim() || undefined : undefined,
+        shopName: formShopName.trim() || undefined,
         shopAddress: isShopOwner ? formShopAddress.trim() || undefined : undefined,
       }
 
@@ -213,6 +237,10 @@ export default function ProfilePage({ role }) {
 
       if (updatedUser) {
         updateUser(updatedUser)
+      }
+
+      if (formLocale && formLocale !== locale) {
+        setLocale(formLocale)
       }
 
       setFormServiceAreas(finalServiceAreas)
@@ -598,38 +626,56 @@ export default function ProfilePage({ role }) {
             )}
           </div>
 
-          {/* Shop Owner Specific Fields */}
-          {isShopOwner && (
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-3 border-t border-slate-100">
-              <div className="space-y-1.5">
-                <label className="text-xs font-bold text-slate-700 block" htmlFor="edit-shop-name">
-                  {t('shopName')}
-                </label>
-                <input
-                  className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange shadow-xs transition-all"
-                  id="edit-shop-name"
-                  onChange={(e) => setFormShopName(e.target.value)}
-                  placeholder={t('enterShopName')}
-                  type="text"
-                  value={formShopName}
-                />
-              </div>
+          {/* Shop Name & Language Selection for All Roles */}
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 pt-3 border-t border-slate-100">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 block" htmlFor="edit-shop-name">
+                {isSupplierLike ? (t('shopName') || 'Shop / Business Name') : (t('shopName') || 'Shop Name')}
+              </label>
+              <input
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange shadow-xs transition-all"
+                id="edit-shop-name"
+                onChange={(e) => setFormShopName(e.target.value)}
+                placeholder={t('enterShopName') || 'Enter shop name'}
+                type="text"
+                value={formShopName}
+              />
+            </div>
 
-              <div className="space-y-1.5">
+            <div className="space-y-1.5">
+              <label className="text-xs font-bold text-slate-700 block" htmlFor="edit-language">
+                {t('language') || 'Language'}
+              </label>
+              <select
+                id="edit-language"
+                className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange shadow-xs transition-all cursor-pointer"
+                value={formLocale}
+                onChange={(e) => setFormLocale(e.target.value)}
+              >
+                {supportedLocales.map((loc) => (
+                  <option key={loc.code} value={loc.code}>
+                    {loc.label}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            {isShopOwner && (
+              <div className="space-y-1.5 sm:col-span-2">
                 <label className="text-xs font-bold text-slate-700 block" htmlFor="edit-shop-address">
-                  {t('shopAddress')}
+                  {t('shopAddress') || 'Shop Address'}
                 </label>
                 <input
                   className="w-full px-3.5 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-800 placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange shadow-xs transition-all"
                   id="edit-shop-address"
                   onChange={(e) => setFormShopAddress(e.target.value)}
-                  placeholder={t('enterShopAddress')}
+                  placeholder={t('enterShopAddress') || 'Enter shop address'}
                   type="text"
                   value={formShopAddress}
                 />
               </div>
-            </div>
-          )}
+            )}
+          </div>
 
           {/* Form Actions */}
           <div className="flex items-center justify-end gap-3 pt-6 border-t border-slate-100">
@@ -689,7 +735,7 @@ export default function ProfilePage({ role }) {
               <div className="p-3.5 bg-slate-50/70 rounded-xl border border-slate-100">
                 <dt className="text-xs font-medium text-slate-400 mb-1">{t('fullName')}</dt>
                 <dd className="font-semibold text-slate-800 flex items-center gap-2">
-                  <FiUser className="w-4 h-4 text-slate-400" />
+                  <FiUser className="w-4 h-4 text-brand-orange" />
                   <span>{user?.name || '-'}</span>
                 </dd>
               </div>
@@ -769,21 +815,32 @@ export default function ProfilePage({ role }) {
                 </dd>
               </div>
 
-              {/* Shop Owner Information */}
+              {/* Shop / Business Name for All Roles */}
+              <div className="p-3.5 bg-slate-50/70 rounded-xl border border-slate-100">
+                <dt className="text-xs font-medium text-slate-400 mb-1">
+                  {isSupplierLike ? (t('shopName') || 'Shop / Business Name') : (t('shopName') || 'Shop Name')}
+                </dt>
+                <dd className="font-semibold text-slate-800 flex items-center gap-2">
+                  <FiShoppingBag className="w-4 h-4 text-brand-orange shrink-0" />
+                  <span>{user?.shop?.name || user?.supplier?.name || '-'}</span>
+                </dd>
+              </div>
+
+              {/* Language for All Roles */}
+              <div className="p-3.5 bg-slate-50/70 rounded-xl border border-slate-100">
+                <dt className="text-xs font-medium text-slate-400 mb-1">{t('language') || 'Language'}</dt>
+                <dd className="font-semibold text-slate-800 flex items-center gap-2">
+                  <FiGlobe className="w-4 h-4 text-brand-orange shrink-0" />
+                  <span>{supportedLocales.find((l) => l.code === locale)?.label || 'English'}</span>
+                </dd>
+              </div>
+
+              {/* Shop Owner Address */}
               {isShopOwner && (
-                <>
-                  <div className="p-3.5 bg-slate-50/70 rounded-xl border border-slate-100">
-                    <dt className="text-xs font-medium text-slate-400 mb-1">{t('shopName')}</dt>
-                    <dd className="font-semibold text-slate-800 flex items-center gap-2">
-                      <FiShoppingBag className="w-4 h-4 text-brand-orange" />
-                      <span>{user?.shop?.name || '-'}</span>
-                    </dd>
-                  </div>
-                  <div className="p-3.5 bg-slate-50/70 rounded-xl border border-slate-100">
-                    <dt className="text-xs font-medium text-slate-400 mb-1">{t('shopAddress')}</dt>
-                    <dd className="font-semibold text-slate-800">{user?.shop?.address || '-'}</dd>
-                  </div>
-                </>
+                <div className="p-3.5 bg-slate-50/70 rounded-xl border border-slate-100 sm:col-span-2">
+                  <dt className="text-xs font-medium text-slate-400 mb-1">{t('shopAddress') || 'Shop Address'}</dt>
+                  <dd className="font-semibold text-slate-800">{user?.shop?.address || '-'}</dd>
+                </div>
               )}
             </dl>
 

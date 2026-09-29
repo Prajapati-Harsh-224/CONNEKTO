@@ -95,7 +95,8 @@ export default function NotificationDropdown({ role, isOpen, onClose, onUnreadCh
   }, [role])
 
 
-  const unreadCount = notifications.filter(n => !readIds.includes(n.id)).length
+  const unreadNotifications = notifications.filter(n => !readIds.includes(n.id))
+  const unreadCount = unreadNotifications.length
 
   useEffect(() => {
     if (onUnreadChange) {
@@ -104,12 +105,15 @@ export default function NotificationDropdown({ role, isOpen, onClose, onUnreadCh
   }, [unreadCount, onUnreadChange])
 
   const handleMarkAllRead = () => {
-    const allIds = notifications.map(n => n.id)
+    const allIds = Array.from(new Set([...readIds, ...notifications.map(n => n.id)]))
     setReadIds(allIds)
     try {
       localStorage.setItem('connecto_read_notifications', JSON.stringify(allIds))
     } catch {
       // Ignore localStorage write failures in private/restricted browsing modes
+    }
+    if (onClose) {
+      onClose()
     }
   }
 
@@ -158,45 +162,36 @@ export default function NotificationDropdown({ role, isOpen, onClose, onUnreadCh
           <div className="p-6 text-center text-slate-500 text-xs">
             {t('loadingNotifications') || 'Loading notifications...'}
           </div>
-        ) : notifications.length === 0 ? (
+        ) : unreadNotifications.length === 0 ? (
           <div className="p-6 text-center text-slate-500 text-xs">
             {t('noNotifications') || 'No notifications available'}
           </div>
         ) : (
-          notifications.map(n => {
-            const isRead = readIds.includes(n.id)
-            return (
-              <Link
-                key={n.id}
-                to={n.link}
-                onClick={() => handleItemClick(n.id)}
-                className={`block px-4 py-3 transition-colors ${
-                  isRead ? 'bg-white hover:bg-slate-50' : 'bg-brand-orange-light/50 hover:bg-brand-orange-light/80'
-                }`}
-              >
-                <div className="flex items-start gap-2.5">
-                  <div
-                    className={`w-2 h-2 rounded-full mt-1.5 shrink-0 ${
-                      isRead ? 'bg-transparent' : 'bg-brand-orange'
-                    }`}
-                  />
-                  <div className="flex-1 min-w-0">
-                    <div className={`text-xs ${isRead ? 'font-medium text-slate-700' : 'font-bold text-slate-900'} truncate`}>
-                      {n.title}
-                    </div>
-                    <div className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">
-                      {n.message}
-                    </div>
-                    {n.time && (
-                      <div className="text-[10px] text-slate-500 mt-1">
-                        {new Date(n.time).toLocaleString()}
-                      </div>
-                    )}
+          unreadNotifications.map(n => (
+            <Link
+              key={n.id}
+              to={n.link}
+              onClick={() => handleItemClick(n.id)}
+              className="block px-4 py-3 transition-colors bg-brand-orange-light/50 hover:bg-brand-orange-light/80"
+            >
+              <div className="flex items-start gap-2.5">
+                <div className="w-2 h-2 rounded-full mt-1.5 shrink-0 bg-brand-orange" />
+                <div className="flex-1 min-w-0">
+                  <div className="text-xs font-bold text-slate-900 truncate">
+                    {n.title}
                   </div>
+                  <div className="text-[11px] text-slate-500 mt-0.5 line-clamp-2">
+                    {n.message}
+                  </div>
+                  {n.time && (
+                    <div className="text-[10px] text-slate-500 mt-1">
+                      {new Date(n.time).toLocaleString()}
+                    </div>
+                  )}
                 </div>
-              </Link>
-            )
-          })
+              </div>
+            </Link>
+          ))
         )}
       </div>
     </div>

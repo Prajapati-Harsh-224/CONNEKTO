@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { FiSearch } from 'react-icons/fi'
 import EmptyState from '../components/EmptyState.jsx'
 import LoadingState from '../components/LoadingState.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
@@ -81,96 +82,18 @@ export default function SupplierIncomingOrdersPage() {
   const translatedCustomerOptions = useMemo(() => [{ label: t('allCustomers'), value: 'All Customers' }, ...customerOptions.slice(1).map((customer) => ({ label: customer, value: customer }))], [customerOptions, t])
   const [page, setPage] = useState(1)
 
-const fallbackSupplierOrders = [
-  {
-    id: 'ord-8a9b2c1d',
-    shopOwner: 'Krishna Kirana Store',
-    customer: 'Krishna Kirana Store',
-    area: 'Satellite, Ahmedabad',
-    date: new Date().toISOString(),
-    amount: 4850,
-    status: 'Pending',
-    items: [
-      { name: 'Tata Tea Gold', quantity: 20, boxes: 2, unitsPerBox: 10 },
-      { name: 'Fortune Sunflower Oil 1L', quantity: 24, boxes: 2, unitsPerBox: 12 },
-    ]
-  },
-  {
-    id: 'ord-3e4f5a6b',
-    shopOwner: 'Shree Ganesh Supermarket',
-    customer: 'Shree Ganesh Supermarket',
-    area: 'Vastrapur, Ahmedabad',
-    date: new Date(Date.now() - 3600000 * 3).toISOString(),
-    amount: 12400,
-    status: 'Preparing',
-    items: [
-      { name: 'Aashirvaad Atta 10kg', quantity: 10, boxes: 5, unitsPerBox: 2 },
-      { name: 'Maggi Noodles 70g', quantity: 96, boxes: 4, unitsPerBox: 24 },
-    ]
-  },
-  {
-    id: 'ord-7c8d9e0f',
-    shopOwner: 'A-One Provision Store',
-    customer: 'A-One Provision Store',
-    area: 'Navrangpura, Ahmedabad',
-    date: new Date(Date.now() - 86400000).toISOString(),
-    amount: 2350,
-    status: 'Out for Delivery',
-    items: [
-      { name: 'Parle-G Gold Biscuits', quantity: 48, boxes: 2, unitsPerBox: 24 },
-    ]
-  },
-  {
-    id: 'ord-1a2b3c4d',
-    shopOwner: 'Radhe Mart',
-    customer: 'Radhe Mart',
-    area: 'Bodakdev, Ahmedabad',
-    date: new Date(Date.now() - 86400000 * 2).toISOString(),
-    amount: 18900,
-    status: 'Delivered',
-    items: [
-      { name: 'Basmati Rice 25kg', quantity: 10, boxes: 10, unitsPerBox: 1 },
-      { name: 'Everest Turmeric Powder', quantity: 40, boxes: 2, unitsPerBox: 20 },
-    ]
-  },
-  {
-    id: 'ord-5e6f7a8b',
-    shopOwner: 'Jai Hind Kirana Stores',
-    customer: 'Jai Hind Kirana Stores',
-    area: 'Maninagar, Ahmedabad',
-    date: new Date(Date.now() - 86400000 * 3).toISOString(),
-    amount: 6750,
-    status: 'Accepted',
-    items: [
-      { name: 'Amul Pure Ghee 1L', quantity: 12, boxes: 1, unitsPerBox: 12 },
-    ]
-  },
-  {
-    id: 'ord-9c0d1e2f',
-    shopOwner: 'Shreeji General Store',
-    customer: 'Shreeji General Store',
-    area: 'Ellis Bridge, Ahmedabad',
-    date: new Date(Date.now() - 86400000 * 4).toISOString(),
-    amount: 3200,
-    status: 'Cancelled',
-    items: [
-      { name: 'Colgate MaxFresh 150g', quantity: 24, boxes: 1, unitsPerBox: 24 },
-    ]
-  }
-]
-
   useEffect(() => {
     let isMounted = true
     getSupplierOrders()
       .then((response) => {
         if (isMounted) {
           const rawOrders = response?.data?.orders || []
-          setOrders(rawOrders.length > 0 ? rawOrders.map(normalizeOrder) : fallbackSupplierOrders)
+          setOrders(rawOrders.map(normalizeOrder))
         }
       })
-      .catch((requestError) => {
+      .catch(() => {
         if (isMounted) {
-          setOrders(fallbackSupplierOrders)
+          setOrders([])
         }
       })
       .finally(() => {
@@ -289,13 +212,13 @@ const fallbackSupplierOrders = [
       <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-100 shadow-xs">
         <div className="flex flex-col sm:flex-row items-center gap-2.5 sm:gap-3 flex-wrap">
           <div className="relative flex-1 min-w-[200px] w-full sm:w-auto">
-            <span className="absolute left-3 top-2.5 text-slate-400 text-sm" aria-hidden="true">⌕</span>
+            <FiSearch className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               onChange={(event) => setSearch(event.target.value)}
               placeholder={t('searchOrdersByIdOrCustomer')}
-              type="search"
+              type="text"
               value={search}
-              className="w-full pl-8 pr-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition-colors"
+              className="w-full pl-9 pr-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange transition-all"
             />
           </div>
           <div className="grid grid-cols-2 sm:flex sm:items-center gap-2 sm:gap-2.5 w-full sm:w-auto">

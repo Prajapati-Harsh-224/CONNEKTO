@@ -3,7 +3,6 @@ import { Link, Outlet, useLocation } from 'react-router-dom'
 import { useLocale } from '../context/LocaleContext.jsx'
 import Navbar from '../components/Navbar.jsx'
 import Footer from '../components/Footer.jsx'
-import LanguageSelector from '../components/LanguageSelector.jsx'
 import { getSelectedRole } from '../utils/roleStorage.js'
 
 export default function AppShell() {
@@ -65,7 +64,6 @@ export default function AppShell() {
                 <Navbar />
               ) : (
                 <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-                  <LanguageSelector />
                   {(isSignInPage || isRoleSelection) && (
                     <Link
                       className="inline-flex items-center gap-1.5 px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-brand-orange hover:bg-brand-orange-dark shadow-xs hover:shadow-sm active:scale-95 transition-all"

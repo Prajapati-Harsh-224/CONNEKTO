@@ -11,6 +11,7 @@ export const roleNavigation = {
     { key: 'orders', section: 'orders' },
     { key: 'products', section: 'products' },
     { key: 'customers', section: 'customers' },
+    { key: 'analytics', section: 'analytics' },
   ],
   'gruh-udyog': [
     { key: 'dashboard', section: 'home' },

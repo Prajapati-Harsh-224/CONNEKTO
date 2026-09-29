@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from 'react'
-import { FiX } from 'react-icons/fi'
+import { FiX, FiSearch } from 'react-icons/fi'
 import EmptyState from '../components/EmptyState.jsx'
 import LoadingState from '../components/LoadingState.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
@@ -228,7 +228,7 @@ export default function SupplierCustomersPage() {
         <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('customersDescription')}</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-2.5 sm:gap-4">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-2.5 sm:gap-4">
         <div className="bg-white rounded-xl sm:rounded-2xl p-3 sm:p-4 border border-slate-100 shadow-xs flex items-center gap-2.5 sm:gap-3.5 min-w-0">
           <div className="w-8 h-8 sm:w-10 sm:h-10 rounded-xl bg-emerald-50 text-emerald-700 flex items-center justify-center font-bold text-sm sm:text-base shrink-0">◎</div>
           <div className="flex flex-col min-w-0 flex-1">
@@ -266,14 +266,14 @@ export default function SupplierCustomersPage() {
       <div className="bg-white rounded-2xl p-3 sm:p-4 border border-slate-100 shadow-xs">
         <div className="flex flex-col sm:flex-row items-center gap-3 flex-wrap">
           <div className="relative flex-1 min-w-[200px] w-full sm:w-auto">
-            <span className="absolute left-3 top-2.5 text-slate-400" aria-hidden="true">⌕</span>
+            <FiSearch className="w-4 h-4 text-slate-400 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
             <input
               aria-label={t('searchCustomers')}
               onChange={(event) => setSearch(event.target.value)}
               placeholder={t('searchCustomers')}
-              type="search"
+              type="text"
               value={search}
-              className="w-full pl-8 pr-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:border-emerald-600 transition-colors"
+              className="w-full pl-9 pr-3.5 py-2 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange transition-all"
             />
           </div>
 

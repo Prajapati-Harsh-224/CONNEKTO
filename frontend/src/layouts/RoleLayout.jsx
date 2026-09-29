@@ -1,9 +1,8 @@
 import { useState, useRef, useEffect } from 'react'
 import { Link, Outlet, useParams, useLocation } from 'react-router-dom'
-import { FiSearch, FiGlobe, FiBell } from 'react-icons/fi'
+import { FiSearch, FiBell } from 'react-icons/fi'
 import MobileNavigation from '../components/MobileNavigation.jsx'
 import Sidebar from '../components/Sidebar.jsx'
-import LanguageSelector from '../components/LanguageSelector.jsx'
 import NotificationDropdown from '../components/NotificationDropdown.jsx'
 import { useAuth } from '../context/AuthContext.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
@@ -62,11 +61,6 @@ export default function RoleLayout({ role: routeRole }) {
         ) : null}
 
         <div className="flex items-center gap-2 sm:gap-3 shrink-0">
-          <div className="hidden sm:flex items-center gap-1.5 text-slate-600">
-            <FiGlobe size={15} className="text-slate-500" />
-            <LanguageSelector />
-          </div>
-
           <div className="relative">
             <button
               ref={notifButtonRef}

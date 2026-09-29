@@ -1,4 +1,5 @@
-const cartKey = 'connecto.demoCart'
+const cartKey = 'connekto.cart'
+const legacyCartKey = 'connecto.demoCart'
 
 export function getItemUnitLabel(itemOrProduct, count = 1) {
   if (!itemOrProduct) return count === 1 ? 'unit' : 'units'
@@ -112,7 +113,15 @@ export function normalizeCartItem(item) {
 }
 
 function readCart() {
-  const storedCart = window.localStorage.getItem(cartKey)
+  if (typeof window === 'undefined') return []
+  let storedCart = window.localStorage.getItem(cartKey)
+  if (!storedCart && window.localStorage.getItem(legacyCartKey)) {
+    storedCart = window.localStorage.getItem(legacyCartKey)
+    window.localStorage.removeItem(legacyCartKey)
+    if (storedCart) {
+      window.localStorage.setItem(cartKey, storedCart)
+    }
+  }
   if (!storedCart) return []
   try {
     const raw = JSON.parse(storedCart)

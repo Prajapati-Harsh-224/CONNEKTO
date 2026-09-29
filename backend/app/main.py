@@ -706,7 +706,7 @@ def update_profile(payload: ProfileUpdateRequest, user: User = Depends(require_u
             supplier = Supplier(
                 id=f"supplier-{user.id[:8]}",
                 owner_id=user.id,
-                name=f"{user.name}'s Supply Desk",
+                name=payload.shopName.strip() if payload.shopName and payload.shopName.strip() else f"{user.name}'s Supply Desk",
                 category=clean_category_str,
                 location=primary_area,
                 service_areas_raw=", ".join(clean_areas) if clean_areas else primary_area,
@@ -719,7 +719,10 @@ def update_profile(payload: ProfileUpdateRequest, user: User = Depends(require_u
             db.add(supplier)
             db.flush()
         else:
-            supplier.name = f"{user.name}'s Supply Desk" if not supplier.name else supplier.name
+            if payload.shopName and payload.shopName.strip():
+                supplier.name = payload.shopName.strip()
+            elif not supplier.name:
+                supplier.name = f"{user.name}'s Supply Desk"
             supplier.category = clean_category_str
             supplier.location = primary_area
             supplier.phone = user.phone or supplier.phone
@@ -785,7 +788,7 @@ def supplier_dashboard(user: User = Depends(require_user), db: Session = Depends
         {"label": "Today's Revenue", "value": f"₹{today_revenue:,.0f}", "detail": "Revenue received today", "accent": "metric-primary"},
     ]
 
-    return envelope({"businessName": supplier.name if supplier else f"{user.name}'s Supply Desk", "supplierId": supplier.id if supplier else None, "metrics": metrics, "valueSummary": {"value": f"Rs {sum(float(o.subtotal) for o in orders):,.0f}", "detail": "Estimated incoming order value this month"}, "recentOrders": [order_json(o) for o in orders], "isDemoData": not bool(orders)}, "Supplier dashboard returned")
+    return envelope({"businessName": supplier.name if supplier else f"{user.name}'s Supply Desk", "supplierId": supplier.id if supplier else None, "metrics": metrics, "valueSummary": {"value": f"Rs {sum(float(o.subtotal) for o in orders):,.0f}", "detail": "Estimated incoming order value this month"}, "recentOrders": [order_json(o) for o in orders], "isDemoData": False}, "Supplier dashboard returned")
 
 @app.get("/api/supplier/orders")
 def supplier_orders(user: User = Depends(require_user), db: Session = Depends(get_db)):
@@ -1362,12 +1365,172 @@ def checkout(request: Request, payload: CheckoutRequest, user: User = Depends(re
 @app.get("/api/analytics/shop")
 def shop_analytics(user: User = Depends(require_user), db: Session = Depends(get_db)):
     if user.role != "SHOP_OWNER": return role_error("Shop Owners", user)
-    rows = db.scalars(select(SupplierOrder).where(SupplierOrder.shop_owner_id == user.id)).all()
-    return envelope({"isDemoData": not bool(rows), "totalOrderValue": sum(float(o.subtotal) for o in rows), "ordersOverTime": [], "topProducts": [], "supplierSpending": [], "statusDistribution": []}, "Shop analytics returned")
+    rows = db.scalars(
+        select(SupplierOrder)
+        .where(SupplierOrder.shop_owner_id == user.id)
+        .options(
+            joinedload(SupplierOrder.items),
+            joinedload(SupplierOrder.supplier)
+        )
+        .order_by(SupplierOrder.created_at.desc())
+    ).unique().all()
+
+    total_orders = len(rows)
+    total_spent = sum(float(o.subtotal) for o in rows if o.status != "Cancelled")
+
+    supp_map = {}
+    for o in rows:
+        if o.status == "Cancelled":
+            continue
+        name = o.supplier_name or (o.supplier.name if o.supplier else "Supplier")
+        supp_map[name] = supp_map.get(name, 0.0) + float(o.subtotal or 0.0)
+    supplier_spending = [{"name": name, "value": val} for name, val in sorted(supp_map.items(), key=lambda x: x[1], reverse=True)[:5]]
+
+    product_map = {}
+    for o in rows:
+        if o.status == "Cancelled":
+            continue
+        for it in o.items:
+            name = it.product_name_snapshot or "Product"
+            if name not in product_map:
+                product_map[name] = {"quantity": 0, "spent": 0.0, "imageUrl": it.product_image_url_snapshot or ""}
+            product_map[name]["quantity"] += int(it.quantity or 0)
+            product_map[name]["spent"] += float(it.line_total or 0.0)
+
+    top_products = [
+        {"name": name, "quantity": data["quantity"], "spent": data["spent"], "imageUrl": data["imageUrl"]}
+        for name, data in sorted(product_map.items(), key=lambda x: x[1]["quantity"], reverse=True)[:5]
+    ]
+
+    now = datetime.now(timezone.utc)
+    month_buckets = []
+    for i in range(5, -1, -1):
+        m = (now.month - i - 1) % 12 + 1
+        y = now.year - ((now.month - i - 1) // 12 * -1 if (now.month - i) <= 0 else 0)
+        dt = datetime(y, m, 1)
+        m_label = dt.strftime("%b")
+        m_val = sum(float(o.subtotal) for o in rows if o.created_at and o.created_at.year == y and o.created_at.month == m and o.status != "Cancelled")
+        month_buckets.append({"label": m_label, "value": m_val})
+
+    status_dist = {}
+    for o in rows:
+        status_dist[o.status] = status_dist.get(o.status, 0) + 1
+    status_distribution = [{"status": s, "count": c} for s, c in status_dist.items()]
+
+    return envelope({
+        "isDemoData": False,
+        "totalOrderValue": total_spent,
+        "totalOrders": total_orders,
+        "ordersOverTime": month_buckets,
+        "topProducts": top_products,
+        "supplierSpending": supplier_spending,
+        "statusDistribution": status_distribution,
+    }, "Shop analytics returned")
 
 @app.get("/api/analytics/supplier")
 def supplier_analytics(user: User = Depends(require_user), db: Session = Depends(get_db)):
     if user.role == "SHOP_OWNER": return role_error("Suppliers", user)
     supplier = owned_supplier(user, db)
-    rows = db.scalars(select(SupplierOrder).where(SupplierOrder.supplier_id == supplier.id)).all() if supplier else []
-    return envelope({"isDemoData": not bool(rows), "ordersReceived": len(rows), "orderValue": sum(float(o.subtotal) for o in rows), "topProducts": [], "topCustomers": [], "orderStatus": {"pending": sum(o.status not in {"Delivered", "Cancelled"} for o in rows), "completed": sum(o.status == "Delivered" for o in rows)}}, "Supplier analytics returned")
+    rows = db.scalars(
+        select(SupplierOrder)
+        .where(SupplierOrder.supplier_id == supplier.id)
+        .options(
+            joinedload(SupplierOrder.items),
+            joinedload(SupplierOrder.shop_owner).joinedload(User.shop)
+        )
+        .order_by(SupplierOrder.created_at.desc())
+    ).unique().all() if supplier else []
+
+    total_orders = len(rows)
+    total_sales = sum(float(o.subtotal) for o in rows if o.status != "Cancelled")
+    pending_orders = sum(1 for o in rows if o.status not in {"Delivered", "Cancelled"})
+    completed_orders = sum(1 for o in rows if o.status == "Delivered")
+
+    product_map = {}
+    for o in rows:
+        if o.status == "Cancelled":
+            continue
+        for it in o.items:
+            name = it.product_name_snapshot or "Product"
+            if name not in product_map:
+                product_map[name] = {"units": 0, "revenue": 0.0}
+            product_map[name]["units"] += int(it.quantity or 0)
+            product_map[name]["revenue"] += float(it.line_total or 0.0)
+
+    sorted_prods = sorted(product_map.items(), key=lambda x: x[1]["units"], reverse=True)[:5]
+    top_products = [
+        {"rank": idx + 1, "name": name, "units": data["units"], "revenue": data["revenue"]}
+        for idx, (name, data) in enumerate(sorted_prods)
+    ]
+
+    customer_map = {}
+    for o in rows:
+        if o.status == "Cancelled":
+            continue
+        cust_id = o.shop_owner_id
+        shop_name = o.shop_owner.shop.name if o.shop_owner and o.shop_owner.shop and o.shop_owner.shop.name else None
+        cust_name = shop_name or (o.shop_owner.name if o.shop_owner else "Customer")
+        if cust_id not in customer_map:
+            customer_map[cust_id] = {"name": cust_name, "orders": 0, "totalSpent": 0.0}
+        customer_map[cust_id]["orders"] += 1
+        customer_map[cust_id]["totalSpent"] += float(o.subtotal or 0.0)
+
+    sorted_custs = sorted(customer_map.values(), key=lambda x: x["totalSpent"], reverse=True)[:5]
+    top_customers = [
+        {"rank": idx + 1, "name": c["name"], "orders": c["orders"], "totalSpent": c["totalSpent"]}
+        for idx, c in enumerate(sorted_custs)
+    ]
+
+    now = datetime.now(timezone.utc)
+    month_labels = []
+    month_values = []
+    for i in range(5, -1, -1):
+        m = (now.month - i - 1) % 12 + 1
+        y = now.year - ((now.month - i - 1) // 12 * -1 if (now.month - i) <= 0 else 0)
+        dt = datetime(y, m, 1)
+        m_label = dt.strftime("%b")
+        m_val = sum(float(o.subtotal) for o in rows if o.created_at and o.created_at.year == y and o.created_at.month == m and o.status != "Cancelled")
+        month_labels.append(m_label)
+        month_values.append(m_val)
+
+    sales_trend = {
+        "Last 6 months": {"labels": month_labels, "values": month_values, "months": month_labels},
+        "Last 3 months": {"labels": month_labels[-3:], "values": month_values[-3:], "months": month_labels[-3:]},
+        "This year": {"labels": month_labels, "values": month_values, "months": month_labels},
+    }
+
+    cat_map = {}
+    for o in rows:
+        if o.status == "Cancelled":
+            continue
+        for it in o.items:
+            p = db.get(Product, it.product_id) if it.product_id else None
+            cat = p.category if p and p.category else "General"
+            cat_map[cat] = cat_map.get(cat, 0.0) + float(it.line_total or 0.0)
+
+    total_cat_val = sum(cat_map.values()) or 1.0
+    colors = ["#27b66d", "#f97316", "#8b5cf6", "#3b82f6", "#ec4899", "#14b8a6"]
+    revenue_breakdown = [
+        {"name": cat, "value": round((val / total_cat_val) * 100, 1), "amount": val, "color": colors[idx % len(colors)]}
+        for idx, (cat, val) in enumerate(sorted(cat_map.items(), key=lambda x: x[1], reverse=True)[:5])
+    ]
+
+    return envelope({
+        "isDemoData": False,
+        "ordersReceived": total_orders,
+        "orderValue": total_sales,
+        "metrics": {
+            "sales": total_sales,
+            "orders": total_orders,
+            "customers": len(customer_map),
+            "productsSold": sum(data["units"] for data in product_map.values()),
+        },
+        "orderStatus": {
+            "pending": pending_orders,
+            "completed": completed_orders,
+        },
+        "topProducts": top_products,
+        "topCustomers": top_customers,
+        "salesTrend": sales_trend,
+        "revenueBreakdown": revenue_breakdown,
+    }, "Supplier analytics returned")
