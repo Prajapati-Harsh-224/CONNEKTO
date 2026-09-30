@@ -53,7 +53,7 @@ export default function Sidebar({ role: routeRole }) {
               className={({ isActive }) =>
                 `flex items-center justify-between px-3 py-2.5 rounded-xl text-xs sm:text-sm font-medium transition-colors ${
                   isActive
-                    ? (role === 'gruh-udyog' ? 'bg-emerald-50 text-emerald-800 font-semibold' : 'bg-brand-orange-light text-brand-orange font-semibold')
+                    ? 'bg-brand-orange-light text-brand-orange font-semibold'
                     : 'text-slate-600 hover:text-slate-900 hover:bg-slate-50'
                 }`
               }

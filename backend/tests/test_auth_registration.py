@@ -58,21 +58,6 @@ def test_supplier_registration():
     assert data["data"]["user"]["name"] == "Test Supplier"
     assert data["data"]["user"]["area"] == "Industrial Area Phase 1"
 
-def test_gruh_udyog_registration():
-    response = client.post("/api/auth/register/gruh-udyog", json={
-        "name": "Test Gruh Udyog",
-        "area": "Rural Craft Zone",
-        "phone": "9876543212",
-        "email": "gruhudyog@example.com",
-        "password": "Password123!",
-        "confirmPassword": "Password123!"
-    })
-    assert response.status_code == 201, response.json()
-    data = response.json()
-    assert data["success"] is True
-    assert data["data"]["user"]["role"] == "GRUH_UDYOG"
-    assert data["data"]["user"]["name"] == "Test Gruh Udyog"
-    assert data["data"]["user"]["area"] == "Rural Craft Zone"
 
 def test_login_with_phone_and_email():
     res_email = client.post("/api/auth/login", json={
@@ -180,22 +165,6 @@ def test_supplier_dashboard_includes_today_revenue_metric():
         for metric in metrics
     )
 
-def test_gruh_udyog_dashboard_and_orders_access():
-    login_response = client.post("/api/auth/login", json={
-        "emailOrPhone": "gruhudyog@example.com",
-        "password": "Password123!",
-    })
-    assert login_response.status_code == 200, login_response.json()
-
-    # Verify Gruh Udyog can access dashboard
-    dashboard_res = client.get("/api/supplier/dashboard")
-    assert dashboard_res.status_code == 200, dashboard_res.json()
-    assert dashboard_res.json()["success"] is True
-
-    # Verify Gruh Udyog can access orders
-    orders_res = client.get("/api/supplier/orders")
-    assert orders_res.status_code == 200, orders_res.json()
-    assert orders_res.json()["success"] is True
 
 
 def test_login_user_not_found_shows_register_message():
@@ -275,33 +244,12 @@ def test_role_enforcement_only_selected_role_can_login():
     assert res_owner_mismatch.json()["error"]["code"] == "ROLE_MISMATCH"
     assert res_owner_mismatch.json()["error"]["details"]["alertMessage"] == "you are a supplier change role and then sign in"
 
-    # 4. When GRUH_UDYOG role is selected, GRUH_UDYOG can log in and gets gruh-udyog dashboard
-    res_gruh_check = client.post("/api/auth/check-identifier", json={
-        "emailOrPhone": "gruhudyog@example.com",
-        "role": "GRUH_UDYOG"
-    })
-    assert res_gruh_check.status_code == 200
-    assert res_gruh_check.json()["data"]["role"] == "GRUH_UDYOG"
-    assert res_gruh_check.json()["data"]["dashboardPath"] == "/dashboard/gruh-udyog"
-
-    # 5. When GRUH_UDYOG attempts to sign in as SUPPLIER or SHOP_OWNER
-    res_gruh_mismatch = client.post("/api/auth/login", json={
-        "emailOrPhone": "gruhudyog@example.com",
-        "password": "Password123!",
-        "role": "SUPPLIER"
-    })
-    assert res_gruh_mismatch.status_code == 403
-    assert res_gruh_mismatch.json()["error"]["code"] == "ROLE_MISMATCH"
-    assert res_gruh_mismatch.json()["error"]["details"]["alertMessage"] == "you are a Gruh Udhyog change role and then sign in"
-
-
 if __name__ == "__main__":
     print("Resetting test database...")
     reset_db()
     print("Running registration and login tests...")
     test_shop_owner_registration()
     test_supplier_registration()
-    test_gruh_udyog_registration()
     test_login_with_phone_and_email()
     test_registration_validation_errors()
     test_login_user_not_found_shows_register_message()

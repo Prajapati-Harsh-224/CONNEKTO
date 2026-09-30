@@ -75,29 +75,9 @@ def test_supplier_login_with_email():
     })
     assert log.status_code == 200, log.json()
 
-def test_gruh_udyog_login_with_email():
-    # Register Gruh Udyog with email
-    reg = client.post("/api/auth/register/gruh-udyog", json={
-        "name": "Gruh Udyog One",
-        "area": "Village Zone",
-        "phone": "9999900003",
-        "email": "gruh.udyog@village.org",
-        "password": "GruhPassword123!",
-        "confirmPassword": "GruhPassword123!"
-    })
-    assert reg.status_code == 201, reg.json()
-
-    # Login with email
-    log = client.post("/api/auth/login", json={
-        "emailOrPhone": "gruh.udyog@village.org",
-        "password": "GruhPassword123!"
-    })
-    assert log.status_code == 200, log.json()
-
 if __name__ == "__main__":
     reset_db()
     print("Testing email logins across all roles...")
     test_shop_owner_login_with_email()
     test_supplier_login_with_email()
-    test_gruh_udyog_login_with_email()
     print("ALL EMAIL LOGIN TESTS PASSED SUCCESSFULLY!")

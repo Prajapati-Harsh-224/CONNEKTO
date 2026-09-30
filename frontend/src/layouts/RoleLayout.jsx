@@ -25,7 +25,7 @@ export default function RoleLayout({ role: routeRole }) {
     }
   }, [location.pathname])
 
-  const roleLabel = role === 'supplier' ? t('supplier') : role === 'gruh-udyog' ? t('gruhUdyog') : t('shopOwner')
+  const roleLabel = role === 'supplier' ? t('supplier') : t('shopOwner')
   const displayName = user?.name || 'Shop Owner'
   const avatarInitial = displayName.trim().slice(0, 1).toUpperCase()
 
@@ -48,7 +48,7 @@ export default function RoleLayout({ role: routeRole }) {
           </Link>
         </div>
 
-        {role !== 'supplier' && role !== 'shop-owner' && role !== 'gruh-udyog' ? (
+        {role !== 'supplier' && role !== 'shop-owner' ? (
           <div className="relative flex-1 max-w-md hidden md:flex items-center">
             <span className="absolute left-3 text-slate-500"><FiSearch size={16} /></span>
             <input
@@ -83,7 +83,7 @@ export default function RoleLayout({ role: routeRole }) {
           </div>
 
           <Link className="flex items-center gap-2.5 p-1 sm:px-2 sm:py-1.5 rounded-xl hover:bg-slate-100/60 transition-colors" to={`/dashboard/${role}/profile`} aria-label={`${displayName}, ${roleLabel}. ${t('profile')}`}>
-            <span className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 ${role === 'gruh-udyog' ? 'bg-brand-orange-dark text-white' : 'bg-brand-orange-light text-brand-orange'}`} aria-hidden="true">
+            <span className="w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm shrink-0 bg-brand-orange-light text-brand-orange" aria-hidden="true">
               {avatarInitial}
             </span>
             <div className="hidden md:flex flex-col text-left leading-tight">

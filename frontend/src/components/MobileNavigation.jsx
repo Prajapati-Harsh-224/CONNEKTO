@@ -57,9 +57,7 @@ export default function MobileNavigation({ role: routeRole }) {
             className={({ isActive }) =>
               `relative flex-1 min-w-0 flex flex-col items-center justify-center gap-0.5 py-1 px-1 rounded-xl text-[10px] font-medium transition-all ${
                 isActive
-                  ? role === 'gruh-udyog'
-                    ? 'text-emerald-700 font-bold bg-emerald-50/70'
-                    : 'text-brand-orange font-bold bg-brand-orange-light/80'
+                  ? 'text-brand-orange font-bold bg-brand-orange-light/80'
                   : 'text-slate-500 hover:text-slate-900 active:scale-95'
               }`
             }

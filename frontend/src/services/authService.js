@@ -3,7 +3,6 @@ import { apiRequest } from './api.js'
 const REGISTER_ROUTES = {
   SHOP_OWNER: '/auth/register/shop-owner',
   SUPPLIER: '/auth/register/supplier',
-  GRUH_UDYOG: '/auth/register/gruh-udyog',
 }
 
 export function checkIdentifier(emailOrPhone, role) {

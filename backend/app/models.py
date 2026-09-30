@@ -100,6 +100,7 @@ class SupplierOrder(Base):
     updated_at: Mapped[datetime] = mapped_column(DateTime, default=datetime.utcnow, onupdate=datetime.utcnow)
     checkout: Mapped["Checkout"] = relationship(overlaps="orders")
     shop_owner: Mapped["User"] = relationship(foreign_keys=[shop_owner_id])
+    supplier: Mapped[Optional["Supplier"]] = relationship(foreign_keys=[supplier_id])
     items: Mapped[List["OrderItem"]] = relationship(cascade="all, delete-orphan")
 
 class OrderItem(Base):

@@ -65,7 +65,7 @@ export default function NotificationDropdown({ role, isOpen, onClose, onUnreadCh
             }))
             setNotifications(list)
           }
-        } else if (role === 'supplier' || role === 'gruh-udyog') {
+        } else if (role === 'supplier') {
           const res = await apiRequest('/supplier/orders')
           if (isMounted && res.success && Array.isArray(res.data?.orders)) {
             const list = res.data.orders.map(order => ({
@@ -75,9 +75,7 @@ export default function NotificationDropdown({ role, isOpen, onClose, onUnreadCh
               title: `New Order #${(order.id || '').slice(0, 8)}`,
               message: `From ${order.shopName || order.shopOwnerName || 'Shop Owner'} · Status: ${order.status} · Amount: ₹${Number(order.subtotal || 0).toLocaleString('en-IN')}`,
               time: order.createdAt,
-              link: role === 'gruh-udyog'
-                ? '/dashboard/gruh-udyog/orders'
-                : (order.id ? `/dashboard/supplier/orders/${order.id}` : '/dashboard/supplier/orders'),
+              link: order.id ? `/dashboard/supplier/orders/${order.id}` : '/dashboard/supplier/orders',
               status: order.status
             }))
             setNotifications(list)

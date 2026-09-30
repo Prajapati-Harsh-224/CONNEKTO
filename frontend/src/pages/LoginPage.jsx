@@ -9,7 +9,7 @@ import { checkIdentifier, register } from '../services/authService.js'
 import { getAuthStateConfig } from '../utils/authUxState.js'
 import { getSelectedRole, saveSelectedRole } from '../utils/roleStorage.js'
 
-const validRoles = ['SHOP_OWNER', 'SUPPLIER', 'GRUH_UDYOG']
+const validRoles = ['SHOP_OWNER', 'SUPPLIER']
 
 const initialForm = {
   identifier: '',
@@ -31,7 +31,6 @@ function isEmailIdentifier(val) {
 function getRoleDashboardPath(role) {
   if (role === 'SHOP_OWNER') return '/dashboard/shop-owner'
   if (role === 'SUPPLIER') return '/dashboard/supplier'
-  if (role === 'GRUH_UDYOG') return '/dashboard/gruh-udyog'
   return '/dashboard/shop-owner'
 }
 
@@ -42,9 +41,6 @@ function getRoleMismatchAlertMessage(actualRole) {
   }
   if (normalized === 'SUPPLIER') {
     return 'you are a supplier change role and then sign in'
-  }
-  if (normalized === 'GRUH_UDYOG') {
-    return 'you are a Gruh Udhyog change role and then sign in'
   }
   return 'you are registered with a different role. change role and then sign in'
 }
@@ -103,7 +99,6 @@ export default function LoginPage() {
       const raw = (error?.message || '').toLowerCase()
       if (raw.includes('shop owner') || raw.includes('shopowner')) actualRole = 'SHOP_OWNER'
       else if (raw.includes('supplier')) actualRole = 'SUPPLIER'
-      else if (raw.includes('gruh')) actualRole = 'GRUH_UDYOG'
     }
 
     const alertText = details.alertMessage || getRoleMismatchAlertMessage(actualRole)
@@ -315,7 +310,6 @@ export default function LoginPage() {
   const roleTone = {
     SHOP_OWNER: { badge: 'bg-brand-orange-light text-brand-orange-dark font-bold', icon: '▦' },
     SUPPLIER: { badge: 'bg-emerald-50 text-emerald-800 font-bold', icon: '▰' },
-    GRUH_UDYOG: { badge: 'bg-purple-50 text-purple-800 font-bold', icon: '⌂' },
   }
   const currentTone = roleTone[selectedRole] || roleTone.SHOP_OWNER
 
@@ -331,7 +325,7 @@ export default function LoginPage() {
           <header className="text-center pb-3 border-b border-slate-100 flex flex-col items-center">
             <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider mb-2 ${currentTone.badge}`}>
               <span>{currentTone.icon}</span>
-              <span>{t(selectedRole === 'SHOP_OWNER' ? 'shopOwner' : selectedRole === 'SUPPLIER' ? 'supplier' : 'gruhUdyog')}</span>
+              <span>{t(selectedRole === 'SHOP_OWNER' ? 'shopOwner' : 'supplier')}</span>
             </span>
             <h1 className="text-xl sm:text-2xl font-bold font-serif text-brand-navy tracking-tight">
               {authConfig.heading}
@@ -356,7 +350,7 @@ export default function LoginPage() {
               {authConfig.showExtraFields ? t('creatingAccountAs') : t('signingInAs')}:
             </span>
             <strong className="text-slate-800 font-semibold">
-              {t(selectedRole === 'SHOP_OWNER' ? 'shopOwner' : selectedRole === 'SUPPLIER' ? 'supplier' : 'gruhUdyog')}
+              {t(selectedRole === 'SHOP_OWNER' ? 'shopOwner' : 'supplier')}
             </strong>
             <Link className="text-brand-orange hover:text-brand-orange-dark hover:underline font-medium" to={`/role-selection${selectedRole ? `?role=${selectedRole}` : ''}`}>
               {t('changeRole')}
@@ -375,10 +369,10 @@ export default function LoginPage() {
               <FormField
                 autoComplete="username"
                 error={errors.identifier}
-                label={selectedRole === 'SHOP_OWNER' || selectedRole === 'SUPPLIER' || selectedRole === 'GRUH_UDYOG' ? t('emailOrPhoneNumber') : t('emailOrPhone')}
+                label={t('emailOrPhoneNumber')}
                 name="identifier"
                 onChange={updateField}
-                placeholder={selectedRole === 'SHOP_OWNER' || selectedRole === 'SUPPLIER' || selectedRole === 'GRUH_UDYOG' ? t('enterEmailOrPhone') : 'you@example.com or +91'}
+                placeholder={t('enterEmailOrPhone')}
                 type="text"
                 value={form.identifier}
               />
@@ -388,7 +382,7 @@ export default function LoginPage() {
                 error={errors.password}
                 label={t('password')}
                 onChange={updateField}
-                placeholder={selectedRole === 'SHOP_OWNER' || selectedRole === 'SUPPLIER' || selectedRole === 'GRUH_UDYOG' ? t('enterYourPassword') : undefined}
+                placeholder={t('enterYourPassword')}
                 value={form.password}
               />
 
@@ -534,7 +528,7 @@ export default function LoginPage() {
                   navigate(`/login?role=${targetRole}`)
                 }}
               >
-                Change Role to {roleMismatchAlert.actualRole === 'SHOP_OWNER' ? 'Shop Owner' : roleMismatchAlert.actualRole === 'SUPPLIER' ? 'Supplier' : 'Gruh Udhyog'} →
+                Change Role to {roleMismatchAlert.actualRole === 'SHOP_OWNER' ? 'Shop Owner' : 'Supplier'} →
               </button>
               <button
                 type="button"

@@ -297,11 +297,29 @@ export default function ShopOwnerAnalyticsPage() {
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
 
+  const loadData = () => {
+    setIsLoading(true)
+    setError('')
+    Promise.allSettled([getShopAnalytics(), getOrders()])
+      .then(([analyticsResult, ordersResult]) => {
+        if (analyticsResult.status === 'fulfilled') {
+          setAnalytics(analyticsResult.value.data)
+        }
+        if (ordersResult.status === 'fulfilled') {
+          setOrders(ordersResult.value.data?.orders || [])
+        }
+        if (analyticsResult.status === 'rejected' && ordersResult.status === 'rejected') {
+          setError(analyticsResult.reason?.message || t('networkError'))
+        } else if (analyticsResult.status === 'rejected') {
+          // If orders succeeded but analytics endpoint had an error, fallback to derived analytics
+          setAnalytics({ isDemoData: false, ordersOverTime: [], supplierSpending: [], topProducts: [], totalOrderValue: 0 })
+        }
+      })
+      .finally(() => setIsLoading(false))
+  }
+
   useEffect(() => {
-    Promise.all([getShopAnalytics(), getOrders()]).then(([analyticsResponse, ordersResponse]) => {
-      setAnalytics(analyticsResponse.data)
-      setOrders(ordersResponse.data.orders || [])
-    }).catch((requestError) => setError(requestError.message)).finally(() => setIsLoading(false))
+    loadData()
   }, [])
 
   const data = useMemo(() => {
@@ -312,7 +330,7 @@ export default function ShopOwnerAnalyticsPage() {
       ordersOverTime: !hasOrderData && analytics?.ordersOverTime?.length ? analytics.ordersOverTime : derived.ordersOverTime,
       supplierSpending: !hasOrderData && analytics?.supplierSpending?.length ? analytics.supplierSpending : derived.supplierSpending,
       topProducts: !hasOrderData && analytics?.topProducts?.length ? analytics.topProducts : derived.topProducts,
-      totalOrderValue: analytics?.totalOrderValue || derived.totalOrderValue,
+      totalOrderValue: analytics?.totalOrderValue ?? derived.totalOrderValue,
     }
   }, [analytics, orders, period])
 
@@ -327,7 +345,7 @@ export default function ShopOwnerAnalyticsPage() {
         </div>
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900">{t('analyticsUnavailable')}</h1>
         <p className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium" role="alert">{error}</p>
-        <button className="px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm transition-all cursor-pointer" onClick={() => window.location.reload()} type="button">
+        <button className="px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm transition-all cursor-pointer" onClick={loadData} type="button">
           {t('tryAgain')}
         </button>
       </section>

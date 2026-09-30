@@ -25,11 +25,6 @@ import SupplierEditProductPage from './pages/SupplierEditProductPage.jsx'
 import SupplierAnalyticsPage from './pages/SupplierAnalyticsPage.jsx'
 import SupplierCustomersPage from './pages/SupplierCustomersPage.jsx'
 import ShopOwnerAnalyticsPage from './pages/ShopOwnerAnalyticsPage.jsx'
-import GruhUdyogDashboardPage from './pages/GruhUdyogDashboardPage.jsx'
-import GruhUdyogProductsPage from './pages/GruhUdyogProductsPage.jsx'
-import GruhUdyogServiceAreasPage from './pages/GruhUdyogServiceAreasPage.jsx'
-import GruhUdyogOrdersPage from './pages/GruhUdyogOrdersPage.jsx'
-import GruhUdyogCustomersPage from './pages/GruhUdyogCustomersPage.jsx'
 import ProfilePage from './pages/ProfilePage.jsx'
 
 function RoleRedirect({ toRole }) {
@@ -88,21 +83,8 @@ export default function App() {
             <Route path="settings" element={<ProfilePage role="supplier" />} />
             <Route path=":section" element={<DashboardPlaceholderPage />} />
           </Route>
-          <Route path="dashboard/gruh-udyog" element={<ProtectedRoute allowedRole="GRUH_UDYOG"><RoleLayout role="gruh-udyog" /></ProtectedRoute>}>
-            <Route index element={<GruhUdyogDashboardPage />} />
-            <Route path="home" element={<GruhUdyogDashboardPage />} />
-            <Route path="dashboard" element={<Navigate replace to="/dashboard/gruh-udyog/home" />} />
-            <Route path="orders" element={<GruhUdyogOrdersPage />} />
-            <Route path="products" element={<GruhUdyogProductsPage />} />
-            <Route path="customers" element={<GruhUdyogCustomersPage />} />
-            <Route path="service-areas" element={<GruhUdyogServiceAreasPage />} />
-            <Route path="profile" element={<ProfilePage role="gruh-udyog" />} />
-            <Route path=":section" element={<DashboardPlaceholderPage />} />
-          </Route>
           <Route path="dashboard/shop_owner" element={<RoleRedirect toRole="shop-owner" />} />
           <Route path="dashboard/shop_owner/*" element={<RoleRedirect toRole="shop-owner" />} />
-          <Route path="dashboard/gruh_udyog" element={<RoleRedirect toRole="gruh-udyog" />} />
-          <Route path="dashboard/gruh_udyog/*" element={<RoleRedirect toRole="gruh-udyog" />} />
           <Route path="dashboard/:role" element={<RoleLayout />}>
             <Route index element={<DashboardPlaceholderPage />} />
             <Route path=":section" element={<DashboardPlaceholderPage />} />

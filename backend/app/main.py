@@ -21,14 +21,14 @@ from sqlalchemy.orm import Session, joinedload, object_session
 
 from .database import Base, SessionLocal, engine, get_db
 from .models import Checkout, OrderItem, Product, SessionToken, Shop, Supplier, SupplierOrder, SupplierServiceArea, User
-from .schemas import CheckoutRequest, LoginRequest, CheckIdentifierRequest, ProductRequest, ShopOwnerRegisterRequest, SupplierRegisterRequest, GruhUdyogRegisterRequest, StatusRequest, ProfileUpdateRequest
+from .schemas import CheckoutRequest, LoginRequest, CheckIdentifierRequest, ProductRequest, ShopOwnerRegisterRequest, SupplierRegisterRequest, StatusRequest, ProfileUpdateRequest
 
 logger = logging.getLogger("connekto")
 
 SESSION_COOKIE = "connecto_session"
 SESSION_DAYS = 7
 CLIENT_ORIGINS = [origin.strip() for origin in os.getenv("CLIENT_ORIGIN", "http://localhost:5173").split(",") if origin.strip()]
-ROLES = {"SHOP_OWNER", "SUPPLIER", "GRUH_UDYOG"}
+ROLES = {"SHOP_OWNER", "SUPPLIER"}
 PAYMENT_METHODS = {"CASH_ON_DELIVERY", "PAY_LATER", "REQUEST_ORDER"}
 TRANSITIONS = {
     "Pending": {"Accepted", "Cancelled"}, "Accepted": {"Preparing", "Cancelled"},
@@ -176,7 +176,7 @@ def safe_user(user: User, db: Session | None = None) -> dict:
     if user.shop:
         result["shop"] = {"name": user.shop.name, "address": user.shop.address, "area": user.shop.area}
 
-    if db and user.role in {"SUPPLIER", "GRUH_UDYOG"}:
+    if db and user.role == "SUPPLIER":
         supplier = db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
         if supplier:
             db_areas = db.scalars(
@@ -325,14 +325,13 @@ def order_json(order: SupplierOrder) -> dict:
 
 def owned_supplier(user: User, db: Session):
     supplier = db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
-    if not supplier and user.role in {"SUPPLIER", "GRUH_UDYOG"}:
+    if not supplier and user.role == "SUPPLIER":
         clean_area = user.area or "Ahmedabad"
-        name_suffix = "Gruh Udyog" if user.role == "GRUH_UDYOG" else "Supply Desk"
         supplier = Supplier(
             id=f"supplier-{user.id[:8]}",
             owner_id=user.id,
-            name=f"{user.name}'s {name_suffix}",
-            category="Food & Beverages" if user.role == "GRUH_UDYOG" else "FMCG",
+            name=f"{user.name}'s Supply Desk",
+            category="FMCG",
             description="",
             location=clean_area,
             service_areas_raw=clean_area,
@@ -381,12 +380,12 @@ def _process_registration(
         details["name"] = "Full name must be at least 2 characters."
     
     clean_area = normalize_area_label(area) if area else ""
-    supplier_areas = service_area_values(service_areas or [area]) if role in {"SUPPLIER", "GRUH_UDYOG"} else []
+    supplier_areas = service_area_values(service_areas or [area]) if role == "SUPPLIER" else []
     if supplier_areas:
         clean_area = supplier_areas[0]
     if len(clean_area) < 2:
         details["area"] = "Area is required."
-    if role in {"SUPPLIER", "GRUH_UDYOG"} and not supplier_areas:
+    if role == "SUPPLIER" and not supplier_areas:
         details["area"] = "At least one service area is required."
 
     if confirm_password is not None and confirm_password != password:
@@ -442,11 +441,6 @@ def _process_registration(
         db.add(supplier)
         db.flush()
         db.add_all([SupplierServiceArea(supplier_id=supplier.id, area_key=normalize_area_key(area), area=area) for area in supplier_areas])
-    elif role == "GRUH_UDYOG":
-        supplier = Supplier(id=f"supplier-{user.id[:8]}", owner_id=user.id, name=f"{user.name}'s Gruh Udyog", category=clean_category, description="", location=clean_area, service_areas_raw=", ".join(supplier_areas), minimum_order="", phone=clean_phone, email=clean_email or "", is_verified=False, rating=None, review_count=0)
-        db.add(supplier)
-        db.flush()
-        db.add_all([SupplierServiceArea(supplier_id=supplier.id, area_key=normalize_area_key(area), area=area) for area in supplier_areas])
 
     db.commit()
     db.refresh(user)
@@ -490,31 +484,12 @@ def register_supplier(request: Request, payload: SupplierRegisterRequest, respon
     )
 
 
-@app.post("/api/auth/register/gruh-udyog", status_code=201, summary="Gruh Udyog Register API")
-@limiter.limit("10/minute")
-def register_gruh_udyog(request: Request, payload: GruhUdyogRegisterRequest, response: Response, db: Session = Depends(get_db)):
-    return _process_registration(
-        db=db,
-        response=response,
-        role="GRUH_UDYOG",
-        name=payload.name,
-        area=payload.area,
-        phone=payload.phone,
-        email=payload.email,
-        password=payload.password,
-        confirm_password=payload.confirmPassword,
-        category=payload.category,
-        service_areas=payload.serviceAreas
-    )
-
 def get_role_mismatch_alert(actual_role: str) -> str:
     role = (actual_role or "").upper()
     if role == "SHOP_OWNER":
         return "you are a shopowner change role and then sign in"
     elif role == "SUPPLIER":
         return "you are a supplier change role and then sign in"
-    elif role == "GRUH_UDYOG":
-        return "you are a Gruh Udhyog change role and then sign in"
     return "change role and then sign in"
 
 
@@ -553,7 +528,6 @@ def check_identifier(request: Request, payload: CheckIdentifierRequest, response
             role_display = {
                 "SHOP_OWNER": "Shop Owner",
                 "SUPPLIER": "Supplier",
-                "GRUH_UDYOG": "Gruh Udyog"
             }
             actual_label = role_display.get(user.role, user.role.replace("_", " ").title())
             alert_msg = get_role_mismatch_alert(user.role)
@@ -609,7 +583,6 @@ def login(request: Request, payload: LoginRequest, response: Response, db: Sessi
             role_display = {
                 "SHOP_OWNER": "Shop Owner",
                 "SUPPLIER": "Supplier",
-                "GRUH_UDYOG": "Gruh Udyog"
             }
             actual_label = role_display.get(user.role, user.role.replace("_", " ").title())
             alert_msg = get_role_mismatch_alert(user.role)
@@ -676,7 +649,7 @@ def update_profile(payload: ProfileUpdateRequest, user: User = Depends(require_u
     clean_areas = service_area_values(raw_areas) if raw_areas else []
     primary_area = clean_areas[0] if clean_areas else (normalize_area_label(payload.area) if payload.area else (user.area or ""))
 
-    if user.role in {"SUPPLIER", "GRUH_UDYOG"} and not clean_areas and not primary_area:
+    if user.role == "SUPPLIER" and not clean_areas and not primary_area:
         details["area"] = "At least one service area is required."
 
     if details:
@@ -700,7 +673,7 @@ def update_profile(payload: ProfileUpdateRequest, user: User = Depends(require_u
         user.login_identifier = user.phone
 
     # Role-specific updates & area logic
-    if user.role in {"SUPPLIER", "GRUH_UDYOG"}:
+    if user.role == "SUPPLIER":
         supplier = db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
         if not supplier:
             supplier = Supplier(
@@ -763,7 +736,7 @@ def logout(request: Request, response: Response, db: Session = Depends(get_db)):
 
 @app.get("/api/supplier/dashboard")
 def supplier_dashboard(user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role not in {"SUPPLIER", "GRUH_UDYOG"}: return role_error("Suppliers", user)
+    if user.role != "SUPPLIER": return role_error("Suppliers", user)
     supplier = db.scalar(select(Supplier).where(Supplier.owner_id == user.id))
     orders = db.scalars(select(SupplierOrder).where(SupplierOrder.supplier_id == supplier.id).options(joinedload(SupplierOrder.items))).unique().all() if supplier else []
 
@@ -792,7 +765,7 @@ def supplier_dashboard(user: User = Depends(require_user), db: Session = Depends
 
 @app.get("/api/supplier/orders")
 def supplier_orders(user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role not in {"SUPPLIER", "GRUH_UDYOG"}: return role_error("Suppliers", user)
+    if user.role != "SUPPLIER": return role_error("Suppliers", user)
     supplier = owned_supplier(user, db)
     orders = db.scalars(
         select(SupplierOrder)
@@ -807,7 +780,7 @@ def supplier_orders(user: User = Depends(require_user), db: Session = Depends(ge
 
 @app.get("/api/supplier/orders/{order_id}")
 def supplier_order(order_id: str, user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role not in {"SUPPLIER", "GRUH_UDYOG"}: return role_error("Suppliers", user)
+    if user.role != "SUPPLIER": return role_error("Suppliers", user)
     supplier = owned_supplier(user, db)
     order = db.scalar(
         select(SupplierOrder)
@@ -821,7 +794,7 @@ def supplier_order(order_id: str, user: User = Depends(require_user), db: Sessio
 
 @app.put("/api/supplier/orders/{order_id}/status")
 def update_supplier_order(order_id: str, payload: StatusRequest, user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role not in {"SUPPLIER", "GRUH_UDYOG"}: return role_error("Suppliers", user)
+    if user.role != "SUPPLIER": return role_error("Suppliers", user)
     supplier = owned_supplier(user, db)
     order = db.scalar(
         select(SupplierOrder)
@@ -839,7 +812,7 @@ def update_supplier_order(order_id: str, payload: StatusRequest, user: User = De
 
 @app.get("/api/supplier/shop-owners")
 def supplier_shop_owners(user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role not in {"SUPPLIER", "GRUH_UDYOG"}:
+    if user.role != "SUPPLIER":
         return role_error("Suppliers", user)
     supplier = owned_supplier(user, db)
     if not supplier:
@@ -919,147 +892,7 @@ def supplier_shop_owners(user: User = Depends(require_user), db: Session = Depen
     }, "Shop owners in matching areas returned")
 
 
-@app.get("/api/gruh-udyog/dashboard")
-def gruh_udyog_dashboard(user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "GRUH_UDYOG":
-        return role_error("Gruh Udyog", user)
-    supplier = owned_supplier(user, db)
-    orders = db.scalars(
-        select(SupplierOrder)
-        .where(SupplierOrder.supplier_id == supplier.id)
-        .options(
-            joinedload(SupplierOrder.items),
-            joinedload(SupplierOrder.shop_owner).joinedload(User.shop)
-        )
-        .order_by(SupplierOrder.created_at.desc())
-    ).unique().all() if supplier else []
 
-    total_orders = len(orders)
-    pending_orders = sum(1 for o in orders if o.status in {"Pending", "Preparing", "Accepted", "Out for Delivery"})
-    completed_orders = sum(1 for o in orders if o.status == "Delivered")
-    total_sales = sum(float(o.subtotal) for o in orders if o.status != "Cancelled")
-
-    orders_data = [order_json(o) for o in orders]
-    attention_orders = [o for o in orders_data if o["status"] in {"Pending", "Preparing", "Accepted", "Out for Delivery"}]
-
-    return envelope({
-        "businessName": supplier.name if supplier else f"{user.name}'s Gruh Udyog",
-        "supplierId": supplier.id if supplier else None,
-        "metrics": {
-            "totalOrders": total_orders,
-            "pendingOrders": pending_orders,
-            "completedOrders": completed_orders,
-            "totalSales": total_sales,
-            "totalSalesFormatted": f"₹{total_sales:,.0f}",
-        },
-        "orders": orders_data,
-        "recentOrders": orders_data[:10],
-        "needsAttentionOrders": attention_orders[:5],
-        "hasRealOrders": total_orders > 0,
-    }, "Gruh Udyog dashboard returned")
-
-
-@app.get("/api/gruh-udyog/orders")
-def gruh_udyog_orders(user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "GRUH_UDYOG":
-        return role_error("Gruh Udyog", user)
-    return supplier_orders(user=user, db=db)
-
-
-@app.get("/api/gruh-udyog/orders/{order_id}")
-def gruh_udyog_order(order_id: str, user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "GRUH_UDYOG":
-        return role_error("Gruh Udyog", user)
-    return supplier_order(order_id=order_id, user=user, db=db)
-
-
-@app.put("/api/gruh-udyog/orders/{order_id}/status")
-def update_gruh_udyog_order(order_id: str, payload: StatusRequest, user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "GRUH_UDYOG":
-        return role_error("Gruh Udyog", user)
-    return update_supplier_order(order_id=order_id, payload=payload, user=user, db=db)
-
-
-@app.get("/api/gruh-udyog/customers")
-def gruh_udyog_customers(user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "GRUH_UDYOG":
-        return role_error("Gruh Udyog", user)
-    supplier = owned_supplier(user, db)
-    if not supplier:
-        return envelope({"customers": []}, "Gruh Udyog customers returned")
-
-    orders = db.scalars(
-        select(SupplierOrder)
-        .where(SupplierOrder.supplier_id == supplier.id)
-        .options(
-            joinedload(SupplierOrder.items),
-            joinedload(SupplierOrder.shop_owner).joinedload(User.shop)
-        )
-        .order_by(SupplierOrder.created_at.desc())
-    ).unique().all()
-
-    customers_map = {}
-    for order in orders:
-        owner = order.shop_owner
-        shop = owner.shop if owner else None
-        cid = owner.id if owner else (order.shop_owner_id or order.id)
-
-        if cid not in customers_map:
-            shop_name = shop.name if shop else (owner.name if owner else "Retail Store")
-            area = shop.area if shop else (owner.area if owner else order.service_area or "Ahmedabad")
-            address = shop.address if shop else f"{area}, Ahmedabad"
-            
-            # Determine status: inactive if order status is Cancelled or marked
-            is_inactive = order.status == "Cancelled"
-
-            created_date = order.created_at.isoformat() if hasattr(order.created_at, "isoformat") else str(order.created_at)
-            since_date = owner.created_at.isoformat() if owner and hasattr(owner.created_at, "isoformat") else created_date
-
-            customers_map[cid] = {
-                "id": cid,
-                "name": shop_name,
-                "shopOwner": owner.name if owner else "Shop Owner",
-                "phone": owner.phone if owner and owner.phone else "",
-                "email": owner.email if owner and owner.email else "",
-                "area": area,
-                "city": "Ahmedabad",
-                "address": address,
-                "location": f"{area}, Ahmedabad" if area else "Ahmedabad",
-                "totalOrders": 0,
-                "totalSpent": 0.0,
-                "lastOrder": created_date,
-                "customerSince": since_date,
-                "status": "Inactive" if is_inactive else "Active",
-                "category": "Retail Store",
-                "orders": []
-            }
-
-        customer_entry = customers_map[cid]
-        customer_entry["totalOrders"] += 1
-        customer_entry["totalSpent"] = round(customer_entry["totalSpent"] + float(order.subtotal), 2)
-        customer_entry["orders"].append(order_json(order))
-
-        # Keep latest order as lastOrder
-        order_date_str = order.created_at.isoformat() if hasattr(order.created_at, "isoformat") else str(order.created_at)
-        if order_date_str > customer_entry["lastOrder"]:
-            customer_entry["lastOrder"] = order_date_str
-            if order.status == "Cancelled":
-                customer_entry["status"] = "Inactive"
-        if order_date_str < customer_entry["customerSince"]:
-            customer_entry["customerSince"] = order_date_str
-
-    customers_list = list(customers_map.values())
-    return envelope({"customers": customers_list}, "Gruh Udyog customers returned")
-
-
-@app.get("/api/gruh-udyog/customers/{customer_id}")
-def gruh_udyog_customer(customer_id: str, user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "GRUH_UDYOG":
-        return role_error("Gruh Udyog", user)
-    all_customers = gruh_udyog_customers(user=user, db=db)
-    cust_list = all_customers.get("data", {}).get("customers", [])
-    found = next((c for c in cust_list if c["id"] == customer_id), None)
-    return envelope({"customer": found}, "Customer returned") if found else error("Customer not found.", "NOT_FOUND", 404)
 
 
 def product_json(product: Product) -> dict:
@@ -1270,40 +1103,6 @@ def deactivate_product(product_id: str, user: User = Depends(require_user), db: 
     return envelope({"product": data, "id": product_id}, "Product removed successfully")
 
 
-@app.get("/api/gruh-udyog/products")
-def gruh_udyog_products(user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "GRUH_UDYOG":
-        return role_error("Gruh Udyog", user)
-    return products(user=user, db=db)
-
-
-@app.post("/api/gruh-udyog/products", status_code=201)
-def gruh_udyog_create_product(payload: ProductRequest, user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "GRUH_UDYOG":
-        return role_error("Gruh Udyog", user)
-    return create_product(payload=payload, user=user, db=db)
-
-
-@app.get("/api/gruh-udyog/products/{product_id}")
-def gruh_udyog_get_product(product_id: str, user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "GRUH_UDYOG":
-        return role_error("Gruh Udyog", user)
-    return get_product(product_id=product_id, user=user, db=db)
-
-
-@app.put("/api/gruh-udyog/products/{product_id}")
-def gruh_udyog_edit_product(product_id: str, payload: ProductRequest, user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "GRUH_UDYOG":
-        return role_error("Gruh Udyog", user)
-    return edit_product(product_id=product_id, payload=payload, user=user, db=db)
-
-
-@app.delete("/api/gruh-udyog/products/{product_id}")
-def gruh_udyog_deactivate_product(product_id: str, user: User = Depends(require_user), db: Session = Depends(get_db)):
-    if user.role != "GRUH_UDYOG":
-        return role_error("Gruh Udyog", user)
-    return deactivate_product(product_id=product_id, user=user, db=db)
-
 @app.get("/api/orders")
 def shop_orders(user: User = Depends(require_user), db: Session = Depends(get_db)):
     if user.role != "SHOP_OWNER": return role_error("Shop Owners", user)
@@ -1393,20 +1192,28 @@ def shop_analytics(user: User = Depends(require_user), db: Session = Depends(get
         for it in o.items:
             name = it.product_name_snapshot or "Product"
             if name not in product_map:
-                product_map[name] = {"quantity": 0, "spent": 0.0, "imageUrl": it.product_image_url_snapshot or ""}
+                product_map[name] = {"quantity": 0, "spent": 0.0, "imageUrl": it.product_image_url_snapshot or "", "productId": it.product_id}
             product_map[name]["quantity"] += int(it.quantity or 0)
             product_map[name]["spent"] += float(it.line_total or 0.0)
 
-    top_products = [
-        {"name": name, "quantity": data["quantity"], "spent": data["spent"], "imageUrl": data["imageUrl"]}
-        for name, data in sorted(product_map.items(), key=lambda x: x[1]["quantity"], reverse=True)[:5]
-    ]
+    top_products = []
+    for name, data in sorted(product_map.items(), key=lambda x: x[1]["quantity"], reverse=True)[:5]:
+        p = db.get(Product, data.get("productId")) if data.get("productId") else None
+        top_products.append({
+            "name": name,
+            "quantity": data["quantity"],
+            "spent": data["spent"],
+            "imageUrl": data["imageUrl"],
+            "category": p.category if p and p.category else "Products",
+            "packSize": p.pack_size if p and p.pack_size else "",
+        })
 
     now = datetime.now(timezone.utc)
     month_buckets = []
     for i in range(5, -1, -1):
-        m = (now.month - i - 1) % 12 + 1
-        y = now.year - ((now.month - i - 1) // 12 * -1 if (now.month - i) <= 0 else 0)
+        total_months = now.year * 12 + now.month - 1 - i
+        y = total_months // 12
+        m = total_months % 12 + 1
         dt = datetime(y, m, 1)
         m_label = dt.strftime("%b")
         m_val = sum(float(o.subtotal) for o in rows if o.created_at and o.created_at.year == y and o.created_at.month == m and o.status != "Cancelled")
@@ -1485,8 +1292,9 @@ def supplier_analytics(user: User = Depends(require_user), db: Session = Depends
     month_labels = []
     month_values = []
     for i in range(5, -1, -1):
-        m = (now.month - i - 1) % 12 + 1
-        y = now.year - ((now.month - i - 1) // 12 * -1 if (now.month - i) <= 0 else 0)
+        total_months = now.year * 12 + now.month - 1 - i
+        y = total_months // 12
+        m = total_months % 12 + 1
         dt = datetime(y, m, 1)
         m_label = dt.strftime("%b")
         m_val = sum(float(o.subtotal) for o in rows if o.created_at and o.created_at.year == y and o.created_at.month == m and o.status != "Cancelled")

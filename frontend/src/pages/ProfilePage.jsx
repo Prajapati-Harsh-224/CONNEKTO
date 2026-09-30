@@ -24,7 +24,6 @@ import { updateProfile, getCurrentUser } from '../services/authService.js'
 const roleKeys = {
   'shop-owner': 'shopOwner',
   supplier: 'supplier',
-  'gruh-udyog': 'gruhUdyog',
 }
 
 const AVAILABLE_CATEGORIES = [
@@ -55,7 +54,7 @@ export default function ProfilePage({ role }) {
   const { locale, setLocale, t } = useLocale()
   const roleLabel = t(roleKeys[role] || 'profile')
   const isShopOwner = role === 'shop-owner'
-  const isSupplierLike = role === 'supplier' || role === 'gruh-udyog'
+  const isSupplierLike = role === 'supplier'
 
   const [isEditing, setIsEditing] = useState(false)
   const [isSaving, setIsSaving] = useState(false)

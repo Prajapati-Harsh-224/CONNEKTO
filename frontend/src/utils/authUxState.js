@@ -17,7 +17,6 @@
 const ROLE_LABELS = {
   SHOP_OWNER: 'Shop Owner',
   SUPPLIER: 'Supplier',
-  GRUH_UDYOG: 'Gruh Udyog',
 }
 
 export function getAuthStateConfig(authState = {}, role = null) {

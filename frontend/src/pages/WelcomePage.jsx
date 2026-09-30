@@ -117,7 +117,6 @@ export default function WelcomePage() {
               <p>{t('aboutBody1')}</p>
               <p>{t('aboutBody2')}</p>
               <p>{t('aboutBody3')}</p>
-              <p>{t('aboutBody4')}</p>
             </div>
             <p className="text-sm sm:text-base font-semibold text-brand-navy pt-2">{t('aboutClosing')}</p>
           </div>
@@ -129,7 +128,7 @@ export default function WelcomePage() {
                 C
               </div>
               <h3 className="text-xl font-black text-brand-navy">Connekto</h3>
-              <p className="text-xs text-slate-500">Unified local commerce ecosystem connecting retailers, suppliers, and producers.</p>
+              <p className="text-xs text-slate-500">Unified local commerce ecosystem connecting retailers and suppliers.</p>
 
               <div className="grid grid-cols-1 gap-2.5 pt-4 text-left">
                 <div className="flex items-center gap-3 p-3 rounded-xl bg-orange-50/70 border border-orange-100">
@@ -149,16 +148,6 @@ export default function WelcomePage() {
                   <div className="min-w-0">
                     <strong className="block text-xs font-bold text-slate-900">{t('supplier')}</strong>
                     <span className="block text-[11px] text-slate-500 truncate">{t('aboutSupplierShort1')}</span>
-                  </div>
-                </div>
-
-                <div className="flex items-center gap-3 p-3 rounded-xl bg-purple-50/70 border border-purple-100">
-                  <div className="w-8 h-8 rounded-lg bg-white text-purple-600 flex items-center justify-center shadow-xs">
-                    <FiUsers className="w-4 h-4" />
-                  </div>
-                  <div className="min-w-0">
-                    <strong className="block text-xs font-bold text-slate-900">{t('gruhUdyog')}</strong>
-                    <span className="block text-[11px] text-slate-500 truncate">{t('aboutGruhUdyogShort1')}</span>
                   </div>
                 </div>
               </div>

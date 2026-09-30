@@ -8,7 +8,7 @@ import { useLocale } from '../context/LocaleContext.jsx'
 import { register } from '../services/authService.js'
 import { getSelectedRole, saveSelectedRole } from '../utils/roleStorage.js'
 
-const roles = ['SHOP_OWNER', 'SUPPLIER', 'GRUH_UDYOG']
+const roles = ['SHOP_OWNER', 'SUPPLIER']
 const initialForm = { name: '', shopName: '', shopAddress: '', area: '', category: '', phone: '', email: '', password: '', confirmPassword: '' }
 
 function validateForm(form, role, hasConsent) {
@@ -22,7 +22,7 @@ function validateForm(form, role, hasConsent) {
     if (!form.area.trim()) errors.area = 'Enter your shop area.'
     if (!form.phone.trim()) errors.phone = 'Enter your phone number.'
     if (form.email.trim() && !/^\S+@\S+\.\S+$/.test(form.email.trim())) errors.email = 'Enter a valid email address.'
-  } else if (role === 'SUPPLIER' || role === 'GRUH_UDYOG') {
+  } else if (role === 'SUPPLIER') {
     if (!form.area.trim()) errors.area = 'Enter your area.'
     if (!form.phone.trim()) errors.phone = 'Enter your phone number.'
     if (form.email.trim() && !/^\S+@\S+\.\S+$/.test(form.email.trim())) errors.email = 'Enter a valid email address.'
@@ -106,14 +106,13 @@ export default function SignupPage() {
   const roleTone = {
     SHOP_OWNER: { badge: 'bg-brand-orange-light text-brand-orange-dark font-bold', icon: '▦' },
     SUPPLIER: { badge: 'bg-emerald-50 text-emerald-800 font-bold', icon: '▰' },
-    GRUH_UDYOG: { badge: 'bg-purple-50 text-purple-800 font-bold', icon: '⌂' },
   }
   const currentTone = roleTone[selectedRole] || roleTone.SHOP_OWNER
 
   return (
     <section className="min-h-[calc(100vh-4.5rem)] flex items-center justify-center px-4 py-8 sm:py-12">
       <div className="w-full max-w-xl">
-        {selectedRole !== 'SHOP_OWNER' && selectedRole !== 'SUPPLIER' && selectedRole !== 'GRUH_UDYOG' && (
+        {selectedRole !== 'SHOP_OWNER' && selectedRole !== 'SUPPLIER' && (
           <div className="text-center mb-6">
             <div className="text-xs font-bold uppercase tracking-widest text-brand-orange mb-1">{t('createYourAccount')}</div>
             <h1 className="text-2xl sm:text-3xl font-bold font-serif text-brand-navy">{t('startWithConnecto')}</h1>
@@ -122,17 +121,17 @@ export default function SignupPage() {
         )}
 
         <form className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-6 sm:p-8 space-y-4" onSubmit={handleSubmit} noValidate>
-          {(selectedRole === 'SHOP_OWNER' || selectedRole === 'SUPPLIER' || selectedRole === 'GRUH_UDYOG') && (
+          {(selectedRole === 'SHOP_OWNER' || selectedRole === 'SUPPLIER') && (
             <header className="text-center pb-3 border-b border-slate-100 flex flex-col items-center">
               <span className={`inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider mb-2 ${currentTone.badge}`}>
                 <span>{currentTone.icon}</span>
-                <span>{t(selectedRole === 'SHOP_OWNER' ? 'shopOwner' : selectedRole === 'SUPPLIER' ? 'supplier' : 'gruhUdyog')}</span>
+                <span>{t(selectedRole === 'SHOP_OWNER' ? 'shopOwner' : 'supplier')}</span>
               </span>
               <h1 className="text-xl sm:text-2xl font-bold font-serif text-brand-navy tracking-tight">
-                {t(selectedRole === 'SHOP_OWNER' ? 'shopOwnerSignupHeading' : selectedRole === 'SUPPLIER' ? 'supplierSignupHeading' : 'gruhUdyogSignupHeading')}
+                {t(selectedRole === 'SHOP_OWNER' ? 'shopOwnerSignupHeading' : 'supplierSignupHeading')}
               </h1>
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
-                {t(selectedRole === 'SHOP_OWNER' ? 'shopOwnerSignupSubtitle' : selectedRole === 'SUPPLIER' ? 'supplierSignupSubtitle' : 'gruhUdyogSignupSubtitle')}
+                {t(selectedRole === 'SHOP_OWNER' ? 'shopOwnerSignupSubtitle' : 'supplierSignupSubtitle')}
               </p>
               <Link className="text-xs font-medium text-brand-orange hover:text-brand-orange-dark hover:underline mt-2 inline-block" to={`/role-selection${selectedRole ? `?role=${selectedRole}` : ''}`}>
                 {t('changeRole')}
@@ -143,7 +142,7 @@ export default function SignupPage() {
           <div className={`flex items-center justify-between text-xs px-3.5 py-2.5 rounded-xl border ${errors.role ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-100'}`}>
             <span className="text-slate-500">{t('creatingAccountAs')}:</span>
             <strong className="text-slate-800 font-semibold">
-              {selectedRole ? t(selectedRole === 'SHOP_OWNER' ? 'shopOwner' : selectedRole === 'SUPPLIER' ? 'supplier' : 'gruhUdyog') : t('noRoleSelected')}
+              {selectedRole ? t(selectedRole === 'SHOP_OWNER' ? 'shopOwner' : 'supplier') : t('noRoleSelected')}
             </strong>
             <Link className="text-brand-orange hover:text-brand-orange-dark hover:underline font-medium" to={`/role-selection${selectedRole ? `?role=${selectedRole}` : ''}`}>{t('changeRole')}</Link>
           </div>
@@ -209,7 +208,7 @@ export default function SignupPage() {
 
           <button className="w-full py-3.5 px-4 rounded-xl font-semibold text-sm text-white bg-brand-orange hover:bg-brand-orange-dark shadow-md shadow-brand-orange/20 active:scale-[0.98] transition-all flex items-center justify-center gap-2 cursor-pointer disabled:opacity-60 disabled:cursor-not-allowed mt-2" disabled={isSubmitting} type="submit">
             <span>{isSubmitting ? t('creatingAccount') : t('createAccount')}</span>
-            {(selectedRole === 'SHOP_OWNER' || selectedRole === 'SUPPLIER' || selectedRole === 'GRUH_UDYOG') && <span aria-hidden="true">→</span>}
+            {(selectedRole === 'SHOP_OWNER' || selectedRole === 'SUPPLIER') && <span aria-hidden="true">→</span>}
           </button>
         </form>
       </div>

@@ -51,20 +51,7 @@ class SupplierRegisterRequest(BaseModel):
     password: str = Field(min_length=8, max_length=128)
     confirmPassword: Optional[str] = Field(default=None, max_length=128)
 
-class GruhUdyogRegisterRequest(BaseModel):
-    model_config = ConfigDict(extra="ignore")
-    role: Literal["GRUH_UDYOG"] = "GRUH_UDYOG"
-    name: str = Field(min_length=2, max_length=100)
-    area: str = Field(min_length=2, max_length=100)
-    category: Optional[str] = Field(default=None, max_length=100)
-    serviceAreas: List[str] = Field(default_factory=list)
-    phone: str = Field(min_length=8, max_length=30)
-    email: str = Field(default="", max_length=255)
-    password: str = Field(min_length=8, max_length=128)
-    confirmPassword: Optional[str] = Field(default=None, max_length=128)
-
-
-RegisterRequest = Annotated[Union[ShopOwnerRegisterRequest, SupplierRegisterRequest, GruhUdyogRegisterRequest], Field(discriminator="role")]
+RegisterRequest = Annotated[Union[ShopOwnerRegisterRequest, SupplierRegisterRequest], Field(discriminator="role")]
 
 class LoginRequest(BaseModel):
     model_config = ConfigDict(extra="ignore")

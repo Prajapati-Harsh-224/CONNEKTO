@@ -5,12 +5,10 @@ import { useLocale } from '../context/LocaleContext.jsx'
 import { getSelectedRole, saveSelectedRole } from '../utils/roleStorage.js'
 import shopOwnerImage from '../assets/shop_owner_img.png'
 import supplierImage from '../assets/Supplier_img.png'
-import gruhUdyogImage from '../assets/gruh_udhyog_img.png'
 
 const roles = [
   { value: 'SHOP_OWNER', titleKey: 'shopOwner', descriptionKey: 'shopOwnerDescription', tone: 'orange', image: shopOwnerImage, overlayKey: 'shopOwnerOverlay', imageAltKey: 'shopOwnerImageAlt', benefitKeys: ['shopOwnerBenefitOne', 'shopOwnerBenefitTwo', 'shopOwnerBenefitThree'] },
   { value: 'SUPPLIER', titleKey: 'supplier', descriptionKey: 'supplierDescription', tone: 'green', image: supplierImage, overlayKey: 'supplierOverlay', imageAltKey: 'supplierImageAlt', benefitKeys: ['supplierBenefitOne', 'supplierBenefitTwo', 'supplierBenefitThree'] },
-  { value: 'GRUH_UDYOG', titleKey: 'gruhUdyog', descriptionKey: 'gruhUdyogDescription', tone: 'purple', image: gruhUdyogImage, overlayKey: 'gruhUdyogOverlay', imageAltKey: 'gruhUdyogImageAlt', benefitKeys: ['gruhUdyogBenefitOne', 'gruhUdyogBenefitTwo', 'gruhUdyogBenefitThree'] },
 ]
 
 export default function RoleSelectionPage() {
@@ -87,7 +85,7 @@ export default function RoleSelectionPage() {
       </div>
 
       <div className="flex flex-col justify-center w-full">
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 lg:gap-5 w-full">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 lg:gap-6 w-full">
           {roles.map((role) => (
             <RoleCard
               key={role.value}

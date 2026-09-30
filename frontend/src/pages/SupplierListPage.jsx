@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
   TbPackage,
@@ -174,12 +174,12 @@ function getAvatarBg(name = '') {
 // ---------------------------------------------------------------------------
 function VerifiedBadge({ label = 'Verified Supplier' }) {
   return (
-    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[10px] font-bold uppercase tracking-wider" aria-label={label}>
-      <svg viewBox="0 0 14 14" fill="none" aria-hidden="true" width="11" height="11">
+    <span className="inline-flex items-center gap-1 px-1.5 sm:px-2 py-0.5 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 text-[9px] sm:text-[10px] font-bold uppercase tracking-wider shrink-0" aria-label={label}>
+      <svg viewBox="0 0 14 14" fill="none" aria-hidden="true" width="10" height="10" className="sm:w-[11px] sm:h-[11px]">
         <circle cx="7" cy="7" r="6.5" fill="#15803d" />
         <path d="M4.5 7l1.8 1.8L9.5 5.5" stroke="#fff" strokeWidth="1.4" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
-      {label}
+      <span className="truncate max-w-[70px] sm:max-w-none">{label}</span>
     </span>
   )
 }
@@ -206,56 +206,27 @@ function StarRating({ rating, reviewCount }) {
 }
 
 // ---------------------------------------------------------------------------
-// HeartButton sub-component
-// ---------------------------------------------------------------------------
-function HeartButton({ isFavorite, name, onClick }) {
-  return (
-    <button
-      type="button"
-      className="p-2 rounded-full hover:bg-slate-100 transition-colors cursor-pointer"
-      aria-label={isFavorite ? `Remove ${name} from favorites` : `Save ${name}`}
-      onClick={onClick}
-    >
-      <svg viewBox="0 0 20 20" fill={isFavorite ? '#ef4444' : 'none'} stroke={isFavorite ? '#ef4444' : '#9ca3af'} strokeWidth="1.6" aria-hidden="true" width="18" height="18">
-        <path d="M10 17.5S2 13 2 7a5 5 0 0 1 8-4 5 5 0 0 1 8 4c0 6-8 10.5-8 10.5Z" strokeLinejoin="round" />
-      </svg>
-    </button>
-  )
-}
-
-// ---------------------------------------------------------------------------
 // SupplierCard sub-component
 // ---------------------------------------------------------------------------
-function SupplierCard({ supplier, isFavorite, onToggleFavorite }) {
+function SupplierCard({ supplier }) {
   const { t } = useLocale()
   const initials = getInitials(supplier.name)
   const bg = getAvatarBg(supplier.name)
 
   return (
-    <article className="relative flex flex-col justify-between p-5 sm:p-6 rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-slate-300 transition-all">
-      <div className="absolute top-4 right-4">
-        <HeartButton
-          isFavorite={isFavorite}
-          name={supplier.name}
-          onClick={(e) => {
-            e.preventDefault()
-            onToggleFavorite(supplier.id)
-          }}
-        />
-      </div>
-
-      <div className="space-y-3">
-        <div className="flex items-start gap-3.5 pr-8">
-          <div className="flex items-center justify-center w-12 h-12 rounded-xl text-white font-black text-base shrink-0 shadow-xs" style={{ background: bg }} aria-hidden="true">
+    <article className="relative flex flex-col justify-between p-3.5 sm:p-6 rounded-xl sm:rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-slate-300 transition-all">
+      <div className="space-y-2 sm:space-y-3">
+        <div className="flex items-start gap-2 sm:gap-3.5">
+          <div className="flex items-center justify-center w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl text-white font-black text-xs sm:text-base shrink-0 shadow-xs" style={{ background: bg }} aria-hidden="true">
             {initials}
           </div>
           <div className="flex flex-col min-w-0">
-            <div className="flex items-center gap-2 flex-wrap">
-              <h3 className="text-base sm:text-lg font-bold text-slate-900 truncate">{supplier.name}</h3>
+            <div className="flex items-center gap-1 sm:gap-2 flex-wrap">
+              <h3 className="text-xs sm:text-lg font-bold text-slate-900 truncate">{supplier.name}</h3>
               {supplier.isVerified && <VerifiedBadge label={t('verifiedSupplier')} />}
             </div>
             {(supplier.serviceAreas?.length > 0 || supplier.location) && (
-              <div className="flex items-center gap-1 text-xs text-slate-500 mt-1 truncate">
+              <div className="hidden sm:flex items-center gap-1 text-xs text-slate-500 mt-1 truncate">
                 <span>📍</span>
                 <span className="truncate">{supplier.serviceAreas?.length > 0 ? supplier.serviceAreas.join(', ') : supplier.location}</span>
               </div>
@@ -263,11 +234,11 @@ function SupplierCard({ supplier, isFavorite, onToggleFavorite }) {
           </div>
         </div>
 
-        <p className="text-xs sm:text-sm text-slate-500 line-clamp-2 leading-relaxed">
+        <p className="text-[11px] sm:text-sm text-slate-500 line-clamp-2 leading-relaxed">
           {supplier.description || t('verifiedSupplierDescription')}
         </p>
 
-        <div className="flex flex-wrap gap-1.5 pt-1">
+        <div className="hidden sm:flex flex-wrap gap-1.5 pt-1">
           {(supplier.tags || []).map((tag) => (
             <span key={tag} className="px-2.5 py-1 rounded-lg bg-slate-100 text-slate-600 text-[11px] font-semibold">
               {tag}
@@ -276,13 +247,13 @@ function SupplierCard({ supplier, isFavorite, onToggleFavorite }) {
         </div>
       </div>
 
-      <div className="pt-4 mt-4 border-t border-slate-100">
+      <div className="pt-2.5 sm:pt-4 mt-2 sm:mt-4 border-t border-slate-100">
         <Link
-          className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white font-bold text-xs sm:text-sm transition-all shadow-xs active:scale-[0.99]"
+          className="flex items-center justify-center gap-1 sm:gap-2 w-full py-2 sm:py-2.5 px-2 rounded-lg sm:rounded-xl bg-brand-orange hover:bg-brand-orange-dark text-white font-bold text-xs sm:text-sm transition-all shadow-xs active:scale-[0.99] truncate text-center"
           to={`/dashboard/shop-owner/suppliers/${supplier.id}/products`}
           aria-label={`${t('viewProducts')} ${supplier.name}`}
         >
-          {t('viewProducts')} <span aria-hidden="true">→</span>
+          <span className="truncate">{t('viewProducts')}</span> <span aria-hidden="true" className="shrink-0">→</span>
         </Link>
       </div>
     </article>
@@ -296,7 +267,6 @@ export default function SupplierListPage() {
   const { t } = useLocale()
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
-  const [favorites, setFavorites] = useState({})
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [suppliers, setSuppliers] = useState([])
@@ -339,10 +309,6 @@ export default function SupplierListPage() {
     return () => {
       isMounted = false
     }
-  }, [])
-
-  const toggleFavorite = useCallback((id) => {
-    setFavorites((prev) => ({ ...prev, [id]: !prev[id] }))
   }, [])
 
   const categoryCatalog = useMemo(() => {
@@ -532,13 +498,11 @@ export default function SupplierListPage() {
           <p className="text-slate-600 font-semibold text-sm">{t('noSuppliers')}</p>
         </div>
       ) : (
-        <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-5 w-full min-w-0">
+        <div className="grid grid-cols-2 lg:grid-cols-2 xl:grid-cols-3 gap-2.5 sm:gap-4 md:gap-5 w-full min-w-0">
           {filteredSuppliers.map((supplier) => (
             <SupplierCard
               key={supplier.id}
               supplier={supplier}
-              isFavorite={Boolean(favorites[supplier.id])}
-              onToggleFavorite={toggleFavorite}
             />
           ))}
         </div>
