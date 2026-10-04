@@ -11,7 +11,7 @@ export default function AppShell() {
 
   const isWorkspace = pathname.startsWith('/dashboard/')
   const isAuthPage = pathname === '/signup' || pathname === '/login' || pathname === '/role-selection' || pathname === '/forgot-password' || pathname === '/register'
-  const isNoScrollPage = isAuthPage || pathname === '/'
+  const isNoScrollPage = isAuthPage
 
   useEffect(() => {
     if (!['/about', '/how-it-works', '/contact'].includes(pathname)) {
@@ -50,7 +50,7 @@ export default function AppShell() {
       {!isWorkspace && (
         <>
           <header className="fixed top-0 left-0 right-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-2xs">
-            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between gap-3 sm:gap-4">
+            <div className="max-w-7xl xl:max-w-[1360px] 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 h-16 flex items-center justify-between gap-3 sm:gap-4">
               <Link className="flex items-center gap-2.5 shrink-0" to="/" aria-label={t('connectoHome')}>
                 <span className="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center font-bold text-base shadow-sm shrink-0">
                   C
@@ -92,7 +92,7 @@ export default function AppShell() {
       <main className={`flex-1 w-full ${isWorkspace ? 'h-full overflow-hidden' : ''}`}>
         <Outlet />
       </main>
-      {!isWorkspace && !isShopOwnerSignup && !isSupplierSignup && !isGruhUdyogSignup && !isShopOwnerLogin && !isSupplierLogin && !isGruhUdyogLogin && !isForgotPassword && !isRegister && (
+      {!isWorkspace && !isAuthPage && (
         <Footer />
       )}
     </div>

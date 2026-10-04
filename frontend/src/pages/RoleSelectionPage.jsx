@@ -39,85 +39,108 @@ export default function RoleSelectionPage() {
   }
 
   return (
-    <section className="min-h-[calc(100vh-4.5rem)] max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 sm:py-12 lg:py-16 grid grid-cols-1 lg:grid-cols-[minmax(280px,0.72fr)_minmax(600px,1.28fr)] gap-8 lg:gap-14 items-center">
-      <div className="flex flex-col justify-center max-w-xl lg:max-w-none">
-        <div className="text-xs font-bold uppercase tracking-widest text-brand-orange mb-2">{t('accountSetup')}</div>
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold font-serif text-brand-navy tracking-tight leading-[1.1] mb-4">
-          {t('roleSelectionHeading')}
-        </h1>
-        <p className="text-sm sm:text-base text-slate-600 leading-relaxed mb-6 sm:mb-8">
-          {t('roleSelectionIntro')}
-        </p>
-
-        <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-1 gap-4 mb-8">
-          {['benefitLocal', 'benefitGrowth', 'benefitNetwork'].map((key, index) => (
-            <div className="flex items-start gap-3" key={key}>
-              <span
-                className={`w-7 h-7 rounded-full flex items-center justify-center font-bold text-xs shrink-0 ${
-                  index === 0
-                    ? 'bg-brand-orange-light text-brand-orange'
-                    : index === 1
-                    ? 'bg-emerald-100 text-emerald-800'
-                    : 'bg-purple-100 text-purple-800'
-                }`}
-                aria-hidden="true"
-              >
-                {['✦', '↗', '✓'][index]}
-              </span>
-              <div>
-                <strong className="text-xs sm:text-sm font-semibold text-slate-800 block">
-                  {t(`${key}Title`)}
-                </strong>
-                <small className="text-[11px] sm:text-xs text-slate-500 leading-normal block mt-0.5">
-                  {t(`${key}Description`)}
-                </small>
-              </div>
+    <section className="w-full min-h-[calc(100vh-4rem)] lg:h-[calc(100vh-4rem)] lg:max-h-[calc(100vh-4rem)] lg:overflow-hidden max-w-7xl xl:max-w-[1360px] 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-3 sm:py-5 lg:py-6 flex flex-col justify-center">
+      <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] gap-6 lg:gap-10 xl:gap-12 items-stretch w-full">
+        {/* Left Column: Context, Features, Quote */}
+        <div className="flex flex-col justify-between h-full max-w-xl lg:max-w-none">
+          {/* Header */}
+          <div>
+            <div className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider text-brand-orange bg-brand-orange-light border border-brand-orange/20 mb-2">
+              <span>✦</span>
+              <span>{t('accountSetup')}</span>
             </div>
-          ))}
+            <h1 className="text-2xl sm:text-3xl lg:text-[2.1rem] xl:text-[2.4rem] font-bold font-serif text-brand-navy tracking-tight leading-[1.16] whitespace-pre-line mb-2">
+              {t('roleSelectionHeading')}
+            </h1>
+            <p className="text-xs sm:text-sm text-slate-600 leading-relaxed">
+              {t('roleSelectionIntro')}
+            </p>
+          </div>
+
+          {/* 3 Structured Feature Benefit Cards */}
+          <div className="flex flex-col gap-2.5 sm:gap-3 my-3 lg:my-auto">
+            {['benefitLocal', 'benefitGrowth', 'benefitNetwork'].map((key, index) => (
+              <div
+                key={key}
+                className="flex items-start gap-3 p-3 rounded-xl bg-white border border-slate-200/80 shadow-2xs hover:border-brand-orange/30 hover:shadow-xs transition-all"
+              >
+                <span
+                  className={`w-7 h-7 sm:w-8 sm:h-8 rounded-lg flex items-center justify-center font-bold text-xs sm:text-sm shrink-0 ${
+                    index === 0
+                      ? 'bg-brand-orange-light text-brand-orange'
+                      : index === 1
+                      ? 'bg-emerald-100 text-emerald-800'
+                      : 'bg-purple-100 text-purple-800'
+                  }`}
+                  aria-hidden="true"
+                >
+                  {['✦', '↗', '✓'][index]}
+                </span>
+                <div className="min-w-0 flex-1">
+                  <strong className="text-xs sm:text-sm font-semibold text-slate-900 block leading-tight">
+                    {t(`${key}Title`)}
+                  </strong>
+                  <small className="text-[11px] sm:text-xs text-slate-500 leading-normal block mt-0.5">
+                    {t(`${key}Description`)}
+                  </small>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Quote Block */}
+          <blockquote className="border-l-3 border-brand-orange bg-gradient-to-r from-orange-50/70 to-transparent p-3 sm:p-3.5 rounded-r-xl text-xs italic text-slate-700">
+            <p className="leading-relaxed">“{t('roleQuote')}”</p>
+            <cite className="block not-italic text-[11px] text-slate-500 font-semibold mt-1">
+              — {t('appName')}
+            </cite>
+          </blockquote>
         </div>
 
-        <blockquote className="border-l-2 border-brand-orange/30 pl-4 text-xs sm:text-sm italic text-slate-600">
-          <p>“{t('roleQuote')}”</p>
-          <cite className="block not-italic text-[11px] text-slate-500 font-medium mt-1.5">
-            — {t('appName')}
-          </cite>
-        </blockquote>
-      </div>
+        {/* Right Column: Cards & Action CTA */}
+        <div className="flex flex-col justify-between h-full w-full">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:gap-5 xl:gap-6 flex-1 items-stretch">
+            {roles.map((role) => (
+              <RoleCard
+                key={role.value}
+                role={{
+                  ...role,
+                  title: t(role.titleKey),
+                  description: t(role.descriptionKey),
+                  overlay: t(role.overlayKey),
+                  imageAlt: t(role.imageAltKey),
+                  benefits: role.benefitKeys.map((key) => t(key)),
+                }}
+                selected={selectedRole === role.value}
+                onSelect={handleRoleSelect}
+              />
+            ))}
+          </div>
 
-      <div className="flex flex-col justify-center w-full">
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 lg:gap-6 w-full">
-          {roles.map((role) => (
-            <RoleCard
-              key={role.value}
-              role={{
-                ...role,
-                title: t(role.titleKey),
-                description: t(role.descriptionKey),
-                overlay: t(role.overlayKey),
-                imageAlt: t(role.imageAltKey),
-                benefits: role.benefitKeys.map((key) => t(key)),
-              }}
-              selected={selectedRole === role.value}
-              onSelect={handleRoleSelect}
-            />
-          ))}
-        </div>
-
-        <div className="flex items-center mt-6 sm:mt-8">
-          <button
-            ref={continueBtnRef}
-            className={`w-full sm:w-auto px-8 py-3.5 rounded-xl font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${
-              selectedRole
-                ? 'bg-brand-orange hover:bg-brand-orange-dark text-white shadow-md shadow-brand-orange/20 active:scale-[0.98]'
-                : 'bg-slate-200 text-slate-500 cursor-not-allowed'
-            }`}
-            disabled={!selectedRole}
-            onClick={() => continueToSignup()}
-            type="button"
-          >
-            <span>{t('continue')}</span>
-            <span aria-hidden="true">→</span>
-          </button>
+          {/* Action CTA spanning full width */}
+          <div className="mt-4 pt-1 shrink-0 w-full">
+            <button
+              ref={continueBtnRef}
+              className={`w-full py-3.5 sm:py-4 px-6 rounded-xl font-bold text-sm sm:text-base transition-all duration-200 flex items-center justify-center gap-2 cursor-pointer ${
+                selectedRole
+                  ? 'bg-brand-orange hover:bg-brand-orange-dark text-white shadow-md shadow-brand-orange/20 active:scale-[0.99]'
+                  : 'bg-slate-200 text-slate-400 cursor-not-allowed'
+              }`}
+              disabled={!selectedRole}
+              onClick={() => continueToSignup()}
+              type="button"
+            >
+              <span>{t('continue')}</span>
+              <span aria-hidden="true">→</span>
+            </button>
+            <div className="flex items-center justify-center gap-3 sm:gap-4 text-[11px] sm:text-xs text-slate-400 font-medium mt-2">
+              <span>🔒 Safe & Secure</span>
+              <span>•</span>
+              <span>⚡ Instant Setup</span>
+              <span>•</span>
+              <span>🔄 Switch Role Anytime</span>
+            </div>
+          </div>
         </div>
       </div>
     </section>
