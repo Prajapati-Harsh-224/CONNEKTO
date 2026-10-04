@@ -20,6 +20,7 @@ import { useAuth } from '../context/AuthContext.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { supportedLocales } from '../utils/translations.js'
 import { updateProfile, getCurrentUser } from '../services/authService.js'
+import ShopOwnerInviteCard from '../components/ShopOwnerInviteCard.jsx'
 
 const roleKeys = {
   'shop-owner': 'shopOwner',
@@ -856,6 +857,11 @@ export default function ProfilePage({ role }) {
             </div>
           </section>
         </div>
+      )}
+
+      {/* Shop Owner Invite Suppliers Section */}
+      {isShopOwner && (
+        <ShopOwnerInviteCard t={t} user={user} />
       )}
     </section>
   )

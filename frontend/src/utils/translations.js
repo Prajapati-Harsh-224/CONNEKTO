@@ -904,6 +904,27 @@ const english = {
   popular: 'Popular / Newest',
   priceLowToHigh: 'Price: Low to High',
   priceHighToLow: 'Price: High to Low',
+
+  // Shop Owner Supplier Invite
+  supplierNetwork: 'Supplier Network',
+  inviteSuppliersTitle: 'Invite Suppliers & Distributors',
+  inviteSuppliersSubtitle: 'Invite your trusted local suppliers or distributors to Connekto via WhatsApp or SMS to streamline your purchasing and product orders.',
+  countryCode: 'Country Code',
+  supplierPhoneNumber: "Supplier's Phone Number",
+  phoneInputPlaceholder: 'e.g. 9876543210',
+  phoneInputHelp: 'Enter the 10-digit mobile number for suppliers in India or full local number for other countries.',
+  sendOnWhatsApp: 'Invite on WhatsApp',
+  sendViaSMS: 'Invite via SMS',
+  inviteMessagePreview: 'Invitation Message Preview',
+  customizeMessage: 'Customize',
+  doneEditing: 'Done',
+  reset: 'Reset',
+  copyMessage: 'Copy Text',
+  messageCopied: 'Copied!',
+  invalidPhoneError: 'Please enter a valid phone number (at least 7 digits).',
+  phoneRequiredError: 'Please enter a mobile phone number.',
+  inviteSentWhatsAppSuccess: 'Opening WhatsApp with your invitation...',
+  inviteSentSMSSuccess: 'Opening SMS composer with your invitation...',
 }
 
 const hindi = {
@@ -1877,6 +1898,27 @@ const hindi = {
   popular: 'लोकप्रिय / नवीनतम',
   priceLowToHigh: 'कीमत: कम से अधिक',
   priceHighToLow: 'कीमत: अधिक से कम',
+
+  // Shop Owner Supplier Invite
+  supplierNetwork: 'सप्लायर नेटवर्क',
+  inviteSuppliersTitle: 'सप्लायर्स और वितरकों को आमंत्रित करें',
+  inviteSuppliersSubtitle: 'व्हाट्सएप या एसएमएस के माध्यम से अपने स्थानीय सप्लायर्स या वितरकों को कनेक्टो से जुड़ने के लिए निमंत्रण भेजें।',
+  countryCode: 'देश कोड',
+  supplierPhoneNumber: 'सप्लायर का फोन नंबर',
+  phoneInputPlaceholder: 'उदा. 9876543210',
+  phoneInputHelp: 'भारत में सप्लायर्स के लिए 10 अंकों का मोबाइल नंबर या अन्य देशों के लिए स्थानीय नंबर दर्ज करें।',
+  sendOnWhatsApp: 'व्हाट्सएप पर आमंत्रित करें',
+  sendViaSMS: 'एसएमएस से आमंत्रित करें',
+  inviteMessagePreview: 'निमंत्रण संदेश पूर्वावलोकन',
+  customizeMessage: 'संपादित करें',
+  doneEditing: 'पूर्ण',
+  reset: 'रीसेट',
+  copyMessage: 'कॉपी करें',
+  messageCopied: 'कॉपी हो गया!',
+  invalidPhoneError: 'कृपया एक मान्य फोन नंबर दर्ज करें (कम से कम 7 अंक)।',
+  phoneRequiredError: 'कृपया एक मोबाइल फोन नंबर दर्ज करें।',
+  inviteSentWhatsAppSuccess: 'आपके निमंत्रण के साथ व्हाट्सएप खुल रहा है...',
+  inviteSentSMSSuccess: 'आपके निमंत्रण के साथ एसएमएस ऐप खुल रहा है...',
 }
 
 const gujarati = {
@@ -2900,6 +2942,27 @@ const gujarati = {
   popular: 'લોકપ્રિય / સૌથી નવું',
   priceLowToHigh: 'કિંમત: ઓછી થી વધુ',
   priceHighToLow: 'કિંમત: વધુ થી ઓછી',
+
+  // Shop Owner Supplier Invite
+  supplierNetwork: 'સપ્લાયર નેટવર્ક',
+  inviteSuppliersTitle: 'સપ્લાયર્સ અને ડિસ્ટ્રિબ્યુટરને આમંત્રિત કરો',
+  inviteSuppliersSubtitle: 'વોટ્સએપ અથવા એસએમએસ દ્વારા તમારા સ્થાનિક સપ્લાયર્સને કનેક્ટો સાથે જોડાવા માટે આમંત્રણ મોકલો.',
+  countryCode: 'દેશ કોડ',
+  supplierPhoneNumber: 'સપ્લાયરનો ફોન નંબર',
+  phoneInputPlaceholder: 'દા.ત. 9876543210',
+  phoneInputHelp: 'ભારતના સપ્લાયર્સ માટે 10-અંકનો મોબાઇલ નંબર અથવા અન્ય દેશો માટે સ્થાનિક નંબર દાખલ કરો.',
+  sendOnWhatsApp: 'વોટ્સએપ પર આમંત્રિત કરો',
+  sendViaSMS: 'એસએમએસ દ્વારા આમંત્રિત કરો',
+  inviteMessagePreview: 'આમંત્રણ સંદેશ પૂર્વાવલોકન',
+  customizeMessage: 'કસ્ટમાઇઝ કરો',
+  doneEditing: 'પૂર્ણ',
+  reset: 'રીસેટ',
+  copyMessage: 'ટેક્સ્ટ કોપી કરો',
+  messageCopied: 'કોપી થઈ ગયું!',
+  invalidPhoneError: 'કૃપા કરીને માન્ય ફોન નંબર દાખલ કરો (ઓછામાં ઓછા 7 અંક).',
+  phoneRequiredError: 'કૃપા કરીને મોબાઇલ ફોન નંબર દાખલ કરો.',
+  inviteSentWhatsAppSuccess: 'તમારા આમંત્રણ સાથે વોટ્સએપ ખુલી રહ્યું છે...',
+  inviteSentSMSSuccess: 'તમારા આમંત્રણ સાથે એસએમએસ એપ ખુલી રહી છે...',
 }
 
 export const translations = { en: english, hi: { ...english, ...hindi }, gu: { ...english, ...gujarati } }
