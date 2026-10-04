@@ -86,11 +86,6 @@ export default function ShopOwnerCartPage() {
   if (!cart.length) {
     return (
       <section className="space-y-6 w-full min-w-0 max-w-full">
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-          <span>{t('shopOwner')}</span>
-          <span aria-hidden="true">›</span>
-          <span className="text-slate-700">{t('cart')}</span>
-        </div>
         <div className="text-center py-12 bg-white rounded-2xl border border-slate-200/80 shadow-xs space-y-4">
           <h1 className="text-2xl sm:text-3xl font-black text-slate-900">{t('cartEmpty')}</h1>
           <EmptyState title={t('noItemsAdded')} message={t('browseCatalogToStart')} />
@@ -107,12 +102,6 @@ export default function ShopOwnerCartPage() {
 
   return (
     <section className="space-y-6 sm:space-y-8 w-full min-w-0 max-w-full">
-      <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-        <span>{t('shopOwner')}</span>
-        <span aria-hidden="true">›</span>
-        <span className="text-slate-700">{t('cart')}</span>
-      </div>
-
       <div className="pb-2 border-b border-slate-100">
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">{t('yourCart')}</h1>
         <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('cartReview')}</p>

@@ -97,7 +97,7 @@ export default function ProductDetailPage() {
   }
 
   return (
-    <section className="p-4 sm:p-6 lg:p-8 max-w-5xl mx-auto space-y-4">
+    <section className="space-y-4 w-full min-w-0">
       <Link 
         className="inline-flex items-center gap-1.5 text-xs sm:text-sm font-bold text-brand-orange hover:text-brand-orange-dark transition-colors" 
         to={`/dashboard/shop-owner/suppliers/${supplier.id}/products`}

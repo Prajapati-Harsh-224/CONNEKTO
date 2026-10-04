@@ -107,7 +107,7 @@ export default function SupplierDashboardPage() {
   )
 
   return (
-    <section className="p-3.5 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-4 sm:space-y-8 w-full min-w-0">
+    <section className="space-y-4 sm:space-y-8 w-full min-w-0">
       <header className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 pb-2 border-b border-slate-100">
         <div>
           <p className="text-xs sm:text-sm font-bold text-brand-orange uppercase tracking-wider">{getDynamicGreeting()}</p>
@@ -173,8 +173,8 @@ export default function SupplierDashboardPage() {
           </button>
         </div>
 
-        {/* Mobile View: Clean Card List (No Horizontal Scroll) */}
-        <div className="space-y-2.5 sm:hidden mt-3">
+        {/* Mobile & Tablet View: Clean Card List (No Horizontal Scroll) */}
+        <div className="space-y-2.5 sm:space-y-3 lg:hidden mt-3">
           {displayOrders.length ? (
             displayOrders.map((order) => (
               <div 
@@ -235,9 +235,9 @@ export default function SupplierDashboardPage() {
           )}
         </div>
 
-        {/* Tablet & Desktop View: Table */}
-        <div className="hidden sm:block overflow-x-auto -mx-5 sm:-mx-6 px-5 sm:px-6 mt-4">
-          <table className="w-full text-left border-separate border-spacing-0 min-w-[760px]">
+        {/* Desktop View: Table (lg: and above) */}
+        <div className="hidden lg:block overflow-x-auto mt-4">
+          <table className="w-full text-left border-separate border-spacing-0">
             <thead>
               <tr className="text-xs font-bold text-slate-500 uppercase tracking-wider">
                 <th className="py-3 px-4 bg-slate-50/80 rounded-l-xl font-bold w-[15%]">{t('orderId')}</th>

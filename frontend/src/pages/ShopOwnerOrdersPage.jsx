@@ -148,11 +148,6 @@ export default function ShopOwnerOrdersPage() {
   if (error) {
     return (
       <section className="space-y-4 w-full min-w-0">
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-          <span>{t('shopOwner')}</span>
-          <span aria-hidden="true">›</span>
-          <span className="text-slate-700">{t('orders')}</span>
-        </div>
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900">{t('yourOrders')}</h1>
         <p className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium" role="alert">{error}</p>
         <button 
@@ -176,12 +171,6 @@ export default function ShopOwnerOrdersPage() {
 
   return (
     <section className="space-y-6 sm:space-y-8 w-full min-w-0">
-      <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-        <span>{t('shopOwner')}</span>
-        <span aria-hidden="true">›</span>
-        <span className="text-slate-700">{t('orders')}</span>
-      </div>
-
       <div className="pb-2 border-b border-slate-100">
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">{t('yourOrders')}</h1>
         <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('ordersSubtitle')}</p>
@@ -356,7 +345,7 @@ export default function ShopOwnerOrdersPage() {
 
               {/* Tablet & Desktop View: Table wrapped in scroll-safe container */}
               <div className="hidden sm:block w-full max-w-full overflow-x-auto rounded-xl">
-                <table className="w-full text-left border-separate border-spacing-0">
+                <table className="w-full text-left border-separate border-spacing-0 min-w-[620px]">
                   <thead>
                     <tr className="text-xs font-bold text-slate-400 uppercase tracking-wider">
                       <th className="py-2 px-1.5 sm:px-2 bg-slate-50 rounded-l-xl font-bold w-[17%]">{t('ordersColumnOrder')}</th>

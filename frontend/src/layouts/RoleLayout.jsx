@@ -96,7 +96,7 @@ export default function RoleLayout({ role: routeRole }) {
 
       <div className="flex-1 w-full min-w-0 max-w-full pt-16 md:pl-56 lg:pl-64 overflow-x-clip">
         <Sidebar role={role} />
-        <main ref={mainRef} className="w-full min-w-0 max-w-full px-3 sm:px-6 lg:px-8 py-5 sm:py-6 pb-24 md:pb-8">
+        <main ref={mainRef} className="w-full min-w-0 max-w-full px-3 sm:px-4 md:px-5 lg:px-8 py-5 sm:py-6 pb-24 md:pb-8">
           <div className="max-w-7xl mx-auto w-full min-w-0">
             <Outlet />
           </div>

@@ -213,7 +213,7 @@ export default function SupplierEditProductPage() {
   const productName = form.name || product?.name || 'Product'
 
   return (
-    <section className="p-4 sm:p-6 lg:p-8 pb-32 sm:pb-12 max-w-5xl mx-auto space-y-6 sm:space-y-8">
+    <section className="pb-32 sm:pb-12 space-y-6 sm:space-y-8 w-full min-w-0">
       {/* ── Breadcrumb ── */}
       <nav className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider" aria-label="Breadcrumb">
         <Link to="/dashboard/supplier/home" className="hover:text-slate-600 transition-colors">

@@ -1,8 +1,0 @@
-{
-  "projectId": "7582",
-  "projectSlug": "connekto",
-  "clerkOrgId": "org_3KBpK1brrTu3an9JTkjVKTWhEyX",
-  "telemetryBindingId": "2d6ae885-83de-41e3-a297-1d0032f142c8",
-  "runtimeUrl": "http://localhost:8000/api/copilotkit",
-  "apiKeyDirectory": "frontend"
-}

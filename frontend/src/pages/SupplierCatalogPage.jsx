@@ -405,7 +405,7 @@ export default function SupplierCatalogPage() {
   }
 
   return (
-    <section className="p-4 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-6 sm:space-y-8 pb-12">
+    <section className="space-y-6 sm:space-y-8 pb-12 w-full min-w-0">
       {/* Breadcrumb Navigation */}
       <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
         <Link className="hover:text-slate-600 transition-colors" to="/dashboard/shop-owner/suppliers">
@@ -596,7 +596,7 @@ export default function SupplierCatalogPage() {
           {visibleProducts.length > 0 ? (
             viewMode === 'grid' ? (
               // Product Cards Grid: 3-column on mobile and tablet, 4-column on desktop
-              <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-5">
+              <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-3.5 lg:gap-5">
                 {visibleProducts.map((product) => {
                   const isFav = Boolean(favorites[product.id])
                   const availableStock = Number(product.availableStock ?? 0)
@@ -619,7 +619,7 @@ export default function SupplierCatalogPage() {
                       }`}
                     >
                       {/* Image Container */}
-                      <div className="relative aspect-square sm:aspect-auto sm:h-44 w-full bg-slate-50 overflow-hidden shrink-0">
+                      <div className="relative aspect-square sm:aspect-auto sm:h-36 md:h-40 lg:h-44 w-full bg-slate-50 overflow-hidden shrink-0">
                         {/* Status Pill Badge */}
                         <span
                           className={`absolute top-1.5 left-1.5 sm:top-3 sm:left-3 px-1.5 sm:px-2.5 py-0.5 rounded-full text-[9px] sm:text-[11px] font-bold shadow-2xs z-10 ${
@@ -665,10 +665,10 @@ export default function SupplierCatalogPage() {
                       </div>
 
                       {/* Card Body */}
-                      <div className="p-1.5 sm:p-4 flex-1 flex flex-col justify-between">
+                      <div className="p-1.5 sm:p-2.5 md:p-3 lg:p-4 flex-1 flex flex-col justify-between">
                         <div>
                           <h3
-                            className="text-[11px] sm:text-base font-bold text-slate-900 line-clamp-2 sm:line-clamp-1 leading-tight group-hover:text-brand-orange transition-colors cursor-pointer"
+                            className="text-[11px] sm:text-xs md:text-sm lg:text-base font-bold text-slate-900 line-clamp-2 leading-tight group-hover:text-brand-orange transition-colors cursor-pointer"
                             onClick={() => setViewingProduct(product)}
                             title={product.name}
                           >
@@ -684,13 +684,13 @@ export default function SupplierCatalogPage() {
 
                         <div className="mt-1.5 sm:mt-3 pt-1.5 sm:pt-3 border-t border-slate-100">
                           <div>
-                            <div className="text-xs sm:text-base font-black text-slate-900 leading-none">
+                            <div className="text-xs sm:text-sm md:text-sm lg:text-base font-black text-slate-900 leading-none">
                               {formatPrice(unitPrice)}{' '}
                               <small className="text-[9px] sm:text-[11px] text-slate-400 font-normal">/ {getItemUnitLabel(product, 1)}</small>
                             </div>
                             <div className="text-[9px] sm:text-xs text-emerald-700 font-semibold mt-0.5 sm:mt-1 truncate">
-                              <span className="sm:hidden">Box: {formatPrice(boxPrice)}</span>
-                              <span className="hidden sm:inline">1 Box = {unitsPerBox} {getItemUnitLabel(product, unitsPerBox)} ({formatPrice(boxPrice)}/box)</span>
+                              <span className="lg:hidden">Box: {formatPrice(boxPrice)}</span>
+                              <span className="hidden lg:inline">1 Box = {unitsPerBox} {getItemUnitLabel(product, unitsPerBox)} ({formatPrice(boxPrice)}/box)</span>
                             </div>
                           </div>
 

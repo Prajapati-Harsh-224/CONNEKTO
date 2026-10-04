@@ -50,11 +50,11 @@ export default function SupplierIncomingOrdersPage() {
   const [statusFilter, setStatusFilter] = useState('All Statuses')
   const [customerFilter, setCustomerFilter] = useState('All Customers')
   const [dateFilter, setDateFilter] = useState('Select Date Range')
-  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 640)
+  const [isMobile, setIsMobile] = useState(() => typeof window !== 'undefined' && window.innerWidth < 1024)
 
   useEffect(() => {
     function handleResize() {
-      setIsMobile(window.innerWidth < 640)
+      setIsMobile(window.innerWidth < 1024)
     }
     window.addEventListener('resize', handleResize)
     return () => window.removeEventListener('resize', handleResize)
@@ -159,11 +159,6 @@ export default function SupplierIncomingOrdersPage() {
   if (error && !orders.length) {
     return (
       <section className="space-y-4">
-        <div className="flex items-center gap-1.5 text-xs text-slate-500">
-          <span>{t('supplier')}</span>
-          <span aria-hidden="true">›</span>
-          <span className="font-semibold text-slate-800">{t('orders')}</span>
-        </div>
         <h1 className="text-2xl font-bold text-slate-900">{t('incomingOrders')}</h1>
         <p className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-xl" role="alert">{error}</p>
         <button
@@ -178,13 +173,7 @@ export default function SupplierIncomingOrdersPage() {
   }
 
   return (
-    <section className="p-3.5 sm:p-6 lg:p-8 max-w-7xl mx-auto space-y-4 sm:space-y-6 w-full min-w-0">
-      <div className="flex items-center gap-1.5 text-xs text-slate-500">
-        <span>{t('supplier')}</span>
-        <span aria-hidden="true">›</span>
-        <span className="font-semibold text-slate-800">{t('orders')}</span>
-      </div>
-
+    <section className="space-y-4 sm:space-y-6 w-full min-w-0">
       <div>
         <h1 className="text-xl sm:text-3xl font-bold font-serif text-brand-navy">{t('orders')}</h1>
         <p className="text-xs sm:text-sm text-slate-500 mt-0.5 sm:mt-1">{t('manageOrdersProductsCustomers')}</p>
@@ -257,8 +246,8 @@ export default function SupplierIncomingOrdersPage() {
         </div>
       </div>
 
-      {/* Mobile View: Clean Card List */}
-      <div className="space-y-3 sm:hidden w-full min-w-0">
+      {/* Mobile & Tablet View: Clean Card List */}
+      <div className="space-y-3 lg:hidden w-full min-w-0">
         {displayedOrders.length ? (
           displayedOrders.map((order) => {
             const orderItems = Array.isArray(order.items) ? order.items : []
@@ -347,8 +336,8 @@ export default function SupplierIncomingOrdersPage() {
         )}
       </div>
 
-      {/* Tablet & Desktop View: Table */}
-      <div className="hidden sm:block bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
+      {/* Desktop View: Table */}
+      <div className="hidden lg:block bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-left border-collapse min-w-[850px]">
             <thead>
@@ -422,7 +411,7 @@ export default function SupplierIncomingOrdersPage() {
 
       {/* Pagination Controls (Hidden in mobile view, shown on tablet/desktop) */}
       {!isMobile && visibleOrders.length > 0 && (
-        <div className="hidden sm:flex flex-col sm:flex-row items-center justify-between gap-3 px-3 sm:px-5 py-3 bg-white rounded-xl border border-slate-100 shadow-2xs text-xs text-slate-500">
+        <div className="hidden lg:flex flex-col sm:flex-row items-center justify-between gap-3 px-3 sm:px-5 py-3 bg-white rounded-xl border border-slate-100 shadow-2xs text-xs text-slate-500">
           <span className="text-center sm:text-left">{t('showingOrdersCount', { start: filteredOrders.length ? (page - 1) * pageSize + 1 : 0, end: Math.min(page * pageSize, filteredOrders.length), total: filteredOrders.length })}</span>
           <div className="flex items-center gap-1.5 sm:gap-1">
             <button disabled={page === 1} onClick={() => setPage((current) => Math.max(1, current - 1))} type="button" className="w-8 h-8 sm:w-7 sm:h-7 rounded-lg border border-slate-200 flex items-center justify-center font-bold disabled:opacity-40 cursor-pointer bg-white">‹</button>

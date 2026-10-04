@@ -344,14 +344,8 @@ export default function SupplierProductManagementPage() {
 
   return (
     <section className="space-y-5 sm:space-y-6 pb-12">
-      {/* Top Header Row with Breadcrumbs, Title, Subtitle, and Add Product */}
+      {/* Top Header Row with Title, Subtitle, and Add Product */}
       <div className="flex flex-col gap-2">
-        <nav className="flex items-center gap-1.5 text-xs text-slate-400 font-medium">
-          <span>{t('supplierWorkspace')}</span>
-          <span className="text-slate-300">›</span>
-          <span className="text-slate-600">{t('products')}</span>
-        </nav>
-
         <div className="flex items-center justify-between gap-3 w-full">
           <div>
             <h1 className="text-xl sm:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight">
@@ -511,7 +505,7 @@ export default function SupplierProductManagementPage() {
       {displayedProducts.length > 0 ? (
         viewMode === 'grid' ? (
           /* 4-Column Product Cards Grid (Matching Gruh Udyog Concept & Size) */
-          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-4 md:gap-5 relative">
+          <div className="grid grid-cols-3 sm:grid-cols-3 md:grid-cols-3 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-3.5 lg:gap-5 relative">
             {activeMenuId && (
               <div
                 className="fixed inset-0 z-20 cursor-default"
@@ -533,7 +527,7 @@ export default function SupplierProductManagementPage() {
                   }`}
                 >
                   {/* Image Container */}
-                  <div className="relative aspect-square sm:aspect-auto sm:h-44 w-full bg-slate-50 overflow-hidden shrink-0 rounded-t-xl sm:rounded-t-2xl">
+                  <div className="relative aspect-square sm:aspect-auto sm:h-36 md:h-40 lg:h-44 w-full bg-slate-50 overflow-hidden shrink-0 rounded-t-xl sm:rounded-t-2xl">
                     {/* Status Pill Badge */}
                     <span
                       className={`absolute top-1.5 left-1.5 sm:top-3 sm:left-3 px-1.5 sm:px-2.5 py-0.5 rounded-full text-[9px] sm:text-[11px] font-bold shadow-2xs z-10 ${
@@ -579,9 +573,9 @@ export default function SupplierProductManagementPage() {
                   </div>
 
                   {/* Card Body */}
-                  <div className="p-1.5 sm:p-4 flex-1 flex flex-col justify-between">
+                  <div className="p-1.5 sm:p-2.5 md:p-3 lg:p-4 flex-1 flex flex-col justify-between">
                     <div>
-                      <h3 className="text-[11px] sm:text-base font-bold text-slate-900 line-clamp-2 sm:line-clamp-1 leading-tight group-hover:text-brand-orange transition-colors" title={product.name}>
+                      <h3 className="text-[11px] sm:text-xs md:text-sm lg:text-base font-bold text-slate-900 line-clamp-2 leading-tight group-hover:text-brand-orange transition-colors" title={product.name}>
                         {product.name}
                       </h3>
                       <p className="text-[9px] sm:text-xs text-slate-400 mt-0.5 truncate">{product.brand || 'General'} · {product.packSize || '1 unit'}</p>
@@ -595,12 +589,12 @@ export default function SupplierProductManagementPage() {
                     <div className="mt-1.5 sm:mt-3 pt-1.5 sm:pt-3 border-t border-slate-100">
                       <div className="flex items-center justify-between relative">
                         <div className="min-w-0 flex-1">
-                          <p className="text-xs sm:text-base font-black text-slate-900 leading-none">
+                          <p className="text-xs sm:text-sm md:text-sm lg:text-base font-black text-slate-900 leading-none">
                             ₹{Number(product.price).toLocaleString('en-IN')}
                           </p>
                           <p className="text-[9px] sm:text-[11px] text-slate-400 mt-0.5 truncate">
-                            <span className="sm:hidden">Box: {product.minimumQuantity || 1}u · Stk: {product.availableStock ?? 0}</span>
-                            <span className="hidden sm:inline">1 Box = {product.minimumQuantity || 1} units · Stock: {product.availableStock ?? 0}</span>
+                            <span className="lg:hidden">Box: {product.minimumQuantity || 1}u · Stk: {product.availableStock ?? 0}</span>
+                            <span className="hidden lg:inline">1 Box = {product.minimumQuantity || 1} units · Stock: {product.availableStock ?? 0}</span>
                           </p>
                         </div>
 

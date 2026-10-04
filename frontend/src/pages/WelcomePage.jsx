@@ -2,7 +2,7 @@ import { useCallback, useEffect } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import { FiArrowRight, FiPlay, FiShoppingBag, FiTruck, FiUsers, FiMail, FiMapPin } from 'react-icons/fi'
 import { useLocale } from '../context/LocaleContext.jsx'
-import homeHeroBg from '../assets/Home_Hero.png'
+import homeHeroBg from '../assets/Home_Hero.webp'
 import contactIllustration from '../assets/contact_illustration.svg'
 
 export default function WelcomePage() {

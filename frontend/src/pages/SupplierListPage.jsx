@@ -214,10 +214,10 @@ function SupplierCard({ supplier }) {
   const bg = getAvatarBg(supplier.name)
 
   return (
-    <article className="relative flex flex-col justify-between p-3.5 sm:p-6 rounded-xl sm:rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-slate-300 transition-all">
+    <article className="relative flex flex-col justify-between p-3.5 sm:p-4 lg:p-6 rounded-xl sm:rounded-2xl bg-white border border-slate-200/80 shadow-xs hover:shadow-md hover:border-slate-300 transition-all">
       <div className="space-y-2 sm:space-y-3">
         <div className="flex items-start gap-2 sm:gap-3.5">
-          <div className="flex items-center justify-center w-9 h-9 sm:w-12 sm:h-12 rounded-lg sm:rounded-xl text-white font-black text-xs sm:text-base shrink-0 shadow-xs" style={{ background: bg }} aria-hidden="true">
+          <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 lg:w-12 lg:h-12 rounded-lg sm:rounded-xl text-white font-black text-xs sm:text-sm lg:text-base shrink-0 shadow-xs" style={{ background: bg }} aria-hidden="true">
             {initials}
           </div>
           <div className="flex flex-col min-w-0">
@@ -371,11 +371,6 @@ export default function SupplierListPage() {
       {/* ── Page header ── */}
       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
-          <nav className="flex items-center gap-2 text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2" aria-label="Breadcrumb">
-            <span>{t('shopOwner')}</span>
-            <span aria-hidden="true">›</span>
-            <span className="text-slate-700">{t('suppliers')}</span>
-          </nav>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">{t('findSuppliers')}</h1>
           <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('findSuppliersDescription')}</p>
         </div>
@@ -432,7 +427,7 @@ export default function SupplierListPage() {
                 type="button"
                 role="listitem"
                 title={cat.label}
-                className={`snap-start aspect-square sm:aspect-auto sm:min-h-[130px] sm:py-4 lg:aspect-square lg:min-h-0 lg:py-3 w-[calc((100%-24px)/4)] min-w-[calc((100%-24px)/4)] sm:w-[calc((100%-12px)/2)] sm:min-w-[calc((100%-12px)/2)] lg:w-[140px] lg:min-w-0 shrink-0 flex flex-col items-center justify-center p-1.5 sm:p-3 rounded-xl sm:rounded-2xl border transition-all text-center cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 sm:active:scale-100 ${
+                className={`snap-start aspect-square sm:aspect-auto sm:min-h-[110px] sm:py-3 lg:aspect-square lg:min-h-0 lg:py-3 w-[calc((100%-24px)/4)] min-w-[calc((100%-24px)/4)] sm:w-[110px] sm:min-w-[110px] md:w-[120px] md:min-w-[120px] lg:w-[140px] lg:min-w-[140px] shrink-0 flex flex-col items-center justify-center p-1.5 sm:p-2.5 md:p-3 rounded-xl sm:rounded-2xl border transition-all text-center cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 sm:active:scale-100 ${
                   isActive 
                     ? 'bg-brand-orange-light border-brand-orange/40 ring-1.5 sm:ring-2 ring-brand-orange/20' 
                     : 'bg-white border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/50'

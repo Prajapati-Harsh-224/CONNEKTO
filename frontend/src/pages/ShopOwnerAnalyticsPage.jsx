@@ -338,11 +338,6 @@ export default function ShopOwnerAnalyticsPage() {
   if (error) {
     return (
       <section className="space-y-4 w-full min-w-0">
-        <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-          <span>{t('shopOwner')}</span>
-          <span aria-hidden="true">›</span>
-          <span className="text-slate-700">{t('analytics')}</span>
-        </div>
         <h1 className="text-2xl sm:text-3xl font-black text-slate-900">{t('analyticsUnavailable')}</h1>
         <p className="p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-700 text-sm font-medium" role="alert">{error}</p>
         <button className="px-5 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-700 font-semibold text-sm transition-all cursor-pointer" onClick={loadData} type="button">
@@ -357,12 +352,6 @@ export default function ShopOwnerAnalyticsPage() {
 
   return (
     <section className="space-y-6 sm:space-y-8 w-full min-w-0">
-      <div className="flex items-center gap-2 text-xs font-semibold text-slate-400 uppercase tracking-wider">
-        <span>{t('shopOwner')}</span>
-        <span aria-hidden="true">›</span>
-        <span className="text-slate-700">{t('analytics')}</span>
-      </div>
-
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b border-slate-100">
         <div>
           <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">{t('analytics')}</h1>

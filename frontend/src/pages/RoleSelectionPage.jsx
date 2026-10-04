@@ -3,8 +3,8 @@ import { useNavigate, useSearchParams } from 'react-router-dom'
 import RoleCard from '../components/RoleCard.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { getSelectedRole, saveSelectedRole } from '../utils/roleStorage.js'
-import shopOwnerImage from '../assets/shop_owner_img.png'
-import supplierImage from '../assets/Supplier_img.png'
+import shopOwnerImage from '../assets/shop_owner_img.webp'
+import supplierImage from '../assets/Supplier_img.webp'
 
 const roles = [
   { value: 'SHOP_OWNER', titleKey: 'shopOwner', descriptionKey: 'shopOwnerDescription', tone: 'orange', image: shopOwnerImage, overlayKey: 'shopOwnerOverlay', imageAltKey: 'shopOwnerImageAlt', benefitKeys: ['shopOwnerBenefitOne', 'shopOwnerBenefitTwo', 'shopOwnerBenefitThree'] },

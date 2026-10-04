@@ -42,33 +42,33 @@ export default function MetricCard({ label, value, detail, accent = '', icon, ac
       <div className="hidden sm:flex flex-col justify-between w-full h-full min-w-0">
         {/* Top row: Icon on left, Action chevron on right */}
         <div className="flex items-center justify-between w-full">
-          <div className={`flex items-center justify-center w-10 h-10 lg:w-11 lg:h-11 rounded-xl border text-lg lg:text-xl font-bold shrink-0 ${iconTheme}`} aria-hidden="true">
+          <div className={`flex items-center justify-center w-8 h-8 sm:w-9 sm:h-9 md:w-10 md:h-10 lg:w-11 lg:h-11 rounded-xl border text-base md:text-lg lg:text-xl font-bold shrink-0 ${iconTheme}`} aria-hidden="true">
             {icon || '•'}
           </div>
           {actionTo && (
             <span 
-              className="flex items-center justify-center w-7.5 h-7.5 rounded-full border border-slate-200 group-hover:border-brand-orange group-hover:bg-brand-orange-light group-hover:text-brand-orange text-slate-400 group-hover:text-brand-orange transition-all shrink-0" 
+              className="flex items-center justify-center w-6 h-6 sm:w-7 sm:h-7 rounded-full border border-slate-200 group-hover:border-brand-orange group-hover:bg-brand-orange-light group-hover:text-brand-orange text-slate-400 group-hover:text-brand-orange transition-all shrink-0" 
               aria-hidden="true"
             >
-              {actionText || <FiChevronRight size={16} />}
+              {actionText || <FiChevronRight size={15} />}
             </span>
           )}
         </div>
 
         {/* Bottom section: Full width for label, value, detail - NEVER truncated or awkwardly broken */}
-        <div className="flex flex-col min-w-0 mt-3 sm:mt-3.5">
+        <div className="flex flex-col min-w-0 mt-2.5 sm:mt-3 lg:mt-3.5">
           <span 
-            className="text-xs lg:text-[13px] font-semibold text-slate-500 tracking-wide block leading-snug break-normal"
+            className="text-[11px] sm:text-xs lg:text-[13px] font-semibold text-slate-500 tracking-wide block leading-snug break-normal"
             title={typeof label === 'string' ? label : undefined}
           >
             {label}
           </span>
-          <strong className="text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight tabular-nums block mt-0.5">
+          <strong className="text-lg sm:text-xl md:text-2xl lg:text-3xl font-extrabold text-slate-900 tracking-tight leading-tight tabular-nums block mt-0.5">
             {value}
           </strong>
           {detail && (
             <small 
-              className="text-[11px] lg:text-xs text-slate-400 font-medium block leading-normal mt-1 break-normal"
+              className="text-[10px] sm:text-[11px] lg:text-xs text-slate-400 font-medium block leading-normal mt-1 break-normal"
               title={typeof detail === 'string' ? detail : undefined}
             >
               {detail}
@@ -79,7 +79,7 @@ export default function MetricCard({ label, value, detail, accent = '', icon, ac
     </>
   )
 
-  const cardClasses = "group relative flex flex-col justify-between w-full h-full min-w-0 p-2.5 sm:p-4 lg:p-5 rounded-xl sm:rounded-2xl bg-white border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_25px_rgba(0,0,0,0.06)] hover:border-slate-300/80 transition-all duration-200"
+  const cardClasses = "group relative flex flex-col justify-between w-full h-full min-w-0 p-2 sm:p-3 md:p-3.5 lg:p-5 rounded-xl sm:rounded-2xl bg-white border border-slate-200/80 shadow-[0_4px_20px_rgba(0,0,0,0.03)] hover:shadow-[0_8px_25px_rgba(0,0,0,0.06)] hover:border-slate-300/80 transition-all duration-200"
 
   if (actionTo) {
     return (

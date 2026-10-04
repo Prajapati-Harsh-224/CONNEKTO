@@ -216,12 +216,6 @@ export default function SupplierCustomersPage() {
 
   return (
     <section className="space-y-6">
-      <div className="flex items-center gap-1.5 text-xs text-slate-500">
-        <span>{t('supplier')}</span>
-        <span aria-hidden="true">›</span>
-        <span className="font-semibold text-slate-800">{t('customers')}</span>
-      </div>
-
       <div>
         <p className="text-[11px] font-bold uppercase tracking-wider text-emerald-700 mb-1">{t('supplierWorkspace')}</p>
         <h1 className="text-2xl sm:text-3xl font-bold font-serif text-brand-navy">{t('customers')}</h1>
@@ -277,11 +271,11 @@ export default function SupplierCustomersPage() {
             />
           </div>
 
-          <div className="flex items-center gap-2.5 w-full sm:w-auto">
+          <div className="flex items-center gap-2 w-full sm:w-auto flex-wrap">
             <select
               onChange={(event) => setStatusFilter(event.target.value)}
               value={statusFilter}
-              className="flex-1 sm:flex-initial px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 bg-white outline-none cursor-pointer"
+              className="flex-1 sm:flex-initial px-2.5 sm:px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 bg-white outline-none cursor-pointer truncate max-w-[130px]"
             >
               <option value="All status">{t('allStatus')}</option>
               <option value="Active">{t('active')}</option>
@@ -291,7 +285,7 @@ export default function SupplierCustomersPage() {
             <select
               onChange={(event) => setLocationFilter(event.target.value)}
               value={locationFilter}
-              className="flex-1 sm:flex-initial px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 bg-white outline-none cursor-pointer"
+              className="flex-1 sm:flex-initial px-2.5 sm:px-3 py-2 rounded-xl border border-slate-200 text-xs font-medium text-slate-700 bg-white outline-none cursor-pointer truncate max-w-[130px]"
             >
               {locationOptions.map((location) => (
                 <option key={location} value={location}>{location === 'All cities' ? t('allCities') : location}</option>
@@ -311,55 +305,59 @@ export default function SupplierCustomersPage() {
 
       <div className="grid grid-cols-1 lg:grid-cols-[1fr_300px] gap-6 items-start">
         <div className="bg-white rounded-2xl border border-slate-100 shadow-xs overflow-hidden">
-          <div className="hidden md:grid grid-cols-[1.4fr_1.4fr_1.1fr_0.7fr_0.9fr] items-center gap-3 px-5 py-3 border-b border-slate-100 bg-slate-50/70 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
-            <span>{t('customerShop')}</span>
-            <span>{t('contact')}</span>
-            <span>{t('area')}</span>
-            <span>{t('orders')}</span>
-            <span>{t('totalSpent')}</span>
-          </div>
-
           {visibleCustomers.length ? (
             <>
+              <div className="overflow-x-auto">
+            <div className="min-w-full">
+              <div className="hidden md:grid grid-cols-[1.3fr_1.3fr_1.1fr_0.6fr_0.9fr] items-center gap-2 md:gap-3 px-3.5 sm:px-4 md:px-5 py-3 border-b border-slate-100 bg-slate-50/70 text-[11px] font-bold text-slate-500 uppercase tracking-wider">
+                <span>{t('customerShop')}</span>
+                <span>{t('contact')}</span>
+                <span>{t('area')}</span>
+                <span>{t('orders')}</span>
+                <span>{t('totalSpent')}</span>
+              </div>
+
               <div className="divide-y divide-slate-50">
-                {visibleCustomers.map((customer) => (
-                  <div
-                    key={customer.id}
-                    className={`flex flex-col md:grid md:grid-cols-[1.4fr_1.4fr_1.1fr_0.7fr_0.9fr] items-start md:items-center gap-2 md:gap-3 px-5 py-3.5 transition-colors cursor-pointer text-xs ${
-                      selectedCustomer?.id === customer.id
-                        ? 'bg-emerald-50/50 border-l-4 border-l-emerald-600'
-                        : 'hover:bg-slate-50/70'
-                    }`}
-                    onClick={() => {
-                      setSelectedCustomerId(customer.id)
-                      setIsMobileDetailOpen(true)
-                    }}
-                    onKeyDown={(event) => {
-                      if (event.key === 'Enter' || event.key === ' ') {
-                        event.preventDefault()
+                  {visibleCustomers.map((customer) => (
+                    <div
+                      key={customer.id}
+                      className={`flex flex-col md:grid md:grid-cols-[1.3fr_1.3fr_1.1fr_0.6fr_0.9fr] items-start md:items-center gap-2 md:gap-3 px-3.5 sm:px-4 md:px-5 py-3.5 transition-colors cursor-pointer text-xs ${
+                        selectedCustomer?.id === customer.id
+                          ? 'bg-emerald-50/50 border-l-4 border-l-emerald-600'
+                          : 'hover:bg-slate-50/70'
+                      }`}
+                      onClick={() => {
                         setSelectedCustomerId(customer.id)
                         setIsMobileDetailOpen(true)
-                      }
-                    }}
-                    role="button"
-                    tabIndex={0}
-                  >
-                    <div>
-                      <strong className="font-bold text-slate-800 block">{customer.name}</strong>
-                      <small className="text-slate-400 text-[11px]">{customer.category}</small>
-                    </div>
+                      }}
+                      onKeyDown={(event) => {
+                        if (event.key === 'Enter' || event.key === ' ') {
+                          event.preventDefault()
+                          setSelectedCustomerId(customer.id)
+                          setIsMobileDetailOpen(true)
+                        }
+                      }}
+                      role="button"
+                      tabIndex={0}
+                    >
+                      <div className="min-w-0">
+                        <strong className="font-bold text-slate-800 block truncate" title={customer.name}>{customer.name}</strong>
+                        <small className="text-slate-400 text-[11px] block truncate">{customer.category}</small>
+                      </div>
 
-                    <div>
-                      <strong className="font-medium text-slate-700 block">{customer.shopOwner}</strong>
-                      <small className="text-slate-400 text-[11px]">{customer.phone || t('noPhoneAvailable')}</small>
-                    </div>
+                      <div className="min-w-0">
+                        <strong className="font-medium text-slate-700 block truncate" title={customer.shopOwner}>{customer.shopOwner}</strong>
+                        <small className="text-slate-400 text-[11px] block truncate">{customer.phone || t('noPhoneAvailable')}</small>
+                      </div>
 
-                    <div className="text-slate-600">{customer.location}</div>
-                    <div className="font-bold text-slate-800 tabular-nums">{customer.totalOrders}</div>
-                    <div className="font-bold text-slate-900 tabular-nums">{formatCurrency(customer.totalSpent)}</div>
-                  </div>
-                ))}
-              </div>
+                      <div className="text-slate-600 min-w-0 truncate" title={customer.location}>{customer.location}</div>
+                      <div className="font-bold text-slate-800 tabular-nums min-w-0">{customer.totalOrders}</div>
+                      <div className="font-bold text-slate-900 tabular-nums min-w-0 whitespace-nowrap">{formatCurrency(customer.totalSpent)}</div>
+                    </div>
+                  ))}
+                </div>
+            </div>
+          </div>
 
               <div className="hidden sm:flex items-center justify-between gap-3 px-5 py-3.5 bg-slate-50/50 border-t border-slate-100 text-xs text-slate-500">
                 <span>

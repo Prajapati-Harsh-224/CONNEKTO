@@ -107,13 +107,6 @@ export default function LoginPage() {
       actualRole: actualRole || 'SHOP_OWNER',
     })
     setRequestError(alertText)
-    setTimeout(() => {
-      try {
-        window.alert(alertText)
-      } catch {
-        // Safe fallback in case window.alert is suppressed
-      }
-    }, 50)
   }
 
   function updateField(event) {
