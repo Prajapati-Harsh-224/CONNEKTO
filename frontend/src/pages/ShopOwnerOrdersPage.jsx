@@ -5,9 +5,11 @@ import EmptyState from '../components/EmptyState.jsx'
 import LoadingState from '../components/LoadingState.jsx'
 import ProductImage from '../components/ProductImage.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
+import CancelOrderModal from '../components/CancelOrderModal.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { getOrders } from '../services/orderService.js'
 import { getItemUnitLabel } from '../utils/cartStorage.js'
+import { getOrderCancellationStatus, formatOrderDateTime, formatFullDateTime } from '../utils/orderCancellation.js'
 
 const tabs = [
   { value: 'All', key: 'ordersAll' },
@@ -22,7 +24,7 @@ function priceValue(value) {
 }
 
 function formatPrice(value) {
-  return `Rs\u00A0${Number(value).toLocaleString('en-IN')}`
+  return `₹\u00A0${Number(value).toLocaleString('en-IN')}`
 }
 
 function getInitials(name = '') {
@@ -68,15 +70,7 @@ function displayPaymentMethod(paymentMethod, t) {
 }
 
 function formatOrderDate(value) {
-  const date = new Date(value)
-  if (Number.isNaN(date.getTime())) return '—'
-  const today = new Date()
-  const yesterday = new Date(today)
-  yesterday.setDate(today.getDate() - 1)
-  if (date.toDateString() === today.toDateString()) return `Today, ${date.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' })}`
-  if (date.toDateString() === yesterday.toDateString()) return `Yesterday, ${date.toLocaleTimeString('en-IN', { hour: 'numeric', minute: '2-digit' })}`
-  const months = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec']
-  return `${date.getDate()} ${months[date.getMonth()]} ${date.getFullYear()}`
+  return formatOrderDateTime(value)
 }
 
 function getSupplierDetails(order) {
@@ -100,9 +94,15 @@ export default function ShopOwnerOrdersPage() {
   const [timeFilter, setTimeFilter] = useState('All Time')
   const [sortBy, setSortBy] = useState('newest')
   const [selectedOrderId, setSelectedOrderId] = useState('')
-  const [currentTime] = useState(Date.now)
+  const [currentTime, setCurrentTime] = useState(Date.now)
+  const [cancellingOrder, setCancellingOrder] = useState(null)
   const [isLoading, setIsLoading] = useState(true)
   const [error, setError] = useState('')
+
+  useEffect(() => {
+    const timer = setInterval(() => setCurrentTime(Date.now()), 1000)
+    return () => clearInterval(timer)
+  }, [])
 
   useEffect(() => {
     getOrders()
@@ -110,6 +110,10 @@ export default function ShopOwnerOrdersPage() {
       .catch((requestError) => setError(requestError.message))
       .finally(() => setIsLoading(false))
   }, [])
+
+  function handleOrderCancelled(updatedOrder) {
+    setOrders((prev) => prev.map((ord) => (ord.id === updatedOrder.id ? { ...ord, ...updatedOrder } : ord)))
+  }
 
   const suppliers = useMemo(() => ['All Suppliers', ...new Set(orders.map((order) => order.supplierName).filter(Boolean))], [orders])
   const counts = useMemo(() => ({
@@ -136,6 +140,7 @@ export default function ShopOwnerOrdersPage() {
   const selectedOrder = visibleOrders.find((order) => order.id === selectedOrderId) || visibleOrders[0]
   const selectedSupplier = selectedOrder ? getSupplierDetails(selectedOrder) : null
   const selectedItems = selectedOrder?.items || []
+  const selectedCancelStatus = selectedOrder ? getOrderCancellationStatus(selectedOrder, currentTime) : null
   const stats = [
     { key: 'total', label: t('ordersTotalOrders'), value: counts.all, description: t('ordersAllTime'), icon: FiPackage, tabValue: 'All' },
     { key: 'pending', label: t('pending'), value: counts.pending, description: t('ordersAwaitingConfirmation'), icon: FiClock, tabValue: 'Pending' },
@@ -284,8 +289,8 @@ export default function ShopOwnerOrdersPage() {
               <div className="space-y-3 sm:hidden w-full min-w-0">
                 {visibleOrders.map((order) => {
                   const items = order.items || []
-                  const isSelected = selectedOrder?.id === order.id
                   const totalBoxes = items.reduce((sum, itm) => sum + Number(itm.boxes || (itm.quantity ? Math.floor(itm.quantity / (itm.unitsPerBoxSnapshot || itm.unitsPerBox || 1)) : 1)), 0)
+                  const cancelStatus = getOrderCancellationStatus(order, currentTime)
 
                   return (
                     <div
@@ -293,11 +298,7 @@ export default function ShopOwnerOrdersPage() {
                       onClick={() => {
                         navigate(`/dashboard/shop-owner/orders/${encodeURIComponent(order.id)}`)
                       }}
-                      className={`p-3.5 rounded-xl border transition-all cursor-pointer space-y-2.5 ${
-                        isSelected
-                          ? 'border-brand-orange bg-orange-50/50 shadow-xs ring-1 ring-brand-orange/30'
-                          : 'border-slate-200/80 bg-white hover:border-slate-300'
-                      }`}
+                      className="p-3.5 rounded-xl border border-slate-200/80 bg-white hover:border-slate-300 shadow-xs transition-all cursor-pointer space-y-2.5"
                     >
                       <div className="flex items-center justify-between gap-2">
                         <div className="flex items-center gap-2 min-w-0">
@@ -315,8 +316,21 @@ export default function ShopOwnerOrdersPage() {
                           )}
                           <span className="font-mono text-xs font-bold text-slate-900 truncate">{formatOrderId(order.id)}</span>
                         </div>
-                        <StatusBadge status={order.status} />
+                        <div className="flex items-center gap-1.5 shrink-0">
+                          <StatusBadge status={order.status} showRestocked={true} />
+                          {order.status === 'Preparing' && cancelStatus.canCancel && (
+                            <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-mono font-bold">
+                              ⏱️ {cancelStatus.formattedTime}
+                            </span>
+                          )}
+                        </div>
                       </div>
+
+                      {order.status === 'Cancelled' && order.cancellationReason && (
+                        <div className="text-[11px] bg-red-50 text-red-700 px-2.5 py-1 rounded-md border border-red-100">
+                          <span className="font-semibold">Reason:</span> {order.cancellationReason}
+                        </div>
+                      )}
 
                       <div className="flex items-center justify-between text-xs">
                         <span className="font-semibold text-slate-700 truncate max-w-[160px]">{order.supplierName}</span>
@@ -328,15 +342,30 @@ export default function ShopOwnerOrdersPage() {
                         <span>{formatOrderDate(order.createdAt)}</span>
                       </div>
 
-                      <div className="pt-1">
+                      <div className="pt-1 flex items-center gap-2">
                         <Link
                           to={`/dashboard/shop-owner/orders/${encodeURIComponent(order.id)}`}
                           onClick={(e) => e.stopPropagation()}
-                          className="w-full py-2 px-3 rounded-lg bg-brand-orange hover:bg-brand-orange-dark text-black text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
+                          className="flex-1 py-2 px-3 rounded-lg bg-brand-orange hover:bg-brand-orange-dark text-black text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
                         >
                           <span>{t('ordersDetails') || 'Order Details'}</span>
                           <span aria-hidden="true">→</span>
                         </Link>
+                        {cancelStatus.canCancel && (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation()
+                              setCancellingOrder(order)
+                            }}
+                            className="py-2 px-3 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1 shrink-0"
+                          >
+                            <span>✕ Cancel</span>
+                            {order.status === 'Preparing' && (
+                              <span className="font-mono text-[10px] text-amber-900 font-black">({cancelStatus.formattedTime})</span>
+                            )}
+                          </button>
+                        )}
                       </div>
                     </div>
                   )
@@ -348,12 +377,13 @@ export default function ShopOwnerOrdersPage() {
                 <table className="w-full text-left border-separate border-spacing-0 min-w-[620px]">
                   <thead>
                     <tr className="text-xs font-bold text-slate-400 uppercase tracking-wider">
-                      <th className="py-2 px-1.5 sm:px-2 bg-slate-50 rounded-l-xl font-bold w-[17%]">{t('ordersColumnOrder')}</th>
-                      <th className="py-2 px-1.5 sm:px-2 bg-slate-50 font-bold w-[23%]">{t('ordersColumnSupplier')}</th>
+                      <th className="py-2 px-1.5 sm:px-2 bg-slate-50 rounded-l-xl font-bold w-[16%]">{t('ordersColumnOrder')}</th>
+                      <th className="py-2 px-1.5 sm:px-2 bg-slate-50 font-bold w-[22%]">{t('ordersColumnSupplier')}</th>
                       <th className="py-2 px-1.5 sm:px-2 bg-slate-50 font-bold w-[10%]">{t('ordersColumnItems')}</th>
                       <th className="py-2 px-1.5 sm:px-2 bg-slate-50 font-bold w-[12%]">{t('ordersColumnAmount')}</th>
-                      <th className="py-2 px-1.5 sm:px-2 bg-slate-50 font-bold w-[19%]">{t('ordersColumnStatus')}</th>
-                      <th className="py-2 px-1.5 sm:px-2 bg-slate-50 rounded-r-xl font-bold w-[19%]">{t('ordersColumnDate')}</th>
+                      <th className="py-2 px-1.5 sm:px-2 bg-slate-50 font-bold w-[18%]">{t('ordersColumnStatus')}</th>
+                      <th className="py-2 px-1.5 sm:px-2 bg-slate-50 font-bold w-[13%]">{t('ordersColumnDate')}</th>
+                      <th className="py-2 px-1.5 sm:px-2 bg-slate-50 rounded-r-xl font-bold w-[9%] text-right">Action</th>
                     </tr>
                   </thead>
 
@@ -361,6 +391,7 @@ export default function ShopOwnerOrdersPage() {
                     {visibleOrders.map((order) => {
                       const items = order.items || []
                       const isSelected = selectedOrder?.id === order.id
+                      const cancelStatus = getOrderCancellationStatus(order, currentTime)
                       return (
                         <tr
                           aria-selected={isSelected}
@@ -421,11 +452,41 @@ export default function ShopOwnerOrdersPage() {
                           </td>
 
                           <td className="py-2.5 px-1.5 sm:px-2 whitespace-nowrap border-b border-slate-100">
-                            <StatusBadge status={order.status} />
+                            <div className="flex items-center gap-1.5">
+                              <StatusBadge status={order.status} showRestocked={true} />
+                              {order.status === 'Preparing' && cancelStatus.canCancel && (
+                                <span className="inline-flex items-center gap-1 px-1.5 py-0.5 rounded-md bg-amber-50 text-amber-800 border border-amber-200 text-[10px] font-mono font-bold" title="Time remaining to cancel">
+                                  ⏱️ {cancelStatus.formattedTime}
+                                </span>
+                              )}
+                            </div>
                           </td>
 
                           <td className="py-2.5 px-1.5 sm:px-2 text-xs text-slate-500 whitespace-nowrap border-b border-slate-100">
                             {formatOrderDate(order.createdAt)}
+                          </td>
+
+                          <td className="py-2.5 px-1.5 sm:px-2 text-right whitespace-nowrap border-b border-slate-100">
+                            {cancelStatus.canCancel ? (
+                              <button
+                                type="button"
+                                onClick={(e) => {
+                                  e.stopPropagation()
+                                  setCancellingOrder(order)
+                                }}
+                                className="px-2.5 py-1 rounded-lg border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-colors cursor-pointer inline-flex items-center gap-1 shadow-2xs"
+                                title={order.status === 'Preparing' ? `Cancel order (${cancelStatus.formattedTime} left)` : 'Cancel order'}
+                              >
+                                <span>Cancel</span>
+                                {order.status === 'Preparing' && (
+                                  <span className="font-mono text-[10px] text-amber-900 font-black">({cancelStatus.formattedTime})</span>
+                                )}
+                              </button>
+                            ) : order.status === 'Preparing' ? (
+                              <span className="text-slate-400 text-[11px] font-medium" title="2-minute cancellation window expired">Window expired</span>
+                            ) : (
+                              <span className="text-slate-300 text-xs">—</span>
+                            )}
                           </td>
                         </tr>
                       )
@@ -450,8 +511,51 @@ export default function ShopOwnerOrdersPage() {
               <strong className="text-xs sm:text-sm font-mono font-bold text-slate-900 truncate" title={`#${selectedOrder.id}`}>
                 {formatOrderId(selectedOrder.id)}
               </strong>
-              <span className="shrink-0"><StatusBadge status={selectedOrder.status} /></span>
+              <span className="shrink-0"><StatusBadge status={selectedOrder.status} showRestocked={true} /></span>
             </div>
+
+            {selectedCancelStatus?.canCancel && (
+              <div className="p-3 rounded-xl bg-slate-50 border border-slate-200/80 space-y-2">
+                {selectedOrder.status === 'Preparing' ? (
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs font-semibold text-slate-600">Cancellation Window:</span>
+                    <span className="inline-flex items-center gap-1 px-2 py-0.5 rounded-md bg-amber-100 text-amber-900 border border-amber-300 font-mono font-bold text-xs shadow-2xs">
+                      ⏱️ {selectedCancelStatus.formattedTime} left
+                    </span>
+                  </div>
+                ) : (
+                  <div className="flex items-center justify-between text-xs">
+                    <span className="font-semibold text-slate-600">Order Cancellation:</span>
+                    <span className="font-semibold text-emerald-600">Immediately eligible</span>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setCancellingOrder(selectedOrder)}
+                  className="w-full py-2 px-3 rounded-xl border border-rose-200 bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-bold transition-colors cursor-pointer flex items-center justify-center gap-1.5 shadow-2xs"
+                >
+                  <span>✕</span>
+                  <span>Cancel Order</span>
+                  {selectedOrder.status === 'Preparing' && (
+                    <span className="font-mono text-[11px] font-black text-amber-900">({selectedCancelStatus.formattedTime})</span>
+                  )}
+                </button>
+              </div>
+            )}
+
+            {selectedOrder.status === 'Preparing' && !selectedCancelStatus?.canCancel && (
+              <div className="p-2.5 rounded-xl bg-slate-50 border border-slate-200 text-xs text-slate-500 flex items-center gap-1.5">
+                <span>🔒</span>
+                <span>Preparation started • 2-minute cancellation window expired</span>
+              </div>
+            )}
+
+            {selectedOrder.status === 'Cancelled' && selectedOrder.cancellationReason && (
+              <div className="p-3 rounded-xl bg-red-50 border border-red-200 text-xs text-red-700 space-y-0.5">
+                <span className="font-bold block">Cancellation Reason:</span>
+                <p>{selectedOrder.cancellationReason}</p>
+              </div>
+            )}
 
             <div className="flex items-center gap-3 p-3 rounded-xl bg-slate-50 border border-slate-100">
               <span className="flex items-center justify-center w-9 h-9 rounded-lg bg-orange-100 text-xs font-bold text-brand-orange shrink-0">
@@ -533,6 +637,14 @@ export default function ShopOwnerOrdersPage() {
           </aside>
         )}
       </div>
+
+      <CancelOrderModal
+        isOpen={Boolean(cancellingOrder)}
+        order={cancellingOrder}
+        onClose={() => setCancellingOrder(null)}
+        onOrderCancelled={handleOrderCancelled}
+        currentTime={currentTime}
+      />
     </section>
   )
 }

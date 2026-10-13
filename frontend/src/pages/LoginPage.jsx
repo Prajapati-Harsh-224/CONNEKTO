@@ -131,6 +131,7 @@ export default function LoginPage() {
     setRoleMismatchAlert(null)
   }
 
+
   async function handleIdentifierCheckOrSignIn(event) {
     event.preventDefault()
     setRequestError('')
@@ -208,6 +209,8 @@ export default function LoginPage() {
         // User does not exist -> redirect to register page with welcome message!
         navigate(`/register?role=${selectedRole}&reason=not_found&identifier=${encodeURIComponent(identifierVal)}`)
         return
+      } else if (error.code === 'INVALID_CREDENTIALS' || error.status === 401) {
+        setRequestError('The sign-in details are not valid.')
       } else {
         setRequestError(msg)
       }
@@ -307,8 +310,8 @@ export default function LoginPage() {
   const currentTone = roleTone[selectedRole] || roleTone.SHOP_OWNER
 
   return (
-    <section className="min-h-[calc(100vh-4.5rem)] flex items-center justify-center px-4 py-8 sm:py-12">
-      <div className={`w-full transition-all duration-300 ${authConfig.showExtraFields ? 'max-w-xl' : 'max-w-md'}`}>
+    <section className="w-full min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-8 sm:py-12 pb-24 sm:pb-32 overflow-y-auto no-scrollbar">
+      <div className={`w-full transition-all duration-300 ${authConfig.showExtraFields ? 'max-w-xl' : 'max-w-md'} my-auto`}>
         <form
           className="bg-white rounded-2xl shadow-xl shadow-slate-200/50 border border-slate-100 p-6 sm:p-8 space-y-4"
           onSubmit={authConfig.showExtraFields ? handleCompleteRegistration : handleIdentifierCheckOrSignIn}

@@ -116,42 +116,19 @@ body::-webkit-scrollbar,
   background: transparent !important;
 }
 
-@media (min-width: 1024px) {
-  html.auth-no-scroll,
-  body.auth-no-scroll {
-    overflow: hidden !important;
-    height: 100vh !important;
-  }
+/* Ensure scrollbars are never visible anywhere while retaining full smooth scrolling */
+.no-scrollbar,
+.no-scrollbar * {
+  -ms-overflow-style: none !important;
+  scrollbar-width: none !important;
 }
 
-/* Maintain normal scrolling and clean scrollbar for scrollable pages like welcome page */
-html:not(.auth-no-scroll),
-body:not(.auth-no-scroll) {
-  -ms-overflow-style: auto !important;
-  scrollbar-width: thin !important;
-}
-
-html:not(.auth-no-scroll)::-webkit-scrollbar,
-body:not(.auth-no-scroll)::-webkit-scrollbar {
-  display: block !important;
-  width: 8px !important;
-  height: 8px !important;
-}
-
-html:not(.auth-no-scroll)::-webkit-scrollbar-track,
-body:not(.auth-no-scroll)::-webkit-scrollbar-track {
-  background: #f8fafc !important;
-}
-
-html:not(.auth-no-scroll)::-webkit-scrollbar-thumb,
-body:not(.auth-no-scroll)::-webkit-scrollbar-thumb {
-  background: #cbd5e1 !important;
-  border-radius: 9999px !important;
-}
-
-html:not(.auth-no-scroll)::-webkit-scrollbar-thumb:hover,
-body:not(.auth-no-scroll)::-webkit-scrollbar-thumb:hover {
-  background: #94a3b8 !important;
+.no-scrollbar::-webkit-scrollbar,
+.no-scrollbar *::-webkit-scrollbar {
+  display: none !important;
+  width: 0 !important;
+  height: 0 !important;
+  background: transparent !important;
 }
 
 

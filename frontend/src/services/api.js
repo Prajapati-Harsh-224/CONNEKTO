@@ -11,7 +11,9 @@ export async function apiRequest(path, options = {}) {
       headers: { 'Content-Type': 'application/json', ...options.headers },
       signal: controller.signal,
       ...options,
-      ...(options.body ? { body: JSON.stringify(options.body) } : {}),
+      ...(options.body !== undefined
+        ? { body: typeof options.body === 'string' ? options.body : JSON.stringify(options.body) }
+        : {}),
     })
     const payload = await response.json().catch(() => null)
     if (!response.ok) {

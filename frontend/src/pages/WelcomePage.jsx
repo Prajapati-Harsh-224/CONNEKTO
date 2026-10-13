@@ -3,6 +3,7 @@ import { Link, useLocation } from 'react-router-dom'
 import { FiArrowRight, FiPlay, FiShoppingBag, FiTruck, FiUsers, FiMail, FiMapPin } from 'react-icons/fi'
 import { useLocale } from '../context/LocaleContext.jsx'
 import homeHeroBg from '../assets/Home_Hero.webp'
+import welcomePageMobileBg from '../assets/welcome-page_bg.jpeg'
 import contactIllustration from '../assets/contact_illustration.svg'
 
 export default function WelcomePage() {
@@ -51,9 +52,19 @@ export default function WelcomePage() {
 
       {/* ── HERO SECTION ── */}
       <section className="relative w-full overflow-hidden pt-6 sm:pt-12 pb-24 sm:pb-36 lg:pb-40 min-h-[520px] sm:min-h-[580px] lg:min-h-[640px]" id="home" aria-label="Hero">
-        {/* Full Hero Background Image */}
+        {/* Full Hero Background Image – mobile */}
         <div
-          className="absolute inset-0 w-full h-full bg-cover bg-center sm:bg-[position:65%_center] lg:bg-center pointer-events-none"
+          className="absolute inset-0 w-full h-full bg-cover bg-center pointer-events-none sm:hidden"
+          style={{
+            backgroundImage: `url(${welcomePageMobileBg})`,
+            backgroundRepeat: 'no-repeat',
+          }}
+          aria-hidden="true"
+        />
+
+        {/* Full Hero Background Image – sm+ (WebP) */}
+        <div
+          className="absolute inset-0 w-full h-full bg-cover bg-[position:65%_center] lg:bg-center pointer-events-none hidden sm:block"
           style={{
             backgroundImage: `url(${homeHeroBg})`,
             backgroundRepeat: 'no-repeat',

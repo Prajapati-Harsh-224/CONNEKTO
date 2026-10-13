@@ -1,10 +1,11 @@
 import StatusBadge from './StatusBadge.jsx'
 import { Link } from 'react-router-dom'
+import { formatOrderDateTime } from '../utils/orderCancellation.js'
 
 export default function IncomingOrderCard({ order, linkTo }) {
   const amount = Number(order.amount ?? order.subtotal ?? 0)
   const customer = order.shopOwner || order.shopOwnerId || 'Shop owner'
-  const date = order.date || (order.createdAt ? new Date(order.createdAt).toLocaleDateString() : '')
+  const date = order.date || (order.createdAt ? formatOrderDateTime(order.createdAt) : '')
 
   const card = (
     <article className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 p-4 bg-white rounded-xl border border-slate-200/80 shadow-xs hover:border-slate-300 hover:shadow-sm transition-all">

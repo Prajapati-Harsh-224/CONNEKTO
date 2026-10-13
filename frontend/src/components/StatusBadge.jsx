@@ -12,22 +12,24 @@ const statusLabels = {
   'Out for Delivery': 'outForDelivery',
   'On the way': 'onTheWay',
   Delivered: 'delivered',
+  Restocked: 'restocked',
   Cancelled: 'cancelled',
 }
 
 function StatusIcon({ status }) {
   const norm = String(status).toLowerCase()
   if (norm === 'pending' || norm === 'new') return <FiClock className="shrink-0" />
-  if (norm === 'accepted' || norm === 'confirmed' || norm === 'delivered') return <FiCheckCircle className="shrink-0" />
+  if (norm === 'accepted' || norm === 'confirmed' || norm === 'delivered' || norm === 'restocked') return <FiCheckCircle className="shrink-0" />
   if (norm === 'preparing' || norm === 'processing') return <FiPackage className="shrink-0" />
   if (norm === 'out for delivery' || norm === 'on the way') return <FiTruck className="shrink-0" />
   if (norm === 'cancelled') return <FiXCircle className="shrink-0" />
   return null
 }
 
-export default function StatusBadge({ status }) {
+export default function StatusBadge({ status, showRestocked = false }) {
   const { t } = useLocale()
-  const labelKey = statusLabels[status] || status
+  const displayStatus = (showRestocked && status === 'Delivered') ? 'Restocked' : status
+  const labelText = displayStatus === 'Restocked' ? 'Restocked' : (t(statusLabels[displayStatus] || displayStatus) || displayStatus)
 
   const statusStyles = {
     new: 'bg-amber-50 text-amber-700 border-amber-200',
@@ -40,16 +42,17 @@ export default function StatusBadge({ status }) {
     'out-for-delivery': 'bg-purple-50 text-purple-700 border-purple-200',
     'on-the-way': 'bg-purple-50 text-purple-700 border-purple-200',
     delivered: 'bg-emerald-50 text-emerald-700 border-emerald-200',
+    restocked: 'bg-emerald-50 text-emerald-700 border-emerald-200',
     cancelled: 'bg-rose-50 text-rose-700 border-rose-200',
   }
 
-  const norm = String(status).toLowerCase().replaceAll(' ', '-')
+  const norm = String(displayStatus).toLowerCase().replaceAll(' ', '-')
   const styleClass = statusStyles[norm] || 'bg-slate-50 text-slate-700 border-slate-200'
 
   return (
     <span className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-[10.5px] sm:text-[11px] font-semibold tracking-wide border whitespace-nowrap shrink-0 ${styleClass}`}>
-      <StatusIcon status={status} />
-      <span>{t(labelKey)}</span>
+      <StatusIcon status={displayStatus} />
+      <span>{labelText}</span>
     </span>
   )
 }

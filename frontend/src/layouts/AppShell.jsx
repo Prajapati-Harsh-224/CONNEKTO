@@ -11,7 +11,8 @@ export default function AppShell() {
 
   const isWorkspace = pathname.startsWith('/dashboard/')
   const isAuthPage = pathname === '/signup' || pathname === '/login' || pathname === '/role-selection' || pathname === '/forgot-password' || pathname === '/register'
-  const isNoScrollPage = isAuthPage
+  const isSignupPage = pathname === '/signup' || pathname === '/register'
+  const isNoScrollPage = false
 
   useEffect(() => {
     if (!['/about', '/how-it-works', '/contact'].includes(pathname)) {
@@ -29,16 +30,16 @@ export default function AppShell() {
       document.body.classList.remove('auth-no-scroll')
     }
   }, [pathname, search, isNoScrollPage])
-  const isShopOwnerSignup = pathname === '/signup' && new URLSearchParams(search).get('role') === 'SHOP_OWNER'
-  const isSupplierSignup = pathname === '/signup' && new URLSearchParams(search).get('role') === 'SUPPLIER'
-  const isGruhUdyogSignup = pathname === '/signup' && new URLSearchParams(search).get('role') === 'GRUH_UDYOG'
+  const isShopOwnerSignup = (pathname === '/signup' || pathname === '/register') && new URLSearchParams(search).get('role') === 'SHOP_OWNER'
+  const isSupplierSignup = (pathname === '/signup' || pathname === '/register') && new URLSearchParams(search).get('role') === 'SUPPLIER'
+  const isGruhUdyogSignup = (pathname === '/signup' || pathname === '/register') && new URLSearchParams(search).get('role') === 'GRUH_UDYOG'
   const isShopOwnerLogin = pathname === '/login' && getSelectedRole() === 'SHOP_OWNER'
   const isSupplierLogin = pathname === '/login' && getSelectedRole() === 'SUPPLIER'
   const isGruhUdyogLogin = pathname === '/login' && getSelectedRole() === 'GRUH_UDYOG'
   const isForgotPassword = pathname === '/forgot-password'
-  const isRegister = pathname === '/register'
+  const isRegister = pathname === '/register' || pathname === '/signup'
   const isRoleSelection = pathname === '/role-selection'
-  const isSignInPage = pathname === '/login' || pathname === '/signup'
+  const isSignInPage = pathname === '/login'
 
   const registerUrl =
     search && search.includes('role=')

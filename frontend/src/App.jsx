@@ -52,7 +52,7 @@ export default function App() {
             <Route path="contact" element={<WelcomePage />} />
             <Route path="role-selection" element={<RoleSelectionPage />} />
             <Route path="login" element={<LoginPage />} />
-            <Route path="signup" element={<LoginPage />} />
+            <Route path="signup" element={<SignupPage />} />
             <Route path="register" element={<SignupPage />} />
             <Route path="forgot-password" element={<AuthPlaceholderPage />} />
             <Route path="dashboard/shop-owner" element={<ProtectedRoute allowedRole="SHOP_OWNER"><RoleLayout role="shop-owner" /></ProtectedRoute>}>

@@ -27,3 +27,17 @@ Desktop.ini
 .venv/
 __pycache__/
 *.py[cod]
+.pytest_cache/
+
+# Agent and temporary files
+.agents/
+.archify/
+.codex/
+.impeccable/
+brag-output/
+cinematic_showcase_90s/
+mobile_demo_video/
+screenshots/
+reference/
+backend/test_connekto_e2e.py
+

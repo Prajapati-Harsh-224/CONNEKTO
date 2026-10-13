@@ -1,32 +1,18 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useEffect, useMemo, useState } from 'react'
 import { Link } from 'react-router-dom'
 import {
-  TbPackage,
-  TbShoppingBag,
-  TbBottle,
-  TbSparkles,
-  TbSpray,
-  TbMilk,
-  TbCookie,
-  TbBuildingFactory2,
-  TbLayoutGrid,
-  TbPencil,
-  TbTag,
-} from 'react-icons/tb'
+  FiSearch,
+  FiMapPin,
+  FiChevronDown,
+  FiX,
+  FiFilter,
+  FiRotateCcw,
+} from 'react-icons/fi'
+import { TbLayoutGrid } from 'react-icons/tb'
 import LoadingState from '../components/LoadingState.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
 import { getSuppliers } from '../services/catalogService.js'
 
-const categoryDescriptions = {
-  FMCG: 'Everyday essentials and quick-turn replenishment.',
-  'Grocery & Staples': 'Core groceries and staple goods for repeat demand.',
-  Beverages: 'Refreshment and household drinks with local appeal.',
-  'Personal Care': 'Daily personal care basics and repeat-purchase items.',
-  'Cleaning & Household': 'Household products for regular store restocking.',
-  'Dairy & Bakery': 'Fresh dairy, bakery, and daily essentials.',
-  'Snacks & Packaged Foods': 'Fast-moving packaged and impulse snack favourites.',
-  'Local Manufacturers': 'Locally produced goods and regional speciality products.',
-}
 
 function normalizeCategory(str) {
   if (!str) return ''
@@ -82,64 +68,21 @@ function normalizeSupplier(supplier = {}) {
 // ---------------------------------------------------------------------------
 // Base Category definitions
 // ---------------------------------------------------------------------------
+const AREA_CHIPS = ['All Areas', 'Bodakdev', 'Navrangpura', 'Satellite', 'Vastrapur', 'Paldi', 'Maninagar']
+
 const baseCategoryCatalog = [
-  { id: 'all', key: 'allCategories', label: 'All Categories', icon: 'all' },
-  { id: 'FMCG', key: 'categoryFmcg', descKey: 'categoryFmcgDesc', icon: 'fmcg' },
-  { id: 'Grocery & Staples', key: 'categoryGrocery', descKey: 'categoryGroceryDesc', icon: 'grocery' },
-  { id: 'Beverages', key: 'categoryBeverages', descKey: 'categoryBeveragesDesc', icon: 'beverage' },
-  { id: 'Personal Care', key: 'categoryPersonalCare', descKey: 'categoryPersonalCareDesc', icon: 'personal' },
-  { id: 'Cleaning & Household', key: 'categoryCleaning', descKey: 'categoryCleaningDesc', icon: 'cleaning' },
-  { id: 'Dairy & Bakery', key: 'categoryDairy', descKey: 'categoryDairyDesc', icon: 'dairy' },
-  { id: 'Snacks & Packaged Foods', key: 'categorySnacks', descKey: 'categorySnacksDesc', icon: 'snacks' },
-  { id: 'Local Manufacturers', key: 'categoryLocal', descKey: 'categoryLocalDesc', icon: 'local' },
-  { id: 'Stationary', label: 'Stationary', icon: 'stationary' },
+  { id: 'all', key: 'allCategories', label: 'All categories' },
+  { id: 'FMCG', key: 'categoryFmcg', descKey: 'categoryFmcgDesc', label: 'FMCG' },
+  { id: 'Grocery & Staples', key: 'categoryGrocery', descKey: 'categoryGroceryDesc', label: 'Grocery & Staples' },
+  { id: 'Snacks & Packaged Foods', key: 'categorySnacks', descKey: 'categorySnacksDesc', label: 'Snacks & Packaged Foods' },
+  { id: 'Beverages', key: 'categoryBeverages', descKey: 'categoryBeveragesDesc', label: 'Beverages' },
+  { id: 'Dairy & Bakery', key: 'categoryDairy', descKey: 'categoryDairyDesc', label: 'Dairy & Bakery' },
+  { id: 'Personal Care', key: 'categoryPersonalCare', descKey: 'categoryPersonalCareDesc', label: 'Personal Care' },
+  { id: 'Cleaning & Household', key: 'categoryCleaning', descKey: 'categoryCleaningDesc', label: 'Cleaning & Household' },
+  { id: 'Packaged Foods', label: 'Packaged Foods' },
+  { id: 'Cooking Essentials', label: 'Cooking Essentials' },
+  { id: 'Stationary', label: 'Stationary' },
 ]
-
-// ---------------------------------------------------------------------------
-// Category SVG icons
-// ---------------------------------------------------------------------------
-const CategoryIcon = ({ type, className = 'w-[18px] h-[18px] sm:w-6 sm:h-6' }) => {
-  const iconProps = { className, strokeWidth: 1.8, 'aria-hidden': true }
-  switch (type) {
-    case 'all':
-      return <TbLayoutGrid {...iconProps} />
-    case 'fmcg':
-      return <TbPackage {...iconProps} />
-    case 'grocery':
-      return <TbShoppingBag {...iconProps} />
-    case 'beverage':
-      return <TbBottle {...iconProps} />
-    case 'personal':
-      return <TbSparkles {...iconProps} />
-    case 'cleaning':
-      return <TbSpray {...iconProps} />
-    case 'dairy':
-      return <TbMilk {...iconProps} />
-    case 'snacks':
-      return <TbCookie {...iconProps} />
-    case 'local':
-      return <TbBuildingFactory2 {...iconProps} />
-    case 'stationary':
-      return <TbPencil {...iconProps} />
-    default:
-      return <TbTag {...iconProps} />
-  }
-}
-
-// Category icon accent colors (background tint / icon color)
-const categoryColors = {
-  all: { bg: '#f1f5f9', color: '#334155' },
-  fmcg: { bg: '#ecfdf5', color: '#047857' },
-  grocery: { bg: '#fffbeb', color: '#b45309' },
-  beverage: { bg: '#eff6ff', color: '#1d4ed8' },
-  personal: { bg: '#fdf2f8', color: '#be185d' },
-  cleaning: { bg: '#f0fdfa', color: '#0f766e' },
-  dairy: { bg: '#f5f3ff', color: '#6d28d9' },
-  snacks: { bg: '#fff7ed', color: '#c2410c' },
-  local: { bg: '#ecfdf5', color: '#065f46' },
-  stationary: { bg: '#f1f5f9', color: '#475569' },
-  tag: { bg: '#f8fafc', color: '#64748b' },
-}
 
 // ---------------------------------------------------------------------------
 // Helper utilities
@@ -265,21 +208,12 @@ function SupplierCard({ supplier }) {
 // ---------------------------------------------------------------------------
 export default function SupplierListPage() {
   const { t } = useLocale()
+  const [selectedArea, setSelectedArea] = useState('All Areas')
   const [selectedCategory, setSelectedCategory] = useState('all')
   const [searchTerm, setSearchTerm] = useState('')
   const [isLoading, setIsLoading] = useState(false)
   const [error, setError] = useState('')
   const [suppliers, setSuppliers] = useState([])
-  const categoryScrollRef = useRef(null)
-
-  const scrollCategories = (direction) => {
-    if (categoryScrollRef.current) {
-      const container = categoryScrollRef.current
-      const scrollAmount = container.clientWidth || 300
-      const offset = direction === 'left' ? -scrollAmount : scrollAmount
-      container.scrollBy({ left: offset, behavior: 'smooth' })
-    }
-  }
 
   useEffect(() => {
     let isMounted = true
@@ -289,7 +223,8 @@ export default function SupplierListPage() {
       setError('')
 
       try {
-        const response = await getSuppliers()
+        const areaParam = selectedArea === 'All Areas' ? 'all' : selectedArea
+        const response = await getSuppliers({ area: areaParam })
         const records = Array.isArray(response?.data?.suppliers) ? response.data.suppliers : []
         if (isMounted) {
           setSuppliers(records.map(normalizeSupplier))
@@ -309,7 +244,7 @@ export default function SupplierListPage() {
     return () => {
       isMounted = false
     }
-  }, [])
+  }, [selectedArea])
 
   const categoryCatalog = useMemo(() => {
     const list = baseCategoryCatalog.map((item) => ({
@@ -339,6 +274,13 @@ export default function SupplierListPage() {
     const q = searchTerm.trim().toLowerCase()
     return [...suppliers]
       .filter((s) => {
+        if (selectedArea !== 'All Areas') {
+          const areaNorm = selectedArea.toLowerCase().trim()
+          const servAreas = (s.serviceAreas || []).map((a) => String(a).toLowerCase().trim())
+          const loc = String(s.location || '').toLowerCase().trim()
+          const matchesArea = servAreas.some((a) => a === areaNorm || a.includes(areaNorm) || areaNorm.includes(a)) || loc.includes(areaNorm)
+          if (!matchesArea) return false
+        }
         if (selectedCategory !== 'all') {
           const target = selectedCategory.toLowerCase().trim()
           const supplierCats = (s.allCategories || [s.category]).map((c) => String(c).toLowerCase().trim())
@@ -347,7 +289,8 @@ export default function SupplierListPage() {
             c.includes(target) || 
             target.includes(c) ||
             (target.includes('snack') && c.includes('snack')) ||
-            (target.includes('grocery') && (c.includes('grocery') || c.includes('staple')))
+            (target.includes('grocery') && (c.includes('grocery') || c.includes('staple'))) ||
+            (target.includes('cooking') && (c.includes('cooking') || c.includes('staple') || c.includes('grocery')))
           )
           if (!matchesCategory) return false
         }
@@ -355,14 +298,44 @@ export default function SupplierListPage() {
         return true
       })
       .sort((a, b) => (b.rating || 0) * Math.log((b.reviewCount || 1) + 1) - (a.rating || 0) * Math.log((a.reviewCount || 1) + 1))
-  }, [suppliers, selectedCategory, searchTerm])
+  }, [suppliers, selectedArea, selectedCategory, searchTerm])
+
+  const areaOptions = useMemo(() => {
+    const list = [...AREA_CHIPS]
+    const existing = new Set(list.map((a) => a.toLowerCase()))
+    suppliers.forEach((s) => {
+      (s.serviceAreas || []).forEach((area) => {
+        if (area && !existing.has(area.toLowerCase())) {
+          existing.add(area.toLowerCase())
+          list.push(area)
+        }
+      })
+      if (s.location && !existing.has(s.location.toLowerCase())) {
+        existing.add(s.location.toLowerCase())
+        list.push(s.location)
+      }
+    })
+    return list
+  }, [suppliers])
+
+  const handleResetFilters = () => {
+    setSelectedArea('All Areas')
+    setSelectedCategory('all')
+    setSearchTerm('')
+  }
 
   const activeCategoryLabel = useMemo(() => {
-    if (selectedCategory === 'all') return t('allSuppliers')
-    const cat = categoryCatalog.find((c) => c.id === selectedCategory)
-    const label = cat?.label || (cat?.key ? t(cat.key) : selectedCategory)
-    return t('suppliersInCategory', { category: label })
-  }, [categoryCatalog, selectedCategory, t])
+    let base = t('allSuppliers') || 'All Suppliers'
+    if (selectedCategory !== 'all') {
+      const cat = categoryCatalog.find((c) => c.id === selectedCategory)
+      const label = cat?.label || (cat?.key ? t(cat.key) : selectedCategory)
+      base = label
+    }
+    if (selectedArea !== 'All Areas') {
+      return `${base} in ${selectedArea}`
+    }
+    return base
+  }, [categoryCatalog, selectedCategory, selectedArea, t])
 
   if (isLoading) return <LoadingState message={t('loadingWorkspace')} />
 
@@ -384,94 +357,183 @@ export default function SupplierListPage() {
         </div>
       </div>
 
-      {/* ── Category selector (single row of square cards) ── */}
-      <div className="space-y-3 w-full min-w-0 max-w-full">
-        <div className="flex items-center justify-between">
-          <span className="text-xs font-bold uppercase tracking-wider text-slate-500">{t('shopByCategory')}</span>
-          <div className="flex items-center gap-1.5">
+      {/* ── Filters & Search Toolbar (Desktop, Tablet, Mobile) ── */}
+      <div className="bg-white p-3.5 sm:p-5 rounded-2xl border border-slate-200/80 shadow-2xs space-y-3.5 sm:space-y-4">
+        {/* Top Header inside filter bar */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pb-3 border-b border-slate-100">
+          <div className="flex items-center gap-2">
+            <span className="flex items-center justify-center w-7 h-7 rounded-lg bg-brand-orange-light text-brand-orange text-sm font-bold">
+              <FiFilter className="w-3.5 h-3.5" />
+            </span>
+            <div>
+              <h2 className="text-xs sm:text-sm font-bold text-slate-800 uppercase tracking-wide">
+                Filter Suppliers
+              </h2>
+              <p className="text-[11px] text-slate-500 hidden sm:block">
+                Select your shop area discovery location and product category
+              </p>
+            </div>
+          </div>
+
+          {(selectedArea !== 'All Areas' || selectedCategory !== 'all' || searchTerm) && (
             <button
               type="button"
-              onClick={() => scrollCategories('left')}
-              className="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer shadow-2xs"
-              aria-label="Scroll left"
+              onClick={handleResetFilters}
+              className="inline-flex items-center gap-1.5 text-xs font-bold text-brand-orange hover:text-brand-orange-dark cursor-pointer self-start sm:self-auto py-1 px-2 rounded-lg hover:bg-orange-50 transition-colors"
             >
-              <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16" aria-hidden="true">
-                <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
+              <FiRotateCcw className="w-3 h-3" />
+              <span>Reset all filters</span>
             </button>
-            <button
-              type="button"
-              onClick={() => scrollCategories('right')}
-              className="p-1.5 rounded-xl border border-slate-200 bg-white hover:bg-slate-50 text-slate-600 transition-colors cursor-pointer shadow-2xs"
-              aria-label="Scroll right"
-            >
-              <svg viewBox="0 0 20 20" fill="currentColor" width="16" height="16" aria-hidden="true">
-                <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
-              </svg>
-            </button>
+          )}
+        </div>
+
+        {/* Inputs Grid: Desktop (12-cols), Tablet (2-cols), Mobile (1-col) */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-3 sm:gap-4">
+          {/* 1. Search Box */}
+          <div className="sm:col-span-2 lg:col-span-5 flex flex-col justify-end">
+            <label htmlFor="sdc-search" className="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+              <FiSearch className="w-3.5 h-3.5 text-slate-500" />
+              <span>Search Suppliers</span>
+            </label>
+            <div className="relative flex items-center">
+              <FiSearch className="w-4 h-4 text-slate-400 absolute left-3.5 pointer-events-none" />
+              <input
+                id="sdc-search"
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                placeholder={t('searchSuppliersByName')}
+                className="w-full pl-10 pr-9 py-2.5 sm:py-3 bg-slate-50 hover:bg-slate-100/60 focus:bg-white border border-slate-200 rounded-xl text-xs sm:text-sm text-slate-800 placeholder-slate-400 focus:outline-hidden focus:ring-2 focus:ring-brand-orange/20 focus:border-brand-orange transition-all shadow-2xs"
+              />
+              {searchTerm && (
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm('')}
+                  className="absolute right-3 text-slate-400 hover:text-slate-600 p-1 rounded-md cursor-pointer transition-colors"
+                  aria-label="Clear search"
+                  title="Clear search"
+                >
+                  <FiX className="w-3.5 h-3.5" />
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* 2. Shop Area Discovery Dropdown */}
+          <div className="sm:col-span-1 lg:col-span-3 flex flex-col justify-end">
+            <label htmlFor="area-discovery-select" className="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+              <FiMapPin className="w-3.5 h-3.5 text-emerald-600" />
+              <span>Shop Area Discovery</span>
+            </label>
+            <div className="relative flex items-center">
+              <FiMapPin className="w-4 h-4 text-emerald-600 absolute left-3.5 pointer-events-none shrink-0" />
+              <select
+                id="area-discovery-select"
+                value={selectedArea}
+                onChange={(e) => setSelectedArea(e.target.value)}
+                aria-label="Shop Area Discovery"
+                className="w-full appearance-none pl-10 pr-9 py-2.5 sm:py-3 bg-slate-50 hover:bg-slate-100/60 focus:bg-white border border-slate-200 hover:border-slate-300 focus:border-brand-orange rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-brand-orange/20 shadow-2xs cursor-pointer transition-all truncate"
+              >
+                {areaOptions.map((area) => (
+                  <option key={area} value={area}>
+                    {area === 'All Areas' ? 'All Areas (Any Location)' : area}
+                  </option>
+                ))}
+              </select>
+              <FiChevronDown className="w-4 h-4 text-slate-400 absolute right-3 pointer-events-none shrink-0" />
+            </div>
+          </div>
+
+          {/* 3. Shop by Category Dropdown */}
+          <div className="sm:col-span-1 lg:col-span-4 flex flex-col justify-end">
+            <label htmlFor="category-select" className="flex items-center gap-1.5 text-[11px] sm:text-xs font-bold uppercase tracking-wider text-slate-700 mb-1.5">
+              <TbLayoutGrid className="w-3.5 h-3.5 text-brand-orange" />
+              <span>{t('shopByCategory')}</span>
+            </label>
+            <div className="relative flex items-center">
+              <TbLayoutGrid className="w-4 h-4 text-brand-orange absolute left-3.5 pointer-events-none shrink-0" />
+              <select
+                id="category-select"
+                value={selectedCategory}
+                onChange={(e) => setSelectedCategory(e.target.value)}
+                aria-label={t('shopByCategory')}
+                className="w-full appearance-none pl-10 pr-9 py-2.5 sm:py-3 bg-slate-50 hover:bg-slate-100/60 focus:bg-white border border-slate-200 hover:border-slate-300 focus:border-brand-orange rounded-xl text-xs sm:text-sm font-semibold text-slate-800 focus:outline-hidden focus:ring-2 focus:ring-brand-orange/20 shadow-2xs cursor-pointer transition-all truncate"
+              >
+                {categoryCatalog.map((cat) => (
+                  <option key={cat.id} value={cat.id}>
+                    {cat.id === 'all' ? (t('allCategories') || 'All Categories') : cat.label}
+                  </option>
+                ))}
+              </select>
+              <FiChevronDown className="w-4 h-4 text-slate-400 absolute right-3 pointer-events-none shrink-0" />
+            </div>
           </div>
         </div>
 
-        <div 
-          ref={categoryScrollRef}
-          className="flex flex-nowrap gap-2 sm:gap-3 overflow-x-auto pb-2.5 sm:pb-3 pt-1 scroll-smooth w-full min-w-0 max-w-full snap-x snap-mandatory"
-          style={{ scrollbarWidth: 'none' }}
-          role="list"
-        >
-          {categoryCatalog.map((cat) => {
-            const isActive = selectedCategory === cat.id
-            const colors = categoryColors[cat.icon] || categoryColors.tag
-            return (
-              <button
-                key={cat.id}
-                type="button"
-                role="listitem"
-                title={cat.label}
-                className={`snap-start aspect-square sm:aspect-auto sm:min-h-[110px] sm:py-3 lg:aspect-square lg:min-h-0 lg:py-3 w-[calc((100%-24px)/4)] min-w-[calc((100%-24px)/4)] sm:w-[110px] sm:min-w-[110px] md:w-[120px] md:min-w-[120px] lg:w-[140px] lg:min-w-[140px] shrink-0 flex flex-col items-center justify-center p-1.5 sm:p-2.5 md:p-3 rounded-xl sm:rounded-2xl border transition-all text-center cursor-pointer shadow-2xs hover:shadow-xs active:scale-95 sm:active:scale-100 ${
-                  isActive 
-                    ? 'bg-brand-orange-light border-brand-orange/40 ring-1.5 sm:ring-2 ring-brand-orange/20' 
-                    : 'bg-white border-slate-200/80 hover:border-slate-300 hover:bg-slate-50/50'
-                }`}
-                onClick={() => setSelectedCategory(isActive && cat.id !== 'all' ? 'all' : cat.id)}
-                aria-pressed={isActive}
-              >
-                <span
-                  className="flex items-center justify-center w-8 h-8 sm:w-12 sm:h-12 rounded-lg sm:rounded-2xl mb-1 sm:mb-2 text-base sm:text-xl shrink-0 shadow-2xs"
-                  style={{ background: colors.bg, color: colors.color }}
+        {/* Active Filter Pills Row */}
+        {(selectedArea !== 'All Areas' || selectedCategory !== 'all' || searchTerm) && (
+          <div className="flex items-center gap-2 pt-2 border-t border-slate-100 flex-wrap text-xs">
+            <span className="text-slate-400 font-medium text-[11px] sm:text-xs">Active filters:</span>
+            {selectedArea !== 'All Areas' && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 border border-emerald-200 text-emerald-800 font-bold text-[11px] sm:text-xs">
+                <span>📍 Area: {selectedArea}</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedArea('All Areas')}
+                  className="hover:text-emerald-950 cursor-pointer p-0.5 rounded-full hover:bg-emerald-100"
+                  aria-label="Remove area filter"
                 >
-                  <CategoryIcon type={cat.icon} className="w-[18px] h-[18px] sm:w-6 sm:h-6" />
-                </span>
-                <span className="text-[10px] sm:text-xs font-bold text-slate-800 leading-[12px] sm:leading-snug text-center line-clamp-2 break-words max-w-full px-0.5">
-                  {cat.label}
-                </span>
-              </button>
-            )
-          })}
-        </div>
+                  <FiX className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+            {selectedCategory !== 'all' && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-orange-50 border border-orange-200 text-brand-orange font-bold text-[11px] sm:text-xs">
+                <span>🏷️ Category: {categoryCatalog.find((c) => c.id === selectedCategory)?.label || selectedCategory}</span>
+                <button
+                  type="button"
+                  onClick={() => setSelectedCategory('all')}
+                  className="hover:text-orange-950 cursor-pointer p-0.5 rounded-full hover:bg-orange-100"
+                  aria-label="Remove category filter"
+                >
+                  <FiX className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+            {searchTerm && (
+              <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-blue-50 border border-blue-200 text-blue-800 font-bold text-[11px] sm:text-xs">
+                <span>🔍 Search: "{searchTerm}"</span>
+                <button
+                  type="button"
+                  onClick={() => setSearchTerm('')}
+                  className="hover:text-blue-950 cursor-pointer p-0.5 rounded-full hover:bg-blue-100"
+                  aria-label="Remove search filter"
+                >
+                  <FiX className="w-3 h-3" />
+                </button>
+              </span>
+            )}
+            <button
+              type="button"
+              onClick={handleResetFilters}
+              className="text-[11px] sm:text-xs font-bold text-slate-500 hover:text-brand-orange hover:underline cursor-pointer ml-auto"
+            >
+              Clear all
+            </button>
+          </div>
+        )}
       </div>
 
-      {/* ── Search toolbar & results header ── */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 w-full min-w-0">
+      {/* ── Results Header ── */}
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 pt-1">
         <div>
-          <h2 className="text-lg font-black text-slate-900">
-            {activeCategoryLabel} <span className="text-xs font-semibold text-slate-500">({filteredSuppliers.length} {t('suppliers')})</span>
+          <h2 className="text-base sm:text-lg lg:text-xl font-black text-slate-900 tracking-tight">
+            {activeCategoryLabel}{' '}
+            <span className="text-xs sm:text-sm font-semibold text-slate-500">
+              ({filteredSuppliers.length} {filteredSuppliers.length === 1 ? 'supplier' : t('suppliers')})
+            </span>
           </h2>
         </div>
-
-        <label className="relative w-full sm:w-80 flex items-center bg-white border border-slate-200 rounded-xl px-3.5 py-2.5 shadow-xs focus-within:ring-2 focus-within:ring-brand-orange/20 focus-within:border-brand-orange transition-all" htmlFor="sdc-search">
-          <svg viewBox="0 0 20 20" fill="none" aria-hidden="true" width="16" height="16" className="text-slate-500 mr-2 shrink-0">
-            <circle cx="9" cy="9" r="5.5" stroke="currentColor" strokeWidth="1.6" />
-            <path d="m13 13 3.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" />
-          </svg>
-          <input
-            className="w-full bg-transparent text-xs sm:text-sm text-slate-800 placeholder-slate-500 focus:outline-hidden"
-            id="sdc-search"
-            type="text"
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            placeholder={t('searchSuppliersByName')}
-          />
-        </label>
       </div>
 
       {/* ── Error state ── */}

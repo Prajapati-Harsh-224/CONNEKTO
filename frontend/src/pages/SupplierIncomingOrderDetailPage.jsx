@@ -5,8 +5,9 @@ import LoadingState from '../components/LoadingState.jsx'
 import StatusBadge from '../components/StatusBadge.jsx'
 import StatusTimeline from '../components/StatusTimeline.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
-import { getSupplierOrder, updateSupplierOrderStatus } from '../services/supplierOrderService.js'
+import { getSupplierOrder, updateSupplierOrderStatus, cancelSupplierOrder } from '../services/supplierOrderService.js'
 import { getItemUnitLabel } from '../utils/cartStorage.js'
+import { formatOrderDateTime } from '../utils/orderCancellation.js'
 
 const statusTransitions = {
   Pending: ['Accepted', 'Cancelled'],
@@ -31,6 +32,7 @@ function normalizeOrder(order) {
     date: order.createdAt,
     subtotal: Number(order.subtotal || 0),
     total: Number(order.subtotal || 0),
+    cancellationReason: order.cancellationReason || '',
     items: (order.items || []).map((item) => ({
       ...item,
       product: item.productNameSnapshot || item.name || 'Product',
@@ -46,13 +48,7 @@ function formatCurrency(value) {
 }
 
 function formatDate(dateValue) {
-  const date = new Date(dateValue)
-  if (Number.isNaN(date.getTime())) return '—'
-  return date.toLocaleDateString('en-IN', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-  })
+  return formatOrderDateTime(dateValue)
 }
 
 export default function SupplierIncomingOrderDetailPage() {
@@ -63,6 +59,8 @@ export default function SupplierIncomingOrderDetailPage() {
   const [error, setError] = useState('')
   const [statusError, setStatusError] = useState('')
   const [isUpdating, setIsUpdating] = useState(false)
+  const [isCancelModalOpen, setIsCancelModalOpen] = useState(false)
+  const [cancelReason, setCancelReason] = useState('Stockout: Item out of stock at distributor warehouse')
 
   useEffect(() => {
     let isMounted = true
@@ -107,6 +105,30 @@ export default function SupplierIncomingOrderDetailPage() {
     }
   }
 
+  async function handleConfirmCancel() {
+    if (!order) return
+    setIsUpdating(true)
+    setStatusError('')
+    try {
+      const reason = cancelReason.trim() || 'Item out of stock at distributor warehouse'
+      const response = await cancelSupplierOrder(order.id, reason)
+      setOrder(normalizeOrder(response?.data?.order || { ...order, status: 'Cancelled', cancellationReason: reason }))
+      setIsCancelModalOpen(false)
+    } catch (requestError) {
+      setStatusError(requestError.message)
+    } finally {
+      setIsUpdating(false)
+    }
+  }
+
+  function handleActionClick(nextStatus) {
+    if (nextStatus === 'Cancelled') {
+      setIsCancelModalOpen(true)
+      return
+    }
+    updateStatus({ target: { value: nextStatus } })
+  }
+
   if (isLoading) return <LoadingState message={t('loadingIncomingOrders')} />
   if (error) return <section className="space-y-4 p-4"><p className="p-3 bg-rose-50 border border-rose-200 text-rose-700 text-sm rounded-xl" role="alert">{error}</p><Link className="px-4 py-2 bg-slate-100 rounded-xl text-sm font-semibold text-slate-700" to="/dashboard/supplier/orders">{t('backToIncomingOrders')}</Link></section>
   if (!order) return <EmptyState title={t('orderNotFound')} message={t('orderUnavailable')} />
@@ -138,6 +160,19 @@ export default function SupplierIncomingOrderDetailPage() {
           <StatusBadge status={order.status} />
         </div>
       </div>
+
+      {order.status === 'Cancelled' && (
+        <div className="p-4 rounded-2xl bg-rose-50 border border-rose-200 text-rose-950 space-y-1 shadow-2xs">
+          <div className="flex items-center gap-2 font-black text-sm text-rose-700">
+            <span>✕</span>
+            <span>Sub-Order Cancelled (Stockout Exception)</span>
+          </div>
+          <p className="text-xs text-rose-800">
+            Cancellation Reason: <strong className="font-bold">{order.cancellationReason || 'Stockout at warehouse'}</strong>
+          </p>
+          <p className="text-[11px] text-rose-600">The shop owner has been notified. Other sub-orders in the checkout session remain active.</p>
+        </div>
+      )}
 
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3.5 bg-white p-4 sm:p-5 rounded-2xl border border-slate-100 shadow-xs">
         <div>
@@ -300,7 +335,7 @@ export default function SupplierIncomingOrderDetailPage() {
                       }`}
                       disabled={isUpdating}
                       key={nextStatus}
-                      onClick={() => updateStatus({ target: { value: nextStatus } })}
+                      onClick={() => handleActionClick(nextStatus)}
                       type="button"
                     >
                       {label}
@@ -323,6 +358,62 @@ export default function SupplierIncomingOrderDetailPage() {
           </section>
         </aside>
       </div>
+
+      {/* Stockout Cancel Modal */}
+      {isCancelModalOpen && (
+        <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-xs flex items-center justify-center p-4">
+          <div className="bg-white rounded-2xl max-w-md w-full p-5 sm:p-6 space-y-4 shadow-xl border border-slate-200 animate-in fade-in zoom-in-95">
+            <div className="space-y-1">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-rose-600">Exception Path</span>
+              <h3 className="text-lg font-bold text-slate-900">Cancel Sub-Order (Stockout)</h3>
+              <p className="text-xs text-slate-500 leading-relaxed">
+                Cancelling this sub-order will not affect other suppliers' orders in the retailer's checkout. The shop owner will be notified with your stated reason.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <label className="text-xs font-semibold text-slate-700 block">Stockout Reason</label>
+              <div className="flex flex-wrap gap-1.5 pb-1">
+                {['Stockout at warehouse', 'Damaged Packaging', 'Delivery Route Full', 'Price Mismatch'].map((preset) => (
+                  <button
+                    key={preset}
+                    type="button"
+                    onClick={() => setCancelReason(preset)}
+                    className="px-2 py-1 rounded-lg bg-slate-100 hover:bg-slate-200 text-[11px] font-medium text-slate-700 transition-colors cursor-pointer"
+                  >
+                    {preset}
+                  </button>
+                ))}
+              </div>
+              <textarea
+                rows={3}
+                className="w-full p-3 rounded-xl border border-slate-200 text-xs text-slate-800 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-rose-500/20 focus:border-rose-500"
+                value={cancelReason}
+                onChange={(e) => setCancelReason(e.target.value)}
+                placeholder="Enter detailed reason for the retailer..."
+              />
+            </div>
+
+            <div className="flex items-center gap-2 pt-2">
+              <button
+                type="button"
+                onClick={() => setIsCancelModalOpen(false)}
+                className="flex-1 py-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-xs font-semibold text-slate-700 transition-colors cursor-pointer"
+              >
+                Keep Order
+              </button>
+              <button
+                type="button"
+                disabled={isUpdating}
+                onClick={handleConfirmCancel}
+                className="flex-1 py-2.5 rounded-xl bg-rose-600 hover:bg-rose-700 text-xs font-bold text-white transition-colors cursor-pointer shadow-xs disabled:opacity-50"
+              >
+                {isUpdating ? 'Cancelling...' : 'Confirm Cancel'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       <div className="pt-2">
         <Link className="text-xs font-semibold text-slate-600 hover:text-slate-900 inline-flex items-center gap-1" to="/dashboard/supplier/orders">

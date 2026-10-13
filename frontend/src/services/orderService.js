@@ -7,3 +7,10 @@ export function getOrders() {
 export function getOrder(orderId) {
   return apiRequest(`/orders/${orderId}`)
 }
+
+export function cancelOrder(orderId, reason = 'Cancelled by shop owner') {
+  return apiRequest(`/orders/${encodeURIComponent(orderId)}/cancel`, {
+    method: 'POST',
+    body: { reason },
+  })
+}

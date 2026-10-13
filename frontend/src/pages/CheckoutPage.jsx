@@ -4,6 +4,7 @@ import EmptyState from '../components/EmptyState.jsx'
 import ProductImage from '../components/ProductImage.jsx'
 import QuantitySelector from '../components/QuantitySelector.jsx'
 import { useLocale } from '../context/LocaleContext.jsx'
+import { useAuth } from '../context/AuthContext.jsx'
 import { createCheckoutRequest } from '../services/checkoutService.js'
 import { getCart, clearCart, removeFromCart, updateCartItem, getItemUnitLabel } from '../utils/cartStorage.js'
 
@@ -12,7 +13,7 @@ function priceValue(value) {
 }
 
 function formatPrice(value) {
-  return `Rs\u00A0${Number(value || 0).toLocaleString('en-IN')}`
+  return `₹${Number(value || 0).toLocaleString('en-IN')}`
 }
 
 function getInitials(name = '') {
@@ -80,18 +81,22 @@ function getConfirmationContent(paymentMethod, t, orderId) {
 
 export default function CheckoutPage() {
   const { t } = useLocale()
+  const { user } = useAuth()
   const [cart, setCart] = useState(getCart)
-  const [paymentMethod, setPaymentMethod] = useState('REQUEST_ORDER')
+  const [paymentMethod, setPaymentMethod] = useState('CASH_ON_DELIVERY')
   const [quantityErrors, setQuantityErrors] = useState({})
   const [collapsedSuppliers, setCollapsedSuppliers] = useState({})
   const [isSubmitting, setIsSubmitting] = useState(false)
   const [error, setError] = useState('')
+  const [areaMismatch, setAreaMismatch] = useState(null)
   const [checkout, setCheckout] = useState(null)
   const [checkoutRequestKey] = useState(() => globalThis.crypto?.randomUUID?.() || `checkout-${Date.now()}-${Math.random().toString(36).slice(2)}`)
+  
+  const deliveryArea = user?.shop?.area || user?.area || 'Bodakdev'
+
   const methods = [
-    { value: 'CASH_ON_DELIVERY', label: t('cashOnDelivery'), description: t('payWhenSupplierDelivers') },
-    { value: 'PAY_LATER', label: t('payLater'), description: t('requestAgreedSupplierTerms') },
-    { value: 'REQUEST_ORDER', label: t('requestOrder'), description: t('sendOrderRequestWithoutPayment') },
+    { value: 'CASH_ON_DELIVERY', label: 'Cash on Delivery', description: 'Zero advance payment is required. Pay when supplier delivers to your kirana store.' },
+    { value: 'PAY_LATER', label: 'Pay Later (credit terms)', description: 'Zero advance payment is required. Restock on 15-day distributor credit terms.' },
   ]
 
   const groups = useMemo(() => cart.reduce((result, item) => {
@@ -140,15 +145,19 @@ export default function CheckoutPage() {
   async function submitRequest(event) {
     event.preventDefault()
     setError('')
+    setAreaMismatch(null)
     if (!cart.length) return
     setIsSubmitting(true)
     try {
-      const response = await createCheckoutRequest(paymentMethod, cart, checkoutRequestKey)
+      const response = await createCheckoutRequest(paymentMethod, cart, checkoutRequestKey, deliveryArea)
       const createdCheckout = response.data.checkout
       setCheckout(createdCheckout)
       clearCart()
       notifyCartUpdated()
     } catch (requestError) {
+      if (requestError.code === 'SUPPLIER_AREA_MISMATCH' || requestError.message?.includes('Area mismatch')) {
+        setAreaMismatch(requestError.message || 'Area mismatch: One or more suppliers do not deliver to your shop area.')
+      }
       setError(requestError.message)
     } finally {
       setIsSubmitting(false)
@@ -335,16 +344,33 @@ export default function CheckoutPage() {
 
       <div className="pb-2 border-b border-slate-100">
         <h1 className="text-2xl sm:text-3xl lg:text-4xl font-black text-slate-900 tracking-tight">{t('checkoutReview')}</h1>
-        <p className="text-xs sm:text-sm text-slate-500 mt-1">{t('checkoutDescription')}</p>
+        <p className="text-xs sm:text-sm text-slate-600 mt-1 font-medium">One checkout session will create separate supplier orders.</p>
       </div>
 
-      <div className="flex items-center gap-3 p-4 rounded-2xl bg-blue-50 border border-blue-200/80 text-blue-950">
-        <span className="flex items-center justify-center w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold shrink-0">✓</span>
-        <div className="text-xs sm:text-sm">
-          <strong className="font-bold block">{t('orderingFromMultipleSuppliers')}</strong>
-          <span className="text-blue-700">{t('checkoutSeparateOrdersNote')}</span>
+      <div className="flex items-center gap-3 p-4 rounded-2xl bg-blue-50/90 border border-blue-200 text-blue-950 shadow-2xs">
+        <span className="flex items-center justify-center w-7 h-7 rounded-full bg-blue-600 text-white text-xs font-bold shrink-0">ℹ</span>
+        <div className="text-xs sm:text-sm leading-relaxed">
+          {groups.length > 1 ? (
+            <>
+              <strong className="font-bold block">Multiple Wholesale Suppliers</strong>
+              <span className="text-blue-800">You're ordering from multiple suppliers. This checkout will create separate orders for each supplier.</span>
+            </>
+          ) : (
+            <span className="text-blue-800 font-medium">One checkout session will create separate supplier orders.</span>
+          )}
         </div>
       </div>
+
+      {areaMismatch && (
+        <div className="flex items-start gap-3 p-4 rounded-2xl bg-amber-50 border border-amber-300 text-amber-950 shadow-xs" role="alert">
+          <span className="flex items-center justify-center w-7 h-7 rounded-full bg-amber-600 text-white text-xs font-bold shrink-0">⚠️</span>
+          <div className="text-xs sm:text-sm space-y-1">
+            <strong className="font-bold block text-amber-900">Area Mismatch Exception</strong>
+            <p className="text-amber-800">{areaMismatch}</p>
+            <p className="text-[11px] text-amber-700">Please review items from suppliers that deliver to your shop area ({deliveryArea}).</p>
+          </div>
+        </div>
+      )}
 
       <div className="grid grid-cols-1 xl:grid-cols-[1fr_360px] gap-6 items-start">
         <div className="space-y-6">
@@ -460,6 +486,14 @@ export default function CheckoutPage() {
             <h2 className="text-base font-black text-slate-900 pb-3 border-b border-slate-100">{t('orderSummary')}</h2>
             
             <div className="space-y-2 text-xs sm:text-sm text-slate-600">
+              <div className="flex justify-between">
+                <span>Subtotal</span>
+                <strong className="font-bold text-slate-800">{formatPrice(total)}</strong>
+              </div>
+              <div className="flex justify-between">
+                <span>Delivery Area</span>
+                <strong className="font-bold text-slate-800">{deliveryArea}</strong>
+              </div>
               <div className="flex justify-between">
                 <span>{t('totalSuppliers')}</span>
                 <strong className="font-bold text-slate-800">{groups.length}</strong>

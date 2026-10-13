@@ -9,7 +9,7 @@ import { useLocale } from '../context/LocaleContext.jsx'
 import { getShopAnalytics } from '../services/shopAnalyticsService.js'
 import { getOrders } from '../services/orderService.js'
 
-const formatPrice = (value) => `Rs\u00A0${Number(value || 0).toLocaleString('en-IN')}`
+const formatPrice = (value) => `₹\u00A0${Number(value || 0).toLocaleString('en-IN')}`
 const monthLabel = (date) => date.toLocaleDateString('en-US', { month: 'short' })
 
 function initials(name = '') {

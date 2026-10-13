@@ -11,7 +11,7 @@ function parsePrice(value) {
 }
 
 function formatPrice(value) {
-  return `Rs\u00A0${Number(value || 0).toLocaleString('en-IN')}`
+  return `₹${Number(value || 0).toLocaleString('en-IN')}`
 }
 
 function getInitials(name = '') {
@@ -174,6 +174,9 @@ export default function ShopOwnerCartPage() {
                               <div className="text-xs text-emerald-700 font-semibold mt-1">
                                 1 Box = {unitsPerBox} {getItemUnitLabel(item, unitsPerBox)} ({formatPrice(boxPrice)}/box)
                               </div>
+                              <div className="text-[11px] text-slate-500 font-medium mt-0.5">
+                                Min. order: 1 Box
+                              </div>
                             </div>
                           </div>
 
@@ -207,7 +210,7 @@ export default function ShopOwnerCartPage() {
                 )}
 
                 <div className="flex items-center justify-between px-5 py-3 bg-slate-50/50 border-t border-slate-100 text-xs text-slate-500 font-medium">
-                  <span>{group.items.length} {group.items.length === 1 ? 'Product' : 'Products'} · {group.totalBoxes} {group.totalBoxes === 1 ? 'Box' : 'Boxes'}</span>
+                  <span>{group.items.length} {group.items.length === 1 ? 'Product' : 'Products'} • {group.totalBoxes} {group.totalBoxes === 1 ? 'Box' : 'Boxes'}</span>
                   <button className="text-rose-600 hover:text-rose-800 font-semibold cursor-pointer" type="button" onClick={() => group.items.forEach(removeItem)}>
                     {t('clearSupplierCart')}
                   </button>

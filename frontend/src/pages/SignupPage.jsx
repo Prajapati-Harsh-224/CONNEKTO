@@ -110,8 +110,8 @@ export default function SignupPage() {
   const currentTone = roleTone[selectedRole] || roleTone.SHOP_OWNER
 
   return (
-    <section className="min-h-[calc(100vh-4.5rem)] flex items-center justify-center px-4 py-8 sm:py-12">
-      <div className="w-full max-w-xl">
+    <section className="w-full min-h-[calc(100vh-4rem)] flex items-center justify-center px-4 py-8 sm:py-12 pb-24 sm:pb-32 overflow-y-auto no-scrollbar">
+      <div className="w-full max-w-xl my-auto">
         {selectedRole !== 'SHOP_OWNER' && selectedRole !== 'SUPPLIER' && (
           <div className="text-center mb-6">
             <div className="text-xs font-bold uppercase tracking-widest text-brand-orange mb-1">{t('createYourAccount')}</div>
