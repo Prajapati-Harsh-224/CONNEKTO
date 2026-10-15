@@ -329,9 +329,6 @@ export default function LoginPage() {
             <p className="text-xs sm:text-sm text-slate-500 mt-1">
               {authConfig.subheading}
             </p>
-            <Link className="text-xs font-medium text-brand-orange hover:text-brand-orange-dark hover:underline mt-2 inline-block" to={`/role-selection${selectedRole ? `?role=${selectedRole}` : ''}`}>
-              {t('changeRole')}
-            </Link>
           </header>
 
           {isRegisteredSuccess && !requestError && (
@@ -348,9 +345,13 @@ export default function LoginPage() {
             <strong className="text-slate-800 font-semibold">
               {t(selectedRole === 'SHOP_OWNER' ? 'shopOwner' : 'supplier')}
             </strong>
-            <Link className="text-brand-orange hover:text-brand-orange-dark hover:underline font-medium" to={`/role-selection${selectedRole ? `?role=${selectedRole}` : ''}`}>
+            <button
+              type="button"
+              onClick={() => navigate(`/role-selection${selectedRole ? `?role=${selectedRole}` : ''}`)}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-brand-orange hover:bg-brand-orange-dark shadow-xs hover:shadow-sm active:scale-95 transition-all cursor-pointer"
+            >
               {t('changeRole')}
-            </Link>
+            </button>
           </div>
 
           {errors.role && (

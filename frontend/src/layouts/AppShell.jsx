@@ -15,9 +15,7 @@ export default function AppShell() {
   const isNoScrollPage = false
 
   useEffect(() => {
-    if (!['/about', '/how-it-works', '/contact'].includes(pathname)) {
-      window.scrollTo(0, 0)
-    }
+    window.scrollTo(0, 0)
     if (isNoScrollPage) {
       document.documentElement.classList.add('auth-no-scroll')
       document.body.classList.add('auth-no-scroll')

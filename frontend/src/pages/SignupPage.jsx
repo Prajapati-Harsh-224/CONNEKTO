@@ -133,23 +133,28 @@ export default function SignupPage() {
               <p className="text-xs sm:text-sm text-slate-500 mt-1">
                 {t(selectedRole === 'SHOP_OWNER' ? 'shopOwnerSignupSubtitle' : 'supplierSignupSubtitle')}
               </p>
-              <Link className="text-xs font-medium text-brand-orange hover:text-brand-orange-dark hover:underline mt-2 inline-block" to={`/role-selection${selectedRole ? `?role=${selectedRole}` : ''}`}>
-                {t('changeRole')}
-              </Link>
             </header>
           )}
 
           <div className={`flex items-center justify-between text-xs px-3.5 py-2.5 rounded-xl border ${errors.role ? 'bg-rose-50 border-rose-200' : 'bg-slate-50 border-slate-100'}`}>
-            <span className="text-slate-500">{t('creatingAccountAs')}:</span>
-            <strong className="text-slate-800 font-semibold">
-              {selectedRole ? t(selectedRole === 'SHOP_OWNER' ? 'shopOwner' : 'supplier') : t('noRoleSelected')}
-            </strong>
-            <Link className="text-brand-orange hover:text-brand-orange-dark hover:underline font-medium" to={`/role-selection${selectedRole ? `?role=${selectedRole}` : ''}`}>{t('changeRole')}</Link>
+            <div className="flex items-center gap-1.5">
+              <span className="text-slate-500">{t('creatingAccountAs') || 'Creating account as'}:</span>
+              <strong className="text-slate-800 font-semibold">
+                {selectedRole ? t(selectedRole === 'SHOP_OWNER' ? 'shopOwner' : 'supplier') : t('noRoleSelected')}
+              </strong>
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate(`/role-selection${selectedRole ? `?role=${selectedRole}` : ''}`)}
+              className="px-3 py-1.5 rounded-lg text-xs font-semibold text-white bg-brand-orange hover:bg-brand-orange-dark shadow-xs hover:shadow-sm active:scale-95 transition-all cursor-pointer"
+            >
+              ← {t('changeRole')}
+            </button>
           </div>
 
           {isNotOurUser && (
             <div className="p-4 rounded-xl text-xs sm:text-sm font-medium text-amber-900 bg-amber-50 border border-amber-200/90 flex items-center gap-3 shadow-xs" role="status">
-              <span className="text-xl shrink-0">👋</span>
+              <span className="text-xl shrink-0"></span>
               <div>
                 <strong className="block font-semibold text-amber-950">Welcome to Connekto!</strong>
                 <span>You are not our user yet, please register.</span>
@@ -170,7 +175,7 @@ export default function SignupPage() {
                 <FormField autoComplete="address-level2" error={errors.area} label={`${t('area')} *`} name="area" onChange={updateField} placeholder={t('area')} type="text" value={form.area} />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
-                <FormField autoComplete="tel" error={errors.phone} label={`${t('phoneNumber')} *`} name="phone" onChange={updateField} placeholder="+91 98765 43210" type="tel" value={form.phone} />
+                <FormField autoComplete="tel" error={errors.phone} label={`${t('phoneNumber')} *`} name="phone" onChange={updateField} placeholder="98765 43210" type="tel" value={form.phone} />
                 <FormField autoComplete="email" error={errors.email} label={t('optionalEmail')} name="email" onChange={updateField} placeholder="you@example.com" type="email" value={form.email} />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
@@ -188,7 +193,7 @@ export default function SignupPage() {
                 <CategoryCombobox error={errors.category} label="Category" name="category" onChange={updateField} placeholder="Select or search category..." value={form.category} />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
-                <FormField autoComplete="tel" error={errors.phone} label={`${t('phoneNumber')} *`} name="phone" onChange={updateField} placeholder="+91 98765 43210" type="tel" value={form.phone} />
+                <FormField autoComplete="tel" error={errors.phone} label={`${t('phoneNumber')} *`} name="phone" onChange={updateField} placeholder="98765 43210" type="tel" value={form.phone} />
                 <FormField autoComplete="email" error={errors.email} label={t('optionalEmail')} name="email" onChange={updateField} placeholder="you@example.com" type="email" value={form.email} />
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3.5 pt-1">
@@ -210,6 +215,13 @@ export default function SignupPage() {
             <span>{isSubmitting ? t('creatingAccount') : t('createAccount')}</span>
             {(selectedRole === 'SHOP_OWNER' || selectedRole === 'SUPPLIER') && <span aria-hidden="true">→</span>}
           </button>
+
+          <div className="pt-2 text-center text-xs text-slate-500">
+            <span>{t('alreadyHaveAccount')} </span>
+            <Link to="/login" className="font-semibold text-brand-orange hover:underline">
+              {t('signIn')} →
+            </Link>
+          </div>
         </form>
       </div>
     </section>

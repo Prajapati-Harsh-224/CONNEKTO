@@ -9,9 +9,6 @@ export default function Footer() {
   const navigate = useNavigate()
   const isRoleSelection = location.pathname === '/role-selection'
 
-  const [email, setEmail] = useState('')
-  const [status, setStatus] = useState('idle') // 'idle' | 'submitting' | 'success'
-  const [error, setError] = useState('')
   const [activeModalTab, setActiveModalTab] = useState(null) // null | 'help' | 'faqs' | 'privacy' | 'terms' | 'cookies'
 
   const tabsRef = useRef(null)
@@ -110,54 +107,43 @@ export default function Footer() {
 
   const handleSectionNav = (e, sectionId) => {
     e.preventDefault()
-    const targetPath = sectionId === 'home' ? '/' : `/${sectionId}`
-    navigate(targetPath)
+    if (location.pathname !== '/') {
+      navigate('/')
+    }
     if (sectionId === 'home') {
       window.scrollTo({ top: 0, behavior: 'smooth' })
     } else {
       const el = document.getElementById(sectionId)
-      if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' })
-    }
-  }
-
-  const handleSubscribe = (e) => {
-    e.preventDefault()
-    const trimmedEmail = email.trim()
-    if (!trimmedEmail) {
-      setError('Please enter your email address.')
-      return
-    }
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
-    if (!emailRegex.test(trimmedEmail)) {
-      setError('Please enter a valid email address.')
-      return
-    }
-
-    setError('')
-    setStatus('submitting')
-
-    // Functional interaction with persistence
-    setTimeout(() => {
-      try {
-        const stored = JSON.parse(localStorage.getItem('connekto_subscribers') || '[]')
-        if (!stored.includes(trimmedEmail)) {
-          stored.push(trimmedEmail)
-          localStorage.setItem('connekto_subscribers', JSON.stringify(stored))
-        }
-      } catch {
-        // Fallback gracefully
+      if (el) {
+        const headerOffset = 70
+        const elementPosition = el.getBoundingClientRect().top
+        const offsetPosition = elementPosition + window.pageYOffset - headerOffset
+        window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
       }
-      setStatus('success')
-      setEmail('')
-    }, 400)
+    }
   }
 
   return (
     <>
-      <footer className="bg-white border-t border-slate-200/80 text-slate-600 mt-auto font-sans" aria-label="Footer">
+      <footer className="bg-white border-t border-slate-200/80 text-slate-600 mt-auto font-sans snap-start scroll-mt-16" aria-label="Footer">
         <div className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 ${isRoleSelection ? 'py-6' : 'pt-14 sm:pt-16 pb-12'}`}>
           {!isRoleSelection && (
             <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-start">
+
+            {/* Column: Brand Identity */}
+            <div className="lg:col-span-5 space-y-3">
+              <div className="flex items-center gap-2.5">
+                <span className="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center font-bold text-base shadow-sm shrink-0">
+                  C
+                </span>
+                <span className="text-lg font-bold text-slate-900 leading-tight">
+                  Connekto
+                </span>
+              </div>
+              <p className="text-xs text-slate-500 max-w-sm leading-relaxed">
+                {t('strongerLocalBusinesses') || 'Connecting local shop owners and suppliers across India for smarter, simpler commerce.'}
+              </p>
+            </div>
 
             {/* Platform & Support Links side by side */}
             <div className="lg:col-span-7 grid grid-cols-2 gap-6 sm:gap-12">
@@ -254,73 +240,6 @@ export default function Footer() {
                     </button>
                   </li>
                 </ul>
-              </div>
-            </div>
-
-            {/* Column: Newsletter / Subscribe Card */}
-            <div className="lg:col-span-5">
-              <div className="bg-emerald-50/50 border border-emerald-100/90 rounded-2xl p-5 sm:p-6 shadow-2xs">
-                <div className="flex items-start gap-3">
-                  <div className="w-10 h-10 rounded-full bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
-                    <svg className="w-5 h-5 text-emerald-800" viewBox="0 0 24 24" fill="currentColor">
-                      <path d="M17 8C8 10 5.9 16.17 3.82 21.34l1.89.66 1.45-3.62C8.75 19.38 10.74 20 13 20c6.08 0 8-7 8-12 0-.55-.45-1-1-1zm-4 10c-1.8 0-3.39-.48-4.73-1.3l5.04-5.04c.39-.39.39-1.02 0-1.41a.996.996 0 00-1.41 0l-5.04 5.04C6.48 13.96 6 12.37 6 10.57c2.53-.48 5.75-1.54 8.52-2.19-1.39 3.03-1.89 6.64-1.52 9.62z" />
-                    </svg>
-                  </div>
-                  <div>
-                    <strong className="block text-sm sm:text-base font-bold text-slate-900 leading-snug">
-                      {t('stayUpdated')}
-                    </strong>
-                    <p className="text-xs text-slate-500 mt-0.5 leading-relaxed">
-                      {t('stayUpdatedDesc')}
-                    </p>
-                  </div>
-                </div>
-
-                {status === 'success' ? (
-                  <div className="mt-4 p-3 bg-white/90 border border-emerald-200 rounded-xl text-xs text-emerald-800 flex items-center justify-between gap-2 shadow-2xs">
-                    <span className="flex items-center gap-1.5 font-medium">
-                      <FiCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-                      <span>Thanks for subscribing! You are on the list.</span>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => setStatus('idle')}
-                      className="text-[11px] font-semibold text-emerald-700 hover:underline cursor-pointer"
-                    >
-                      Reset
-                    </button>
-                  </div>
-                ) : (
-                  <form onSubmit={handleSubscribe} className="mt-4 space-y-1.5">
-                    <div className="flex flex-col sm:flex-row gap-2">
-                      <input
-                        type="email"
-                        value={email}
-                        onChange={(e) => {
-                          setEmail(e.target.value)
-                          if (error) setError('')
-                        }}
-                        placeholder={t('enterYourEmail')}
-                        className="flex-1 bg-white border border-slate-200 rounded-xl px-3.5 py-2 text-xs sm:text-sm text-slate-800 placeholder:text-slate-500 focus:outline-none focus:ring-2 focus:ring-emerald-600/20 focus:border-emerald-600 shadow-2xs transition-all"
-                      />
-                      <button
-                        type="submit"
-                        disabled={status === 'submitting'}
-                        className="bg-emerald-800 hover:bg-emerald-900 text-white text-xs sm:text-sm font-semibold px-4 py-2 rounded-xl shadow-xs active:scale-95 transition-all flex items-center justify-center gap-1.5 shrink-0 cursor-pointer disabled:opacity-60"
-                      >
-                        <span>{status === 'submitting' ? '...' : t('subscribe')}</span>
-                        <span aria-hidden="true">→</span>
-                      </button>
-                    </div>
-                    {error && (
-                      <p className="text-[11px] text-rose-600 font-medium">{error}</p>
-                    )}
-                  </form>
-                )}
-
-                <p className="text-xs text-emerald-800/80 font-normal mt-2.5">
-                  {t('noSpam')}
-                </p>
               </div>
             </div>
 

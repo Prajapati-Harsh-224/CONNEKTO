@@ -40,9 +40,9 @@ export default function Navbar() {
 
   const navLinks = [
     { key: 'home', defaultLabel: 'Home', id: 'home', path: '/', icon: FiHome },
-    { key: 'about', defaultLabel: 'About', id: 'about', path: '/about', icon: FiInfo },
-    { key: 'howItWorks', defaultLabel: 'How It Works', id: 'how-it-works', path: '/how-it-works', icon: FiCompass },
-    { key: 'contact', defaultLabel: 'Contact', id: 'contact', path: '/contact', icon: FiMail },
+    { key: 'about', defaultLabel: 'About', id: 'about', path: '/', icon: FiInfo },
+    { key: 'howItWorks', defaultLabel: 'How It Works', id: 'how-it-works', path: '/', icon: FiCompass },
+    { key: 'contact', defaultLabel: 'Contact', id: 'contact', path: '/', icon: FiMail },
   ]
 
   // Track active section based on scroll position
@@ -87,6 +87,18 @@ export default function Navbar() {
     setIsOpen(false)
   }, [location.pathname, location.hash])
 
+  // Lock body scroll when mobile drawer is open
+  useEffect(() => {
+    if (isOpen) {
+      document.body.style.overflow = 'hidden'
+    } else {
+      document.body.style.overflow = ''
+    }
+    return () => {
+      document.body.style.overflow = ''
+    }
+  }, [isOpen])
+
   // Handle click outside, Escape key, and window resize
   useEffect(() => {
     if (!isOpen) return
@@ -105,6 +117,7 @@ export default function Navbar() {
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
         setIsOpen(false)
+        toggleButtonRef.current?.focus()
       }
     }
 
@@ -199,6 +212,7 @@ export default function Navbar() {
           }`}
           aria-expanded={isOpen}
           aria-controls="mobile-nav-dropdown"
+          aria-haspopup="dialog"
           aria-label={
             isOpen
               ? t('closeMenu') || 'Close menu'
@@ -212,7 +226,7 @@ export default function Navbar() {
       {/* ── BACKDROP OVERLAY (Mobile & Tablet) ── */}
       {isOpen && (
         <div
-          className="lg:hidden fixed inset-0 top-16 bg-slate-900/25 backdrop-blur-[2px] z-40 transition-opacity"
+          className="lg:hidden fixed inset-0 top-16 bg-slate-900/40 backdrop-blur-xs z-40 transition-opacity"
           onClick={() => setIsOpen(false)}
           aria-hidden="true"
         />
@@ -223,6 +237,9 @@ export default function Navbar() {
         <div
           ref={menuRef}
           id="mobile-nav-dropdown"
+          role="dialog"
+          aria-modal="true"
+          aria-label={t('navigation') || 'Navigation menu'}
           className="lg:hidden absolute top-16 left-0 right-0 w-full bg-white/98 backdrop-blur-xl border-b border-slate-200 shadow-2xl z-50 max-h-[calc(100vh-4rem)] overflow-y-auto"
         >
           {/* Section Navigation Links */}
