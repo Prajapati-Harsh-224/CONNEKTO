@@ -107,19 +107,28 @@ export default function Footer() {
 
   const handleSectionNav = (e, sectionId) => {
     e.preventDefault()
-    if (location.pathname !== '/') {
-      navigate('/')
-    }
+    const isLandingPage =
+      location.pathname === '/' ||
+      ['/about', '/how-it-works', '/contact'].includes(location.pathname)
+
     if (sectionId === 'home') {
-      window.scrollTo({ top: 0, behavior: 'smooth' })
-    } else {
+      if (isLandingPage) {
+        window.history.pushState(null, '', '/')
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      } else {
+        navigate('/')
+      }
+      return
+    }
+
+    if (isLandingPage) {
+      window.history.pushState(null, '', `#${sectionId}`)
       const el = document.getElementById(sectionId)
       if (el) {
-        const headerOffset = 70
-        const elementPosition = el.getBoundingClientRect().top
-        const offsetPosition = elementPosition + window.pageYOffset - headerOffset
-        window.scrollTo({ top: offsetPosition, behavior: 'smooth' })
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
       }
+    } else {
+      navigate(`/#${sectionId}`)
     }
   }
 

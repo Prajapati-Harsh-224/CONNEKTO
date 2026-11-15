@@ -13,7 +13,7 @@ export default function LanguageSelector() {
     <div
       role="group"
       aria-label="Language selector"
-      className="inline-flex items-center p-0.5 sm:p-1 rounded-full bg-slate-900/70 sm:bg-slate-900/50 border border-slate-700/70 sm:border-white/10 backdrop-blur-md shadow-xs shrink-0"
+      className="inline-flex items-center p-0.5 sm:p-1 rounded-full bg-slate-100 border border-slate-200 shadow-2xs shrink-0"
     >
       {languages.map((lang) => {
         const isActive = locale === lang.code
@@ -25,8 +25,8 @@ export default function LanguageSelector() {
             aria-pressed={isActive}
             className={`px-2 sm:px-2.5 py-0.5 sm:py-1 text-[11px] sm:text-xs font-semibold rounded-full transition-all duration-150 cursor-pointer ${
               isActive
-                ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold shadow-xs shadow-emerald-500/30'
-                : 'text-slate-300 hover:text-white hover:bg-white/10'
+                ? 'bg-brand-orange text-white font-bold shadow-xs shadow-brand-orange/20'
+                : 'text-slate-600 hover:text-slate-900 hover:bg-slate-200/60'
             }`}
             title={lang.fullLabel}
           >

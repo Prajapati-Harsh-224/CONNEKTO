@@ -280,16 +280,17 @@ const english = {
   // Homepage Hero & Value Proposition
   heroEyebrow: 'B2B Multi-Supplier Marketplace & Management Platform',
   heroHeading: 'Every Shop to Every FMCG Supplier — In One App.',
-  heroSubtitle: 'Compare live wholesale prices across multiple distributors, combine items into one consolidated cart, and restock your shop in minutes.',
+  heroSubtitle:
+    'Compare wholesale prices across multiple distributors, combine items into one consolidated cart, and restock your shop in minutes — all in your preferred language.',
   primaryCtaShop: 'Start Ordering as a Shop',
   secondaryCtaSupplier: 'Join as a Supplier',
   forRetailers: 'For Retailers (Shops)',
   forSuppliers: 'For FMCG Suppliers',
-  watchTour: 'Watch 60s Product Tour',
+  watchTour: 'Watch Demo',
   trustMetricComparison: 'Multi-Supplier Price Comparison',
   trustMetricConsolidated: '1-Tap Consolidated Cart',
   trustMetricLanguages: 'Instant Gujarati & Hindi Support',
-  watchVideo: 'Watch 60s Product Tour',
+  watchVideo: 'Watch Demo',
 
   // Shop Owner & Supplier Entry Points
   forBusinesses: 'Tailored Solutions',
@@ -675,7 +676,7 @@ const english = {
   // heroEyebrow override removed
   // heroHeading override removed
   // heroSubtitle override removed
-  watchVideo: 'Watch 60s Product Tour',
+  watchVideo: 'Watch Demo',
   about: 'About',
   forBusinesses: 'For Businesses',
   howItWorks: 'How It Works',
@@ -1653,11 +1654,11 @@ const hindi = {
   secondaryCtaSupplier: 'सप्लायर के रूप में जुड़ें',
   forRetailers: 'दुकानदारों (किराना) के लिए',
   forSuppliers: 'FMCG सप्लायर्स के लिए',
-  watchTour: '60 सेकंड का प्रोडक्ट टूर देखें',
+  watchTour: 'डेमो देखें',
   trustMetricComparison: 'मल्टी-सप्लायर रेट कम्पेरिजन',
-  trustMetricConsolidated: '1-टैप कंबाइंड सिंगल कार्ट',
+  trustMetricConsolidated: '1-टैપ कंबाइंड सिंगल कार्ट',
   trustMetricLanguages: 'तुरंत गुजराती और हिंदी सपोर्ट',
-  watchVideo: '60 सेकंड का प्रोडक्ट टूर देखें',
+  watchVideo: 'डेमो देखें',
   about: 'परिचय',
   forBusinesses: 'व्यवसायों के लिए',
   howItWorks: 'यह कैसे काम करता है',
@@ -2698,11 +2699,11 @@ const gujarati = {
   secondaryCtaSupplier: 'સપ્લાયર તરીકે જોડાઓ',
   forRetailers: 'રિટેલર્સ / દુકાનદારો માટે',
   forSuppliers: 'FMCG સપ્લાયર્સ માટે',
-  watchTour: '60 સેકન્ડ પ્રોડક્ટ ટૂર જુઓ',
+  watchTour: 'ડેમો જુઓ',
   trustMetricComparison: 'મલ્ટી-સપ્લાયર ભાવ સરખામણી',
   trustMetricConsolidated: '1-ક્લિક કન્સોલિડેટેડ કાર્ટ',
   trustMetricLanguages: 'ગુજરાતી અને હિન્દી સપોર્ટ',
-  watchVideo: '60 સેકન્ડ પ્રોડક્ટ ટૂર જુઓ',
+  watchVideo: 'ડેમો જુઓ',
   about: 'વિષે',
   forBusinesses: 'વ્યવસાયો માટે',
   howItWorks: 'આ કેવી રીતે કામ કરે',

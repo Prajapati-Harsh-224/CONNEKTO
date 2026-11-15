@@ -9,7 +9,6 @@ import {
   FiVolumeX,
   FiMaximize,
   FiShoppingBag,
-  FiShoppingCart,
   FiTruck,
   FiMail,
   FiMapPin,
@@ -17,17 +16,66 @@ import {
   FiX,
   FiLayers,
   FiTrendingUp,
-  FiShield,
   FiSend,
-  FiZap,
 } from 'react-icons/fi'
 import { useLocale } from '../context/LocaleContext.jsx'
-import InteractivePhoneMockup from '../components/InteractivePhoneMockup.jsx'
+
+const HERO_TRANSLATIONS = {
+  en: {
+    badge: 'B2B Multi-Supplier Marketplace & Management Platform',
+    headlinePrefix: 'Every Shop to Every ',
+    headlineHighlight: 'FMCG Supplier',
+    headlineSuffix: ' — In One App.',
+    subheadline:
+      'Compare wholesale prices across multiple distributors, combine items into one consolidated cart, and restock your shop in minutes — all in your preferred language.',
+    primaryCta: 'Start Ordering as a Shop',
+    secondaryCta: 'Join as a Supplier',
+    demoCta: 'Watch Demo',
+    features: [
+      'Compare Multiple Suppliers',
+      '1-Tap Consolidated Cart',
+      'Multi-Language Support',
+    ],
+  },
+  gu: {
+    badge: 'B2B મલ્ટી-સપ્લાયર માર્કેટપ્લેસ અને મેનેજમેન્ટ પ્લેટફોર્મ',
+    headlinePrefix: 'દરેક દુકાનથી દરેક ',
+    headlineHighlight: 'FMCG સપ્લાયર',
+    headlineSuffix: ' સુધી — એક જ એપમાં.',
+    subheadline:
+      'અનેક ડિસ્ટ્રિબ્યુટર્સના જથ્થાબંધ ભાવોની તુલના કરો, એક જ કાર્ટમાં ઓર્ડર ભેગા કરો અને મિનિટોમાં તમારી દુકાનનો સ્ટોક ભરો — બધું તમારી મનપસંદ ભાષામાં.',
+    primaryCta: 'દુકાનદાર તરીકે ઓર્ડર શરૂ કરો',
+    secondaryCta: 'સપ્લાયર તરીકે જોડાઓ',
+    demoCta: 'ડેમો જુઓ',
+    features: [
+      'અનેક સપ્લાયર્સની સરખામણી',
+      '1-ટેપ કન્સોલિડેટેડ કાર્ટ',
+      'બહુભાષી સપોર્ટ',
+    ],
+  },
+  hi: {
+    badge: 'B2B मल्टी-सप्लायर मार्केटप्लेस और मैनेजमेंट प्लेटफॉर्म',
+    headlinePrefix: 'हर दुकान से हर ',
+    headlineHighlight: 'FMCG सप्लायर',
+    headlineSuffix: ' तक — अब एक ही ऐप में।',
+    subheadline:
+      'कई डिस्ट्रीब्यूटर्स के थोक दामों की तुलना करें, एक ही कार्ट में ऑर्डर जोड़ें और मिनटों में अपनी दुकान का स्टॉक पूरा करें।',
+    primaryCta: 'दुकानदार के रूप में ऑर्डर करें',
+    secondaryCta: 'सप्लायर के रूप में जुड़ें',
+    demoCta: 'डेमो देखें',
+    features: [
+      'कई सप्लायर्स की तुलना करें',
+      '1-टैप कंबाइंड कार्ट',
+      'बहुभाषी सपोर्ट',
+    ],
+  },
+}
 
 export default function WelcomePage() {
-  const { t } = useLocale()
+  const { t, locale } = useLocale()
   const location = useLocation()
-  const [activeRoleMode, setActiveRoleMode] = useState('retailer') // 'retailer' | 'supplier'
+  const currentLocale = locale || 'en'
+  const hero = HERO_TRANSLATIONS[currentLocale] || HERO_TRANSLATIONS.en
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
@@ -76,9 +124,9 @@ export default function WelcomePage() {
   const toggleFullscreen = () => {
     if (!videoContainerRef.current) return
     if (!document.fullscreenElement) {
-      videoContainerRef.current.requestFullscreen().catch(() => {})
+      videoContainerRef.current.requestFullscreen().catch(() => { })
     } else {
-      document.exitFullscreen().catch(() => {})
+      document.exitFullscreen().catch(() => { })
     }
   }
 
@@ -129,18 +177,31 @@ export default function WelcomePage() {
   }, [])
 
   useEffect(() => {
-    // Disable browser automatic scroll restoration so refresh always starts at top
+    // Disable browser automatic scroll restoration so refresh always starts smoothly
     if ('scrollRestoration' in window.history) {
       window.history.scrollRestoration = 'manual'
     }
-    window.scrollTo(0, 0)
 
-    // When refreshing or loading on section routes, reset URL to '/' so home is shown
-    if (['/about', '/how-it-works', '/contact'].includes(location.pathname) || location.hash) {
-      window.history.replaceState(null, '', '/')
+    const sectionFromPath = {
+      '/about': 'about',
+      '/how-it-works': 'how-it-works',
+      '/contact': 'contact',
+    }[location.pathname]
+
+    const targetId = location.hash ? location.hash.replace('#', '') : sectionFromPath
+
+    if (targetId && targetId !== 'home') {
+      const timer = setTimeout(() => {
+        const el = document.getElementById(targetId)
+        if (el) {
+          el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+        }
+      }, 100)
+      return () => clearTimeout(timer)
+    } else if (!location.hash && location.pathname === '/') {
       window.scrollTo(0, 0)
     }
-  }, [])
+  }, [location.pathname, location.hash])
 
   useEffect(() => {
     document.documentElement.classList.add('snap-scroll-page')
@@ -195,171 +256,102 @@ export default function WelcomePage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-slate-950 text-slate-100 selection:bg-emerald-500/20 selection:text-emerald-400">
+    <div className="min-h-[100dvh] w-full overflow-x-hidden bg-white flex flex-col justify-between text-slate-900 selection:bg-orange-500/20 selection:text-orange-600">
 
-      {/* ── HERO SECTION (High-Contrast Dark Glassmorphism) ── */}
+      {/* ── HERO SECTION (Crisp Orange & White) ── */}
       <section
-        className="relative w-full overflow-hidden min-h-[580px] lg:min-h-[660px] pt-6 sm:pt-12 pb-12 sm:pb-24 flex items-center snap-start scroll-mt-16 bg-[#090d16]"
+        className="relative w-full overflow-hidden min-h-[100dvh] pt-6 sm:pt-10 lg:pt-16 pb-12 sm:pb-16 lg:pb-24 flex items-center snap-start scroll-mt-20 bg-white bg-gradient-to-b from-orange-50/70 via-white to-white"
         id="home"
         aria-label="Hero"
       >
-        {/* Subtle radial ambient glows in eco-friendly blue-green accents */}
+        {/* Soft, subtle warm orange highlights */}
         <div
-          className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 sm:w-[580px] h-96 sm:h-[580px] bg-gradient-to-tr from-emerald-500/15 via-teal-500/10 to-transparent rounded-full blur-3xl pointer-events-none"
+          className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 sm:w-[580px] h-96 sm:h-[580px] bg-gradient-to-tr from-orange-100/60 via-amber-50/20 to-transparent rounded-full blur-3xl pointer-events-none"
           aria-hidden="true"
         />
         <div
-          className="absolute top-1/3 right-1/4 w-80 sm:w-[500px] h-80 sm:h-[500px] bg-gradient-to-bl from-teal-500/12 via-cyan-500/10 to-transparent rounded-full blur-3xl pointer-events-none"
+          className="absolute top-1/3 right-1/4 w-80 sm:w-[500px] h-80 sm:h-[500px] bg-gradient-to-bl from-orange-100/50 via-amber-50/15 to-transparent rounded-full blur-3xl pointer-events-none"
           aria-hidden="true"
         />
         <div
-          className="absolute bottom-6 left-1/3 w-72 sm:w-[420px] h-72 sm:h-[420px] bg-gradient-to-t from-cyan-500/8 to-transparent rounded-full blur-3xl pointer-events-none"
+          className="absolute bottom-6 left-1/3 w-72 sm:w-[420px] h-72 sm:h-[420px] bg-gradient-to-t from-orange-50/60 to-transparent rounded-full blur-3xl pointer-events-none"
           aria-hidden="true"
         />
         <div
-          className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none opacity-60"
+          className="absolute inset-0 bg-[radial-gradient(#f9731612_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none opacity-60"
           aria-hidden="true"
         />
 
-        {/* Hero Content Layer */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
-            
-            {/* Left Column: Sharp B2B Copy & CTAs */}
-            <div className="lg:col-span-7 space-y-5 sm:space-y-6 text-left">
-              {/* Top Pill Badge */}
-              <div>
-                <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-bold tracking-wide text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-md shadow-xs">
-                  <span className="text-emerald-400">✦</span>
-                  <span>{t('heroEyebrow')}</span>
-                </span>
-              </div>
+        {/* Hero Content Layer - Centered and Prominent without Mobile Mockup */}
+        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center flex flex-col items-center space-y-6 sm:space-y-7">
+          {/* Top Pill Badge */}
+          <div>
+            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold tracking-wide text-orange-600 bg-orange-50 border border-orange-200 shadow-2xs">
+              <span className="text-orange-500">✦</span>
+              <span>{hero.badge}</span>
+            </span>
+          </div>
 
-              {/* Main Headline */}
-              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.12]">
-                {t('heroHeading')}
-              </h1>
+          {/* Main Headline */}
+          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.14] max-w-3xl">
+            {hero.headlinePrefix}<span className="text-orange-600">{hero.headlineHighlight}</span>{hero.headlineSuffix}
+          </h1>
 
-              {/* Subheadline */}
-              <p className="text-sm sm:text-lg text-slate-300 font-medium leading-relaxed max-w-2xl">
-                {t('heroSubtitle')}
-              </p>
+          {/* Subheadline */}
+          <p className="text-base sm:text-xl text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto">
+            {hero.subheadline}
+          </p>
 
-              {/* Interactive Role Switcher Pill */}
-              <div className="space-y-3 pt-1">
-                <div className="inline-flex p-1 rounded-xl bg-white/[0.05] border border-white/10 backdrop-blur-md shadow-xs">
-                  <button
-                    type="button"
-                    onClick={() => setActiveRoleMode('retailer')}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      activeRoleMode === 'retailer'
-                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold shadow-xs'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    {t('forRetailers')}
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setActiveRoleMode('supplier')}
-                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
-                      activeRoleMode === 'supplier'
-                        ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 font-bold shadow-xs'
-                        : 'text-slate-400 hover:text-white'
-                    }`}
-                  >
-                    {t('forSuppliers')}
-                  </button>
-                </div>
+          {/* Feature Highlights (Quick Pills/Bullets inside Hero) */}
+          <div className="flex flex-wrap justify-center gap-2.5 text-xs sm:text-sm pt-1">
+            {hero.features.map((feat, idx) => (
+              <span
+                key={idx}
+                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-orange-50 border border-orange-200/80 text-orange-800 font-medium shadow-2xs"
+              >
+                <FiCheck className="w-4 h-4 text-orange-500 shrink-0" />
+                <span>{feat}</span>
+              </span>
+            ))}
+          </div>
 
-                {/* Role Dynamic Highlights */}
-                <div className="flex flex-wrap gap-2 text-xs">
-                  {activeRoleMode === 'retailer' ? (
-                    <>
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-emerald-300 font-medium">
-                        <FiCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Compare live rates across distributors
-                      </span>
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-emerald-300 font-medium">
-                        <FiCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> 1-Tap consolidated cart & split delivery
-                      </span>
-                    </>
-                  ) : (
-                    <>
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-teal-300 font-medium">
-                        <FiCheck className="w-3.5 h-3.5 text-teal-400 shrink-0" /> Expand distribution to 500+ local retail shops
-                      </span>
-                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-teal-300 font-medium">
-                        <FiCheck className="w-3.5 h-3.5 text-teal-400 shrink-0" /> Real-time catalog & digital order settlement
-                      </span>
-                    </>
-                  )}
-                </div>
-              </div>
+          {/* Action CTAs */}
+          <div className="flex flex-wrap items-center justify-center gap-3.5 pt-2 w-full sm:w-auto">
+            {/* Primary CTA Button: Start Ordering as a Shop */}
+            <Link
+              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-sm sm:text-base font-semibold !text-white text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 shadow-md shadow-orange-500/25 active:scale-95 transition-all w-full sm:w-auto"
+              to="/signup?role=SHOP_OWNER"
+            >
+              <span className="!text-white text-white">{hero.primaryCta}</span>
+              <FiArrowRight className="w-4 h-4 sm:w-5 sm:h-5 !text-white text-white" />
+            </Link>
 
-              {/* Action CTAs */}
-              <div className="flex flex-wrap items-center gap-3 pt-2">
-                <Link
-                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm sm:text-base font-bold text-slate-950 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 shadow-lg shadow-emerald-500/25 transition-all flex-1 sm:flex-initial"
-                  to={activeRoleMode === 'retailer' ? '/signup?role=SHOP_OWNER' : '/signup?role=SUPPLIER'}
-                >
-                  <span>{activeRoleMode === 'retailer' ? t('primaryCtaShop') : t('secondaryCtaSupplier')}</span>
-                  <FiArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-                </Link>
+            {/* Secondary CTA Button: Join as a Supplier */}
+            <Link
+              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm sm:text-base font-semibold text-orange-600 bg-white hover:bg-orange-50 border border-orange-200 shadow-2xs active:scale-95 transition-all w-full sm:w-auto"
+              to="/signup?role=SUPPLIER"
+            >
+              <span>{hero.secondaryCta}</span>
+            </Link>
 
-                <Link
-                  className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-sm sm:text-base font-semibold text-white bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 active:scale-95 transition-all flex-1 sm:flex-initial"
-                  to={activeRoleMode === 'retailer' ? '/signup?role=SUPPLIER' : '/signup?role=SHOP_OWNER'}
-                >
-                  <span>{activeRoleMode === 'retailer' ? t('secondaryCtaSupplier') : t('primaryCtaShop')}</span>
-                </Link>
-
-                <button
-                  type="button"
-                  onClick={() => setIsVideoModalOpen(true)}
-                  className="inline-flex items-center gap-2 px-4 py-3 rounded-xl text-xs sm:text-sm font-medium text-slate-300 hover:text-white transition-colors cursor-pointer group"
-                >
-                  <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center group-hover:scale-110 transition-transform">
-                    <FiPlay className="w-2.5 h-2.5 fill-current ml-0.5" />
-                  </span>
-                  <span>{t('watchTour')}</span>
-                </button>
-              </div>
-
-              {/* Trust Micro-Metrics Row below CTAs */}
-              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-5 border-t border-white/10 text-xs text-slate-300">
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
-                    <FiZap className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="font-medium">{t('trustMetricComparison')}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-teal-500/15 border border-teal-500/30 text-teal-300 flex items-center justify-center shrink-0">
-                    <FiShoppingCart className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="font-medium">{t('trustMetricConsolidated')}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <div className="w-6 h-6 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 flex items-center justify-center shrink-0">
-                    <FiShield className="w-3.5 h-3.5" />
-                  </div>
-                  <span className="font-medium">{t('trustMetricLanguages')}</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Right Column: Interactive Phone Mockup */}
-            <div className="lg:col-span-5 flex justify-center lg:justify-end py-4 lg:py-0">
-              <InteractivePhoneMockup />
-            </div>
-
+            {/* Video Action: Watch Demo */}
+            <button
+              type="button"
+              onClick={() => setIsVideoModalOpen(true)}
+              className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-xs sm:text-sm font-semibold text-orange-600 bg-white hover:bg-orange-50 border border-orange-200 shadow-2xs active:scale-95 transition-all cursor-pointer group w-full sm:w-auto"
+            >
+              <span className="w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <FiPlay className="w-2.5 h-2.5 fill-current ml-0.5" />
+              </span>
+              <span>{hero.demoCta}</span>
+            </button>
           </div>
         </div>
       </section>
 
       {/* ── ABOUT SECTION ── */}
       <section
-        className="relative w-full h-auto min-h-0 max-h-none sm:min-h-[580px] flex flex-col sm:items-center justify-center snap-start scroll-mt-16 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-6 sm:py-20 overflow-hidden"
+        className="relative w-full h-auto min-h-0 max-h-none sm:min-h-[580px] flex flex-col sm:items-center justify-center snap-start scroll-mt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-6 sm:py-20 overflow-hidden"
         id="about"
         aria-labelledby="about-heading"
       >
@@ -391,9 +383,9 @@ export default function WelcomePage() {
                 </Link>
                 <Link
                   to="/signup?role=SUPPLIER"
-                  className="flex items-center gap-2 p-2 rounded-xl bg-emerald-50/80 border border-emerald-100 shadow-2xs hover:bg-emerald-100/70 transition-all"
+                  className="flex items-center gap-2 p-2 rounded-xl bg-orange-50/80 border border-orange-100 shadow-2xs hover:bg-orange-100/70 transition-all"
                 >
-                  <div className="w-7 h-7 rounded-lg bg-white text-emerald-600 flex items-center justify-center shrink-0 shadow-xs">
+                  <div className="w-7 h-7 rounded-lg bg-white text-brand-orange flex items-center justify-center shrink-0 shadow-xs">
                     <FiTruck className="w-3.5 h-3.5" />
                   </div>
                   <div className="min-w-0">
@@ -424,8 +416,8 @@ export default function WelcomePage() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-3 p-3 rounded-xl bg-emerald-50/70 border border-emerald-100">
-                    <div className="w-8 h-8 rounded-lg bg-white text-emerald-600 flex items-center justify-center shadow-xs">
+                  <div className="flex items-center gap-3 p-3 rounded-xl bg-orange-50/70 border border-orange-100">
+                    <div className="w-8 h-8 rounded-lg bg-white text-brand-orange flex items-center justify-center shadow-xs">
                       <FiTruck className="w-4 h-4" />
                     </div>
                     <div className="min-w-0">
@@ -442,7 +434,7 @@ export default function WelcomePage() {
 
       {/* ── HOW IT WORKS (SECTION 3.D) ── */}
       <section
-        className="relative w-full h-auto min-h-0 bg-slate-50/70 border-t border-slate-200/80 px-4 sm:px-6 lg:px-8 py-8 sm:py-20 flex flex-col sm:items-center justify-center snap-start scroll-mt-16 overflow-hidden"
+        className="relative w-full h-auto min-h-0 bg-slate-50/70 border-t border-slate-200/80 px-4 sm:px-6 lg:px-8 py-8 sm:py-20 flex flex-col sm:items-center justify-center snap-start scroll-mt-20 overflow-hidden"
         id="how-it-works"
         aria-labelledby="hiw-heading"
       >
@@ -477,7 +469,7 @@ export default function WelcomePage() {
 
       {/* ── CONTACT SECTION (SECTION 3.E) ── */}
       <section
-        className="relative w-full h-auto min-h-0 bg-white border-t border-slate-200/80 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-8 sm:py-20 flex flex-col justify-center snap-start scroll-mt-16 overflow-hidden"
+        className="relative w-full h-auto min-h-0 bg-white border-t border-slate-200/80 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-8 sm:py-20 flex flex-col justify-center snap-start scroll-mt-20 overflow-hidden"
         id="contact"
         aria-labelledby="contact-heading"
       >
@@ -516,7 +508,7 @@ export default function WelcomePage() {
           <div className="lg:col-span-7 bg-slate-50/70 border border-slate-200/90 rounded-2xl sm:rounded-3xl p-5 sm:p-8 shadow-xs">
             {contactStatus === 'success' ? (
               <div className="text-center py-8 space-y-4">
-                <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto text-xl font-bold">
+                <div className="w-12 h-12 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center mx-auto text-xl font-bold">
                   ✓
                 </div>
                 <h3 className="text-lg font-bold text-slate-900">{t('contactMessageSent')}</h3>
@@ -767,7 +759,7 @@ export default function WelcomePage() {
                   <strong className="block text-xs font-bold text-slate-900">2. Split Orders</strong>
                   <p className="text-[11px] text-slate-500">Shop across distributors and checkout in a single cart.</p>
                 </div>
-                <div className="p-3 rounded-xl bg-emerald-50/60 border border-emerald-100 space-y-1">
+                <div className="p-3 rounded-xl bg-orange-50/60 border border-orange-100 space-y-1">
                   <strong className="block text-xs font-bold text-slate-900">3. Live Tracking</strong>
                   <p className="text-[11px] text-slate-500">Real-time status updates as your shipment moves.</p>
                 </div>

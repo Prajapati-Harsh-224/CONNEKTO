@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
-import { Link, useLocation } from 'react-router-dom'
+import { useLocation, useNavigate } from 'react-router-dom'
 import {
-  FiArrowRight,
   FiChevronRight,
   FiCompass,
   FiHome,
@@ -13,58 +12,51 @@ import {
 import { useLocale } from '../context/LocaleContext.jsx'
 import LanguageSelector from './LanguageSelector.jsx'
 
-function scrollToSection(id) {
-  if (id === 'home') {
-    window.scrollTo({ top: 0, behavior: 'smooth' })
-    return
-  }
-  const el = document.getElementById(id)
-  if (el) {
-    const headerOffset = 70
-    const elementPosition = el.getBoundingClientRect().top
-    const offsetPosition = elementPosition + window.pageYOffset - headerOffset
-    window.scrollTo({
-      top: offsetPosition,
-      behavior: 'smooth',
-    })
-  }
-}
-
 export default function Navbar() {
   const location = useLocation()
+  const navigate = useNavigate()
   const { t } = useLocale()
   const [isOpen, setIsOpen] = useState(false)
   const [activeSection, setActiveSection] = useState('home')
   const menuRef = useRef(null)
   const toggleButtonRef = useRef(null)
-  const isHome = location.pathname === '/'
 
   const navLinks = [
-    { key: 'home', defaultLabel: 'Home', id: 'home', path: '/', icon: FiHome },
-    { key: 'about', defaultLabel: 'About', id: 'about', path: '/', icon: FiInfo },
-    { key: 'howItWorks', defaultLabel: 'How It Works', id: 'how-it-works', path: '/', icon: FiCompass },
-    { key: 'contact', defaultLabel: 'Contact', id: 'contact', path: '/', icon: FiMail },
+    { key: 'home', defaultLabel: 'Home', id: 'home', hash: '#home', icon: FiHome },
+    { key: 'about', defaultLabel: 'About', id: 'about', hash: '#about', icon: FiInfo },
+    { key: 'howItWorks', defaultLabel: 'How It Works', id: 'how-it-works', hash: '#how-it-works', icon: FiCompass },
+    { key: 'contact', defaultLabel: 'Contact', id: 'contact', hash: '#contact', icon: FiMail },
   ]
 
   // Track active section based on scroll position
   useEffect(() => {
-    const sectionIds = ['home', 'about', 'how-it-works', 'contact']
-
     const handleScroll = () => {
-      const scrollPosition = window.scrollY + 120
-      let current = 'home'
+      // Near top of page -> home
+      if (window.scrollY < 120) {
+        setActiveSection('home')
+        return
+      }
 
+      // Near bottom of page -> contact
+      if (window.innerHeight + window.scrollY >= document.documentElement.scrollHeight - 100) {
+        setActiveSection('contact')
+        return
+      }
+
+      // Check sections from bottom to top
+      const sectionIds = ['contact', 'how-it-works', 'about']
       for (const id of sectionIds) {
-        if (id === 'home') continue
         const el = document.getElementById(id)
         if (el) {
-          const top = el.offsetTop
-          if (scrollPosition >= top) {
-            current = id
+          const rect = el.getBoundingClientRect()
+          const elementTop = rect.top + window.scrollY
+          if (window.scrollY + 180 >= elementTop) {
+            setActiveSection(id)
+            return
           }
         }
       }
-      setActiveSection(current)
+      setActiveSection('home')
     }
 
     window.addEventListener('scroll', handleScroll, { passive: true })
@@ -73,19 +65,19 @@ export default function Navbar() {
     return () => window.removeEventListener('scroll', handleScroll)
   }, [])
 
-  // Sync active section with location path/hash and close dropdown
+  // Sync active section with location path/hash
   useEffect(() => {
+    const hashSection = location.hash ? location.hash.replace('#', '') : null
     const pathSectionMap = {
       '/': 'home',
       '/about': 'about',
       '/how-it-works': 'how-it-works',
       '/contact': 'contact',
     }
-    const section = pathSectionMap[location.pathname] || (location.hash ? location.hash.replace('#', '') : null)
+    const section = hashSection || pathSectionMap[location.pathname]
     if (section) {
       setActiveSection(section)
     }
-    setIsOpen(false)
   }, [location.pathname, location.hash])
 
   // Lock body scroll when mobile drawer is open
@@ -111,12 +103,14 @@ export default function Navbar() {
         toggleButtonRef.current &&
         !toggleButtonRef.current.contains(event.target)
       ) {
+        document.body.style.overflow = ''
         setIsOpen(false)
       }
     }
 
     const handleKeyDown = (event) => {
       if (event.key === 'Escape') {
+        document.body.style.overflow = ''
         setIsOpen(false)
         toggleButtonRef.current?.focus()
       }
@@ -124,6 +118,7 @@ export default function Navbar() {
 
     const handleResize = () => {
       if (window.innerWidth >= 1024) {
+        document.body.style.overflow = ''
         setIsOpen(false)
       }
     }
@@ -141,16 +136,38 @@ export default function Navbar() {
     }
   }, [isOpen])
 
-  const handleLinkClick = (id) => {
-    setActiveSection(id)
-    setIsOpen(false)
-    scrollToSection(id)
-  }
+  const handleLinkClick = (e, item) => {
+    e.preventDefault()
+    setActiveSection(item.id)
 
-  const registerUrl =
-    location.search && location.search.includes('role=')
-      ? `/register${location.search}`
-      : '/register'
+    // Unlock body scroll immediately so mobile browsers allow smooth scrolling
+    document.body.style.overflow = ''
+    setIsOpen(false)
+
+    const isLandingPage =
+      location.pathname === '/' ||
+      ['/about', '/how-it-works', '/contact'].includes(location.pathname)
+
+    if (item.id === 'home') {
+      if (isLandingPage) {
+        window.history.pushState(null, '', '/')
+        window.scrollTo({ top: 0, behavior: 'smooth' })
+      } else {
+        navigate('/')
+      }
+      return
+    }
+
+    if (isLandingPage) {
+      window.history.pushState(null, '', item.hash)
+      const el = document.getElementById(item.id)
+      if (el) {
+        el.scrollIntoView({ behavior: 'smooth', block: 'start' })
+      }
+    } else {
+      navigate(`/${item.hash}`)
+    }
+  }
 
   return (
     <>
@@ -162,24 +179,20 @@ export default function Navbar() {
         {navLinks.map((item) => {
           const isActive = activeSection === item.id
           const baseClass =
-            'px-3 py-1.5 rounded-lg transition-all duration-150 cursor-pointer text-xs sm:text-sm'
+            'px-3 py-1.5 rounded-lg transition-all duration-150 cursor-pointer text-xs sm:text-sm font-medium'
           const activeClass = isActive
-            ? isHome
-              ? 'text-emerald-400 font-bold bg-emerald-500/15 border border-emerald-500/30 shadow-xs'
-              : 'text-brand-orange font-bold bg-brand-orange-light shadow-2xs'
-            : isHome
-              ? 'text-slate-300 hover:text-white hover:bg-white/10'
-              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
+            ? 'text-brand-orange font-bold bg-orange-50 border border-orange-200/80 shadow-2xs'
+            : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/80'
 
           return (
-            <Link
+            <a
               key={item.key}
+              href={item.hash || '/'}
               className={`${baseClass} ${activeClass}`}
-              to={item.path}
-              onClick={() => handleLinkClick(item.id)}
+              onClick={(e) => handleLinkClick(e, item)}
             >
               {t(item.key) || item.defaultLabel}
-            </Link>
+            </a>
           )
         })}
       </nav>
@@ -188,44 +201,15 @@ export default function Navbar() {
       <div className="flex items-center gap-2 sm:gap-3 shrink-0">
         <LanguageSelector />
 
-        {/* Sign Up Link (hidden on mobile and tablet < lg, shown on desktop lg+) */}
-        <Link
-          className={`hidden lg:inline-flex px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors ${
-            isHome
-              ? 'text-slate-300 hover:text-white hover:bg-white/10'
-              : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100/60'
-          }`}
-          to={registerUrl}
-        >
-          {t('signUp')}
-        </Link>
-
-        {/* Sign In CTA button (hidden on xs, shown on md+) */}
-        <Link
-          className={`hidden md:inline-flex px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold active:scale-95 transition-all items-center gap-1.5 ${
-            isHome
-              ? 'text-slate-950 font-bold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 shadow-sm shadow-emerald-500/20'
-              : 'text-white bg-brand-orange hover:bg-brand-orange-dark shadow-xs hover:shadow-sm'
-          }`}
-          to="/login"
-        >
-          <span>{t('signIn')}</span>
-          <span aria-hidden="true">→</span>
-        </Link>
-
         {/* Mobile / Tablet Hamburger Toggle Button (visible on < lg) */}
         <button
           ref={toggleButtonRef}
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
           className={`lg:hidden p-2 rounded-xl active:scale-95 transition-all focus:outline-none focus-visible:ring-2 ${
-            isHome
-              ? isOpen
-                ? 'bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/40 focus-visible:ring-emerald-400'
-                : 'bg-slate-900/60 text-slate-200 border border-white/10 hover:bg-white/10 focus-visible:ring-emerald-400'
-              : isOpen
-                ? 'bg-orange-50 text-brand-orange ring-1 ring-orange-200 focus-visible:ring-brand-orange'
-                : 'bg-slate-50 text-slate-700 border border-slate-200/80 hover:bg-slate-100 focus-visible:ring-brand-orange'
+            isOpen
+              ? 'bg-orange-50 text-brand-orange ring-1 ring-orange-200 focus-visible:ring-brand-orange'
+              : 'bg-slate-50 text-slate-700 border border-slate-200/80 hover:bg-slate-100 focus-visible:ring-brand-orange'
           }`}
           aria-expanded={isOpen}
           aria-controls="mobile-nav-dropdown"
@@ -243,8 +227,11 @@ export default function Navbar() {
       {/* ── BACKDROP OVERLAY (Mobile & Tablet) ── */}
       {isOpen && (
         <div
-          className="lg:hidden fixed inset-0 top-16 bg-slate-950/60 backdrop-blur-xs z-40 transition-opacity"
-          onClick={() => setIsOpen(false)}
+          className="lg:hidden fixed inset-0 top-16 bg-slate-950/40 backdrop-blur-xs z-40 transition-opacity"
+          onClick={() => {
+            document.body.style.overflow = ''
+            setIsOpen(false)
+          }}
           aria-hidden="true"
         />
       )}
@@ -257,45 +244,33 @@ export default function Navbar() {
           role="dialog"
           aria-modal="true"
           aria-label={t('navigation') || 'Navigation menu'}
-          className={`lg:hidden absolute top-16 left-0 right-0 w-full backdrop-blur-2xl border-b shadow-2xl z-50 max-h-[calc(100vh-4rem)] overflow-y-auto ${
-            isHome
-              ? 'bg-[#090d16]/98 border-white/10 text-white'
-              : 'bg-white/98 border-slate-200 text-slate-900'
-          }`}
+          className="lg:hidden fixed top-16 left-0 right-0 w-full backdrop-blur-2xl border-b border-slate-200 bg-white/98 text-slate-900 shadow-2xl z-50 max-h-[calc(100vh-4rem)] overflow-y-auto"
         >
           {/* Section Navigation Links */}
           <div className="p-3 sm:p-4 space-y-1">
-            <div className={`px-3 py-1 text-[11px] font-bold uppercase tracking-wider ${isHome ? 'text-slate-400' : 'text-slate-400'}`}>
+            <div className="px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
               {t('navigation') || 'Navigation'}
             </div>
             {navLinks.map((item) => {
               const isActive = activeSection === item.id
               const Icon = item.icon
               return (
-                <Link
+                <a
                   key={item.key}
-                  to={item.path}
-                  onClick={() => handleLinkClick(item.id)}
-                  className={`flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all ${
+                  href={item.hash || '/'}
+                  onClick={(e) => handleLinkClick(e, item)}
+                  className={`flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all cursor-pointer ${
                     isActive
-                      ? isHome
-                        ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold'
-                        : 'bg-brand-orange-light text-brand-orange shadow-2xs font-bold'
-                      : isHome
-                        ? 'text-slate-300 hover:text-white hover:bg-white/10'
-                        : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100/70'
+                      ? 'bg-orange-50 text-brand-orange font-bold border border-orange-200/60 shadow-2xs'
+                      : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100/70'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
                       className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
                         isActive
-                          ? isHome
-                            ? 'bg-emerald-500/25 text-emerald-300'
-                            : 'bg-white text-brand-orange shadow-2xs'
-                          : isHome
-                            ? 'bg-slate-800 text-slate-400'
-                            : 'bg-slate-100 text-slate-500'
+                          ? 'bg-white text-brand-orange shadow-2xs'
+                          : 'bg-slate-100 text-slate-500'
                       }`}
                     >
                       <Icon className="w-4 h-4" />
@@ -303,42 +278,13 @@ export default function Navbar() {
                     <span>{t(item.key) || item.defaultLabel}</span>
                   </div>
                   {isActive ? (
-                    <span className={`w-2 h-2 rounded-full ${isHome ? 'bg-emerald-400' : 'bg-brand-orange'}`} />
+                    <span className="w-2 h-2 rounded-full bg-brand-orange" />
                   ) : (
                     <FiChevronRight className="w-4 h-4 text-slate-400" />
                   )}
-                </Link>
+                </a>
               )
             })}
-          </div>
-
-          {/* Action Buttons in Dropdown */}
-          <div className={`p-4 border-t flex flex-col gap-2.5 ${isHome ? 'border-white/10 bg-slate-900/50' : 'border-slate-200/80 bg-slate-50/80'}`}>
-            <div className="grid grid-cols-2 gap-2.5">
-              <Link
-                to={registerUrl}
-                onClick={() => setIsOpen(false)}
-                className={`w-full py-2.5 px-4 rounded-xl text-center text-xs sm:text-sm font-bold shadow-2xs transition-all active:scale-[0.99] ${
-                  isHome
-                    ? 'text-slate-200 bg-white/10 border border-white/15 hover:bg-white/15'
-                    : 'text-slate-700 bg-white border border-slate-200 hover:bg-slate-50'
-                }`}
-              >
-                {t('signUp')}
-              </Link>
-              <Link
-                to="/login"
-                onClick={() => setIsOpen(false)}
-                className={`w-full py-2.5 px-4 rounded-xl text-center text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 active:scale-[0.99] ${
-                  isHome
-                    ? 'text-slate-950 font-bold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 shadow-md shadow-emerald-500/20'
-                    : 'text-white bg-brand-orange hover:bg-brand-orange-dark shadow-xs'
-                }`}
-              >
-                <span>{t('signIn')}</span>
-                <FiArrowRight className="w-4 h-4" />
-              </Link>
-            </div>
           </div>
         </div>
       )}
