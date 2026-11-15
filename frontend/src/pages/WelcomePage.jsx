@@ -9,6 +9,7 @@ import {
   FiVolumeX,
   FiMaximize,
   FiShoppingBag,
+  FiShoppingCart,
   FiTruck,
   FiMail,
   FiMapPin,
@@ -18,14 +19,15 @@ import {
   FiTrendingUp,
   FiShield,
   FiSend,
+  FiZap,
 } from 'react-icons/fi'
 import { useLocale } from '../context/LocaleContext.jsx'
-import homeHeroBg from '../assets/Home_Hero.webp'
-import welcomePageMobileBg from '../assets/welcome-page_bg.jpeg'
+import InteractivePhoneMockup from '../components/InteractivePhoneMockup.jsx'
 
 export default function WelcomePage() {
   const { t } = useLocale()
   const location = useLocation()
+  const [activeRoleMode, setActiveRoleMode] = useState('retailer') // 'retailer' | 'supplier'
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
   const [isPlaying, setIsPlaying] = useState(false)
   const [currentTime, setCurrentTime] = useState(0)
@@ -193,76 +195,164 @@ export default function WelcomePage() {
   }
 
   return (
-    <div className="w-full min-h-screen bg-brand-cream/30 text-slate-800 selection:bg-brand-orange/20 selection:text-brand-orange">
+    <div className="w-full min-h-screen bg-slate-950 text-slate-100 selection:bg-emerald-500/20 selection:text-emerald-400">
 
-      {/* ── HERO SECTION ── */}
+      {/* ── HERO SECTION (High-Contrast Dark Glassmorphism) ── */}
       <section
-        className="relative w-full overflow-hidden h-[calc(100svh-4rem)] min-h-[500px] max-h-[calc(100svh-4rem)] sm:h-auto sm:max-h-none sm:min-h-[580px] lg:min-h-[640px] pt-4 sm:pt-12 pb-6 sm:pb-36 lg:pb-40 flex flex-col justify-between sm:block snap-start scroll-mt-16 bg-[#FAF7F2]"
+        className="relative w-full overflow-hidden min-h-[580px] lg:min-h-[660px] pt-6 sm:pt-12 pb-12 sm:pb-24 flex items-center snap-start scroll-mt-16 bg-[#090d16]"
         id="home"
         aria-label="Hero"
       >
-        {/* Full Hero Background Image – mobile */}
+        {/* Subtle radial ambient glows in eco-friendly blue-green accents */}
         <div
-          className="absolute inset-0 w-full h-full bg-cover bg-center pointer-events-none sm:hidden"
-          style={{
-            backgroundImage: `url(${welcomePageMobileBg})`,
-            backgroundRepeat: 'no-repeat',
-          }}
+          className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 sm:w-[580px] h-96 sm:h-[580px] bg-gradient-to-tr from-emerald-500/15 via-teal-500/10 to-transparent rounded-full blur-3xl pointer-events-none"
           aria-hidden="true"
         />
-
-        {/* Full Hero Background Image – sm+ */}
         <div
-          className="absolute inset-0 w-full h-full bg-cover bg-[position:65%_center] lg:bg-center pointer-events-none hidden sm:block"
-          style={{
-            backgroundImage: `url(${welcomePageMobileBg})`,
-            backgroundRepeat: 'no-repeat',
-          }}
+          className="absolute top-1/3 right-1/4 w-80 sm:w-[500px] h-80 sm:h-[500px] bg-gradient-to-bl from-teal-500/12 via-cyan-500/10 to-transparent rounded-full blur-3xl pointer-events-none"
           aria-hidden="true"
         />
-
-        {/* Subtle overlay/gradient for readability */}
         <div
-          className="absolute inset-0 pointer-events-none bg-gradient-to-b from-[#FAF7F2] from-15% via-[#FAF7F2]/90 via-32% via-[#FAF7F2]/30 via-52% to-[#FAF7F2]/5 sm:bg-gradient-to-r sm:from-[#FAF7F2]/95 sm:via-[#FAF7F2]/75 sm:to-transparent"
+          className="absolute bottom-6 left-1/3 w-72 sm:w-[420px] h-72 sm:h-[420px] bg-gradient-to-t from-cyan-500/8 to-transparent rounded-full blur-3xl pointer-events-none"
+          aria-hidden="true"
+        />
+        <div
+          className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none opacity-60"
           aria-hidden="true"
         />
 
         {/* Hero Content Layer */}
-        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full flex-1 flex flex-col justify-between sm:block">
-          <div className="max-w-2xl lg:max-w-3xl flex-1 flex flex-col justify-between sm:block sm:space-y-6">
-            <div className="space-y-2.5 sm:space-y-4">
-              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] sm:text-xs font-bold uppercase tracking-wider text-brand-orange bg-orange-50 border border-orange-200 shadow-2xs">
-                <span>✦</span>
-                <span>{t('heroEyebrow')}</span>
-              </span>
-              <h1 className="text-2xl sm:text-4xl md:text-5xl lg:text-6xl font-black text-brand-navy tracking-tight leading-[1.14]">
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 lg:gap-12 items-center">
+            
+            {/* Left Column: Sharp B2B Copy & CTAs */}
+            <div className="lg:col-span-7 space-y-5 sm:space-y-6 text-left">
+              {/* Top Pill Badge */}
+              <div>
+                <span className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-bold tracking-wide text-emerald-400 bg-emerald-500/10 border border-emerald-500/20 backdrop-blur-md shadow-xs">
+                  <span className="text-emerald-400">✦</span>
+                  <span>{t('heroEyebrow')}</span>
+                </span>
+              </div>
+
+              {/* Main Headline */}
+              <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-white tracking-tight leading-[1.12]">
                 {t('heroHeading')}
               </h1>
-              <p className="text-xs sm:text-base lg:text-lg text-slate-700 font-medium leading-relaxed max-w-xl">
+
+              {/* Subheadline */}
+              <p className="text-sm sm:text-lg text-slate-300 font-medium leading-relaxed max-w-2xl">
                 {t('heroSubtitle')}
               </p>
+
+              {/* Interactive Role Switcher Pill */}
+              <div className="space-y-3 pt-1">
+                <div className="inline-flex p-1 rounded-xl bg-white/[0.05] border border-white/10 backdrop-blur-md shadow-xs">
+                  <button
+                    type="button"
+                    onClick={() => setActiveRoleMode('retailer')}
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      activeRoleMode === 'retailer'
+                        ? 'bg-gradient-to-r from-emerald-500 to-teal-500 text-slate-950 font-bold shadow-xs'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {t('forRetailers')}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setActiveRoleMode('supplier')}
+                    className={`px-3.5 py-1.5 rounded-lg text-xs font-bold transition-all cursor-pointer ${
+                      activeRoleMode === 'supplier'
+                        ? 'bg-gradient-to-r from-teal-500 to-emerald-500 text-slate-950 font-bold shadow-xs'
+                        : 'text-slate-400 hover:text-white'
+                    }`}
+                  >
+                    {t('forSuppliers')}
+                  </button>
+                </div>
+
+                {/* Role Dynamic Highlights */}
+                <div className="flex flex-wrap gap-2 text-xs">
+                  {activeRoleMode === 'retailer' ? (
+                    <>
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-emerald-300 font-medium">
+                        <FiCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> Compare live rates across distributors
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-emerald-300 font-medium">
+                        <FiCheck className="w-3.5 h-3.5 text-emerald-400 shrink-0" /> 1-Tap consolidated cart & split delivery
+                      </span>
+                    </>
+                  ) : (
+                    <>
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-teal-300 font-medium">
+                        <FiCheck className="w-3.5 h-3.5 text-teal-400 shrink-0" /> Expand distribution to 500+ local retail shops
+                      </span>
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-lg bg-white/[0.04] border border-white/10 text-teal-300 font-medium">
+                        <FiCheck className="w-3.5 h-3.5 text-teal-400 shrink-0" /> Real-time catalog & digital order settlement
+                      </span>
+                    </>
+                  )}
+                </div>
+              </div>
+
+              {/* Action CTAs */}
+              <div className="flex flex-wrap items-center gap-3 pt-2">
+                <Link
+                  className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm sm:text-base font-bold text-slate-950 bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 active:scale-95 shadow-lg shadow-emerald-500/25 transition-all flex-1 sm:flex-initial"
+                  to={activeRoleMode === 'retailer' ? '/signup?role=SHOP_OWNER' : '/signup?role=SUPPLIER'}
+                >
+                  <span>{activeRoleMode === 'retailer' ? t('primaryCtaShop') : t('secondaryCtaSupplier')}</span>
+                  <FiArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
+                </Link>
+
+                <Link
+                  className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-sm sm:text-base font-semibold text-white bg-white/[0.06] hover:bg-white/[0.12] border border-white/15 active:scale-95 transition-all flex-1 sm:flex-initial"
+                  to={activeRoleMode === 'retailer' ? '/signup?role=SUPPLIER' : '/signup?role=SHOP_OWNER'}
+                >
+                  <span>{activeRoleMode === 'retailer' ? t('secondaryCtaSupplier') : t('primaryCtaShop')}</span>
+                </Link>
+
+                <button
+                  type="button"
+                  onClick={() => setIsVideoModalOpen(true)}
+                  className="inline-flex items-center gap-2 px-4 py-3 rounded-xl text-xs sm:text-sm font-medium text-slate-300 hover:text-white transition-colors cursor-pointer group"
+                >
+                  <span className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <FiPlay className="w-2.5 h-2.5 fill-current ml-0.5" />
+                  </span>
+                  <span>{t('watchTour')}</span>
+                </button>
+              </div>
+
+              {/* Trust Micro-Metrics Row below CTAs */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 pt-5 border-t border-white/10 text-xs text-slate-300">
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-emerald-500/15 border border-emerald-500/30 text-emerald-400 flex items-center justify-center shrink-0">
+                    <FiZap className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="font-medium">{t('trustMetricComparison')}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-teal-500/15 border border-teal-500/30 text-teal-300 flex items-center justify-center shrink-0">
+                    <FiShoppingCart className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="font-medium">{t('trustMetricConsolidated')}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-6 h-6 rounded-lg bg-cyan-500/15 border border-cyan-500/30 text-cyan-300 flex items-center justify-center shrink-0">
+                    <FiShield className="w-3.5 h-3.5" />
+                  </div>
+                  <span className="font-medium">{t('trustMetricLanguages')}</span>
+                </div>
+              </div>
             </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-wrap items-center gap-2.5 sm:gap-3.5 pt-3 sm:pt-3 mt-auto sm:mt-0">
-              <Link
-                className="inline-flex items-center justify-center gap-2 px-5 py-3 sm:px-6 sm:py-3.5 rounded-xl text-sm sm:text-base font-bold text-white bg-brand-orange hover:bg-brand-orange-dark active:scale-95 shadow-md shadow-brand-orange/20 transition-all flex-1 sm:flex-initial"
-                to="/role-selection"
-              >
-                <span>{t('getStarted')}</span>
-                <FiArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
-              </Link>
-              <button
-                type="button"
-                className="inline-flex items-center justify-center gap-2 px-4 py-3 sm:px-5 sm:py-3.5 rounded-xl text-sm sm:text-base font-semibold text-slate-800 bg-white hover:bg-slate-50 border border-slate-200 active:scale-95 shadow-2xs transition-all cursor-pointer flex-1 sm:flex-initial"
-                onClick={() => setIsVideoModalOpen(true)}
-              >
-                <span className="w-5 h-5 sm:w-6 sm:h-6 rounded-full bg-orange-100 text-brand-orange flex items-center justify-center">
-                  <FiPlay className="w-2.5 h-2.5 sm:w-3 sm:h-3 fill-current ml-0.5" />
-                </span>
-                <span>{t('watchVideo')}</span>
-              </button>
+            {/* Right Column: Interactive Phone Mockup */}
+            <div className="lg:col-span-5 flex justify-center lg:justify-end py-4 lg:py-0">
+              <InteractivePhoneMockup />
             </div>
+
           </div>
         </div>
       </section>

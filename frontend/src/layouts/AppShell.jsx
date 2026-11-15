@@ -12,6 +12,7 @@ export default function AppShell() {
   const isWorkspace = pathname.startsWith('/dashboard/')
   const isAuthPage = pathname === '/signup' || pathname === '/login' || pathname === '/role-selection' || pathname === '/forgot-password' || pathname === '/register'
   const isSignupPage = pathname === '/signup' || pathname === '/register'
+  const isHome = pathname === '/'
   const isNoScrollPage = false
 
   useEffect(() => {
@@ -48,15 +49,21 @@ export default function AppShell() {
     <div className="min-h-screen flex flex-col bg-surface-bg">
       {!isWorkspace && (
         <>
-          <header className="fixed top-0 left-0 right-0 z-50 w-full bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-2xs">
+          <header className={`fixed top-0 left-0 right-0 z-50 w-full transition-colors duration-200 ${
+            isHome
+              ? 'bg-[#090d16]/90 backdrop-blur-xl border-b border-white/10 text-white shadow-2xl'
+              : 'bg-white/95 backdrop-blur-md border-b border-slate-100 shadow-2xs'
+          }`}>
             <div className="max-w-7xl xl:max-w-[1360px] 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 h-16 flex items-center justify-between gap-3 sm:gap-4">
               <Link className="flex items-center gap-2.5 shrink-0" to="/" aria-label={t('connectoHome')}>
-                <span className="w-8 h-8 rounded-full bg-brand-orange text-white flex items-center justify-center font-bold text-base shadow-sm shrink-0">
+                <span className={`w-8 h-8 rounded-xl flex items-center justify-center font-black text-base shadow-sm shrink-0 ${
+                  isHome ? 'bg-gradient-to-tr from-emerald-500 to-teal-400 text-slate-950 shadow-emerald-500/25' : 'bg-brand-orange text-white'
+                }`}>
                   C
                 </span>
                 <span className="flex flex-col">
-                  <span className="text-base font-bold text-slate-900 leading-tight">{messages.appName}</span>
-                  <span className="text-[10px] text-slate-500 font-medium hidden sm:inline leading-none mt-0.5">{t('strongerLocalBusinesses')}</span>
+                  <span className={`text-base font-bold leading-tight ${isHome ? 'text-white' : 'text-slate-900'}`}>{messages.appName}</span>
+                  <span className={`text-[10px] font-medium hidden sm:inline leading-none mt-0.5 ${isHome ? 'text-emerald-400/90' : 'text-slate-500'}`}>{t('strongerLocalBusinesses')}</span>
                 </span>
               </Link>
               {!isAuthPage ? (

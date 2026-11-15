@@ -4,11 +4,116 @@
     <meta charset="UTF-8" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Connekto demo prototype for supplier ordering." />
-    <title>Connekto</title>
+    <title>Connekto — Every Shop to Every FMCG Supplier in One App</title>
+    <meta
+      name="description"
+      content="B2B Multi-Supplier Marketplace & Business Management Platform. Compare wholesale supplier rates, consolidate orders into one cart, and restock your shop in English, Gujarati, or Hindi."
+    />
+    <meta name="theme-color" content="#090d16" />
+
+    <!-- Open Graph / WhatsApp / LinkedIn / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://connekto.vercel.app/" />
+    <meta property="og:title" content="Connekto — Every Shop to Every FMCG Supplier in One App" />
+    <meta
+      property="og:description"
+      content="B2B Multi-Supplier Marketplace & Business Management Platform. Compare wholesale supplier rates, consolidate orders into one cart, and restock your shop in English, Gujarati, or Hindi."
+    />
+    <meta property="og:image" content="https://connekto.vercel.app/og-banner.png" />
+    <meta property="og:site_name" content="Connekto" />
+
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://connekto.vercel.app/" />
+    <meta name="twitter:title" content="Connekto — Every Shop to Every FMCG Supplier in One App" />
+    <meta
+      name="twitter:description"
+      content="B2B Multi-Supplier Marketplace & Business Management Platform. Compare wholesale supplier rates, consolidate orders into one cart, and restock your shop in English, Gujarati, or Hindi."
+    />
+    <meta name="twitter:image" content="https://connekto.vercel.app/og-banner.png" />
+
+    <!-- Prevent white flash on initial mobile load before CSS and JS hydrate -->
+    <style>
+      html, body {
+        background-color: #090d16;
+        color: #f8fafc;
+        margin: 0;
+        padding: 0;
+      }
+      #root {
+        min-height: 100vh;
+      }
+      .connekto-preloader {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        background: #090d16;
+        color: #e2e8f0;
+        font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        padding: 24px;
+        box-sizing: border-box;
+      }
+      .preloader-glow {
+        position: relative;
+        width: 64px;
+        height: 64px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin-bottom: 16px;
+      }
+      .preloader-glow::before {
+        content: '';
+        position: absolute;
+        inset: -8px;
+        border-radius: 50%;
+        background: radial-gradient(circle, rgba(16, 185, 129, 0.45) 0%, rgba(20, 184, 166, 0.15) 55%, transparent 70%);
+        animation: connekto-pulse 1.8s ease-in-out infinite;
+      }
+      .preloader-badge {
+        position: relative;
+        width: 50px;
+        height: 50px;
+        border-radius: 16px;
+        background: linear-gradient(135deg, #10b981 0%, #0d9488 100%);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-weight: 800;
+        font-size: 26px;
+        box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.45);
+      }
+      .preloader-text {
+        font-size: 16px;
+        font-weight: 700;
+        letter-spacing: -0.01em;
+        color: #f1f5f9;
+        margin-bottom: 4px;
+      }
+      .preloader-subtext {
+        font-size: 12px;
+        color: #94a3b8;
+        font-weight: 500;
+      }
+      @keyframes connekto-pulse {
+        0%, 100% { transform: scale(0.94); opacity: 0.6; }
+        50% { transform: scale(1.16); opacity: 1; }
+      }
+    </style>
   </head>
-  <body>
-    <div id="root"></div>
+  <body class="bg-[#090d16] text-slate-100 antialiased selection:bg-emerald-500/20 selection:text-emerald-400">
+    <div id="root">
+      <div class="connekto-preloader" aria-label="Loading Connekto">
+        <div class="preloader-glow">
+          <div class="preloader-badge">C</div>
+        </div>
+        <div class="preloader-text">Connekto</div>
+        <div class="preloader-subtext">B2B Multi-Supplier Marketplace</div>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

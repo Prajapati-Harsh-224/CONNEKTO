@@ -37,6 +37,7 @@ export default function Navbar() {
   const [activeSection, setActiveSection] = useState('home')
   const menuRef = useRef(null)
   const toggleButtonRef = useRef(null)
+  const isHome = location.pathname === '/'
 
   const navLinks = [
     { key: 'home', defaultLabel: 'Home', id: 'home', path: '/', icon: FiHome },
@@ -155,7 +156,7 @@ export default function Navbar() {
     <>
       {/* ── DESKTOP HORIZONTAL NAVIGATION (Visible on >= 1024px) ── */}
       <nav
-        className="hidden lg:flex items-center gap-1 xl:gap-2 text-xs sm:text-sm font-medium text-slate-600"
+        className="hidden lg:flex items-center gap-1 xl:gap-2 text-xs sm:text-sm font-medium"
         aria-label="Primary navigation"
       >
         {navLinks.map((item) => {
@@ -163,8 +164,12 @@ export default function Navbar() {
           const baseClass =
             'px-3 py-1.5 rounded-lg transition-all duration-150 cursor-pointer text-xs sm:text-sm'
           const activeClass = isActive
-            ? 'text-brand-orange font-bold bg-brand-orange-light shadow-2xs'
-            : 'hover:text-slate-900 hover:bg-slate-100/70'
+            ? isHome
+              ? 'text-emerald-400 font-bold bg-emerald-500/15 border border-emerald-500/30 shadow-xs'
+              : 'text-brand-orange font-bold bg-brand-orange-light shadow-2xs'
+            : isHome
+              ? 'text-slate-300 hover:text-white hover:bg-white/10'
+              : 'text-slate-600 hover:text-slate-900 hover:bg-slate-100/70'
 
           return (
             <Link
@@ -185,7 +190,11 @@ export default function Navbar() {
 
         {/* Sign Up Link (hidden on mobile and tablet < lg, shown on desktop lg+) */}
         <Link
-          className="hidden lg:inline-flex px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold text-slate-700 hover:text-slate-900 hover:bg-slate-100/60 transition-colors"
+          className={`hidden lg:inline-flex px-3 py-1.5 rounded-lg text-xs sm:text-sm font-semibold transition-colors ${
+            isHome
+              ? 'text-slate-300 hover:text-white hover:bg-white/10'
+              : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100/60'
+          }`}
           to={registerUrl}
         >
           {t('signUp')}
@@ -193,7 +202,11 @@ export default function Navbar() {
 
         {/* Sign In CTA button (hidden on xs, shown on md+) */}
         <Link
-          className="hidden md:inline-flex px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold text-white bg-brand-orange hover:bg-brand-orange-dark shadow-xs hover:shadow-sm active:scale-95 transition-all items-center gap-1.5"
+          className={`hidden md:inline-flex px-3.5 py-1.5 sm:py-2 rounded-xl text-xs sm:text-sm font-semibold active:scale-95 transition-all items-center gap-1.5 ${
+            isHome
+              ? 'text-slate-950 font-bold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 shadow-sm shadow-emerald-500/20'
+              : 'text-white bg-brand-orange hover:bg-brand-orange-dark shadow-xs hover:shadow-sm'
+          }`}
           to="/login"
         >
           <span>{t('signIn')}</span>
@@ -205,10 +218,14 @@ export default function Navbar() {
           ref={toggleButtonRef}
           type="button"
           onClick={() => setIsOpen((prev) => !prev)}
-          className={`lg:hidden p-2 rounded-xl text-slate-700 hover:text-brand-orange hover:bg-slate-100 active:scale-95 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-brand-orange ${
-            isOpen
-              ? 'bg-orange-50 text-brand-orange ring-1 ring-orange-200'
-              : 'bg-slate-50 border border-slate-200/80'
+          className={`lg:hidden p-2 rounded-xl active:scale-95 transition-all focus:outline-none focus-visible:ring-2 ${
+            isHome
+              ? isOpen
+                ? 'bg-emerald-500/20 text-emerald-400 ring-1 ring-emerald-500/40 focus-visible:ring-emerald-400'
+                : 'bg-slate-900/60 text-slate-200 border border-white/10 hover:bg-white/10 focus-visible:ring-emerald-400'
+              : isOpen
+                ? 'bg-orange-50 text-brand-orange ring-1 ring-orange-200 focus-visible:ring-brand-orange'
+                : 'bg-slate-50 text-slate-700 border border-slate-200/80 hover:bg-slate-100 focus-visible:ring-brand-orange'
           }`}
           aria-expanded={isOpen}
           aria-controls="mobile-nav-dropdown"
@@ -226,7 +243,7 @@ export default function Navbar() {
       {/* ── BACKDROP OVERLAY (Mobile & Tablet) ── */}
       {isOpen && (
         <div
-          className="lg:hidden fixed inset-0 top-16 bg-slate-900/40 backdrop-blur-xs z-40 transition-opacity"
+          className="lg:hidden fixed inset-0 top-16 bg-slate-950/60 backdrop-blur-xs z-40 transition-opacity"
           onClick={() => setIsOpen(false)}
           aria-hidden="true"
         />
@@ -240,11 +257,15 @@ export default function Navbar() {
           role="dialog"
           aria-modal="true"
           aria-label={t('navigation') || 'Navigation menu'}
-          className="lg:hidden absolute top-16 left-0 right-0 w-full bg-white/98 backdrop-blur-xl border-b border-slate-200 shadow-2xl z-50 max-h-[calc(100vh-4rem)] overflow-y-auto"
+          className={`lg:hidden absolute top-16 left-0 right-0 w-full backdrop-blur-2xl border-b shadow-2xl z-50 max-h-[calc(100vh-4rem)] overflow-y-auto ${
+            isHome
+              ? 'bg-[#090d16]/98 border-white/10 text-white'
+              : 'bg-white/98 border-slate-200 text-slate-900'
+          }`}
         >
           {/* Section Navigation Links */}
           <div className="p-3 sm:p-4 space-y-1">
-            <div className="px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+            <div className={`px-3 py-1 text-[11px] font-bold uppercase tracking-wider ${isHome ? 'text-slate-400' : 'text-slate-400'}`}>
               {t('navigation') || 'Navigation'}
             </div>
             {navLinks.map((item) => {
@@ -257,16 +278,24 @@ export default function Navbar() {
                   onClick={() => handleLinkClick(item.id)}
                   className={`flex items-center justify-between px-3.5 py-3 rounded-xl text-sm font-semibold transition-all ${
                     isActive
-                      ? 'bg-brand-orange-light text-brand-orange shadow-2xs font-bold'
-                      : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100/70'
+                      ? isHome
+                        ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/30 font-bold'
+                        : 'bg-brand-orange-light text-brand-orange shadow-2xs font-bold'
+                      : isHome
+                        ? 'text-slate-300 hover:text-white hover:bg-white/10'
+                        : 'text-slate-700 hover:text-slate-900 hover:bg-slate-100/70'
                   }`}
                 >
                   <div className="flex items-center gap-3">
                     <div
                       className={`w-8 h-8 rounded-lg flex items-center justify-center transition-colors ${
                         isActive
-                          ? 'bg-white text-brand-orange shadow-2xs'
-                          : 'bg-slate-100 text-slate-500'
+                          ? isHome
+                            ? 'bg-emerald-500/25 text-emerald-300'
+                            : 'bg-white text-brand-orange shadow-2xs'
+                          : isHome
+                            ? 'bg-slate-800 text-slate-400'
+                            : 'bg-slate-100 text-slate-500'
                       }`}
                     >
                       <Icon className="w-4 h-4" />
@@ -274,9 +303,9 @@ export default function Navbar() {
                     <span>{t(item.key) || item.defaultLabel}</span>
                   </div>
                   {isActive ? (
-                    <span className="w-2 h-2 rounded-full bg-brand-orange" />
+                    <span className={`w-2 h-2 rounded-full ${isHome ? 'bg-emerald-400' : 'bg-brand-orange'}`} />
                   ) : (
-                    <FiChevronRight className="w-4 h-4 text-slate-300" />
+                    <FiChevronRight className="w-4 h-4 text-slate-400" />
                   )}
                 </Link>
               )
@@ -284,19 +313,27 @@ export default function Navbar() {
           </div>
 
           {/* Action Buttons in Dropdown */}
-          <div className="p-4 border-t border-slate-200/80 bg-slate-50/80 flex flex-col gap-2.5">
+          <div className={`p-4 border-t flex flex-col gap-2.5 ${isHome ? 'border-white/10 bg-slate-900/50' : 'border-slate-200/80 bg-slate-50/80'}`}>
             <div className="grid grid-cols-2 gap-2.5">
               <Link
                 to={registerUrl}
                 onClick={() => setIsOpen(false)}
-                className="w-full py-2.5 px-4 rounded-xl text-center text-xs sm:text-sm font-bold text-slate-700 bg-white border border-slate-200 hover:bg-slate-50 shadow-2xs transition-all active:scale-[0.99]"
+                className={`w-full py-2.5 px-4 rounded-xl text-center text-xs sm:text-sm font-bold shadow-2xs transition-all active:scale-[0.99] ${
+                  isHome
+                    ? 'text-slate-200 bg-white/10 border border-white/15 hover:bg-white/15'
+                    : 'text-slate-700 bg-white border border-slate-200 hover:bg-slate-50'
+                }`}
               >
                 {t('signUp')}
               </Link>
               <Link
                 to="/login"
                 onClick={() => setIsOpen(false)}
-                className="w-full py-2.5 px-4 rounded-xl text-center text-xs sm:text-sm font-bold text-white bg-brand-orange hover:bg-brand-orange-dark shadow-xs hover:shadow-sm transition-all flex items-center justify-center gap-1.5 active:scale-[0.99]"
+                className={`w-full py-2.5 px-4 rounded-xl text-center text-xs sm:text-sm font-bold transition-all flex items-center justify-center gap-1.5 active:scale-[0.99] ${
+                  isHome
+                    ? 'text-slate-950 font-bold bg-gradient-to-r from-emerald-500 to-teal-500 hover:from-emerald-400 hover:to-teal-400 shadow-md shadow-emerald-500/20'
+                    : 'text-white bg-brand-orange hover:bg-brand-orange-dark shadow-xs'
+                }`}
               >
                 <span>{t('signIn')}</span>
                 <FiArrowRight className="w-4 h-4" />
