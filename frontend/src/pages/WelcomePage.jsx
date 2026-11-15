@@ -1,8 +1,13 @@
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useRef, useState } from 'react'
 import { Link, useLocation } from 'react-router-dom'
 import {
   FiArrowRight,
   FiPlay,
+  FiPause,
+  FiRotateCcw,
+  FiVolume2,
+  FiVolumeX,
+  FiMaximize,
   FiShoppingBag,
   FiTruck,
   FiMail,
@@ -22,6 +27,85 @@ export default function WelcomePage() {
   const { t } = useLocale()
   const location = useLocation()
   const [isVideoModalOpen, setIsVideoModalOpen] = useState(false)
+  const [isPlaying, setIsPlaying] = useState(false)
+  const [currentTime, setCurrentTime] = useState(0)
+  const [duration, setDuration] = useState(90)
+  const [isMuted, setIsMuted] = useState(false)
+  const [hasEnded, setHasEnded] = useState(false)
+  const [videoError, setVideoError] = useState(false)
+  const videoRef = useRef(null)
+  const videoContainerRef = useRef(null)
+
+  const formatTime = (seconds) => {
+    if (isNaN(seconds) || seconds < 0) return '00:00'
+    const mins = Math.floor(seconds / 60)
+    const secs = Math.floor(seconds % 60)
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`
+  }
+
+  const togglePlay = () => {
+    if (!videoRef.current) return
+    if (hasEnded) {
+      videoRef.current.currentTime = 0
+      setHasEnded(false)
+    }
+    if (videoRef.current.paused) {
+      videoRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false))
+    } else {
+      videoRef.current.pause()
+      setIsPlaying(false)
+    }
+  }
+
+  const toggleMute = () => {
+    if (!videoRef.current) return
+    videoRef.current.muted = !isMuted
+    setIsMuted(!isMuted)
+  }
+
+  const handleSeek = (e) => {
+    const time = Number(e.target.value)
+    setCurrentTime(time)
+    if (videoRef.current) {
+      videoRef.current.currentTime = time
+    }
+  }
+
+  const toggleFullscreen = () => {
+    if (!videoContainerRef.current) return
+    if (!document.fullscreenElement) {
+      videoContainerRef.current.requestFullscreen().catch(() => {})
+    } else {
+      document.exitFullscreen().catch(() => {})
+    }
+  }
+
+  useEffect(() => {
+    if (isVideoModalOpen) {
+      setHasEnded(false)
+      setVideoError(false)
+      const timer = setTimeout(() => {
+        if (videoRef.current) {
+          videoRef.current.currentTime = 0
+          videoRef.current.play().then(() => {
+            setIsPlaying(true)
+          }).catch(() => {
+            if (videoRef.current) {
+              videoRef.current.muted = true
+              setIsMuted(true)
+              videoRef.current.play().then(() => setIsPlaying(true)).catch(() => setIsPlaying(false))
+            }
+          })
+        }
+      }, 150)
+      return () => clearTimeout(timer)
+    } else {
+      if (videoRef.current) {
+        videoRef.current.pause()
+      }
+      setIsPlaying(false)
+    }
+  }, [isVideoModalOpen])
 
   // Contact form state
   const [contactForm, setContactForm] = useState({ name: '', email: '', role: 'SHOP_OWNER', message: '' })
@@ -454,7 +538,7 @@ export default function WelcomePage() {
           onClick={() => setIsVideoModalOpen(false)}
         >
           <div
-            className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-2xl max-w-2xl w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            className="bg-white rounded-2xl sm:rounded-3xl border border-slate-200 shadow-2xl max-w-3xl w-full overflow-hidden animate-in fade-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Modal Header */}
@@ -477,17 +561,109 @@ export default function WelcomePage() {
 
             {/* Video Walkthrough Container */}
             <div className="p-5 sm:p-7 space-y-4">
-              <div className="relative rounded-2xl overflow-hidden aspect-video bg-slate-900 flex flex-col items-center justify-center text-white p-6 text-center">
-                <div className="w-14 h-14 sm:w-16 sm:h-16 rounded-full bg-brand-orange/90 flex items-center justify-center text-white shadow-lg mb-3">
-                  <FiPlay className="w-6 h-6 fill-current ml-1" />
-                </div>
-                <h4 className="text-base sm:text-lg font-bold">Watch How Connekto Simplifies Local Trade</h4>
-                <p className="text-xs sm:text-sm text-slate-300 max-w-md mt-1">
-                  From multi-supplier catalog browsing to fast checkout and live delivery coordination.
-                </p>
-                <div className="absolute bottom-3 left-4 right-4 flex items-center justify-between text-[11px] text-slate-400 font-mono">
-                  <span>00:00 / 02:15</span>
-                  <span>1080p HD</span>
+              <div
+                ref={videoContainerRef}
+                className="relative rounded-2xl overflow-hidden aspect-video bg-slate-950 flex flex-col items-center justify-center text-white group shadow-inner"
+              >
+                {/* HTML5 Video Element */}
+                <video
+                  ref={videoRef}
+                  src="/demo-walkthrough.mp4"
+                  playsInline
+                  preload="metadata"
+                  className="w-full h-full object-cover cursor-pointer"
+                  onClick={togglePlay}
+                  onPlay={() => setIsPlaying(true)}
+                  onPause={() => setIsPlaying(false)}
+                  onTimeUpdate={(e) => setCurrentTime(e.target.currentTime)}
+                  onLoadedMetadata={(e) => setDuration(e.target.duration || 90)}
+                  onEnded={() => {
+                    setIsPlaying(false)
+                    setHasEnded(true)
+                  }}
+                  onError={() => setVideoError(true)}
+                />
+
+                {/* Big Center Play / Restart overlay button when paused or ended */}
+                {(!isPlaying || hasEnded) && (
+                  <button
+                    type="button"
+                    onClick={togglePlay}
+                    className="absolute inset-0 m-auto w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-brand-orange/95 hover:bg-brand-orange text-white flex items-center justify-center shadow-2xl transition-transform hover:scale-105 active:scale-95 cursor-pointer z-10"
+                    aria-label={hasEnded ? 'Replay walkthrough' : 'Play walkthrough'}
+                  >
+                    {hasEnded ? (
+                      <FiRotateCcw className="w-7 h-7 sm:w-8 sm:h-8" />
+                    ) : (
+                      <FiPlay className="w-7 h-7 sm:w-8 sm:h-8 fill-current ml-1" />
+                    )}
+                  </button>
+                )}
+
+                {/* Custom Overlay Controls Bar */}
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-3 sm:p-4 pt-6 flex flex-col gap-2 z-10">
+                  {/* Progress scrubber */}
+                  <input
+                    type="range"
+                    min="0"
+                    max={duration || 90}
+                    step="0.1"
+                    value={currentTime}
+                    onChange={handleSeek}
+                    className="w-full h-1.5 bg-slate-700/80 rounded-lg appearance-none cursor-pointer accent-brand-orange"
+                    aria-label="Video scrubber"
+                  />
+
+                  {/* Controls row */}
+                  <div className="flex items-center justify-between text-xs sm:text-sm font-medium">
+                    <div className="flex items-center gap-3">
+                      <button
+                        type="button"
+                        onClick={togglePlay}
+                        className="hover:text-brand-orange transition-colors cursor-pointer"
+                        aria-label={isPlaying ? 'Pause' : 'Play'}
+                      >
+                        {isPlaying ? (
+                          <FiPause className="w-4 h-4 fill-current" />
+                        ) : hasEnded ? (
+                          <FiRotateCcw className="w-4 h-4" />
+                        ) : (
+                          <FiPlay className="w-4 h-4 fill-current" />
+                        )}
+                      </button>
+
+                      <button
+                        type="button"
+                        onClick={toggleMute}
+                        className="hover:text-brand-orange transition-colors cursor-pointer"
+                        aria-label={isMuted ? 'Unmute' : 'Mute'}
+                      >
+                        {isMuted ? (
+                          <FiVolumeX className="w-4 h-4" />
+                        ) : (
+                          <FiVolume2 className="w-4 h-4" />
+                        )}
+                      </button>
+
+                      <span className="font-mono text-[11px] sm:text-xs text-slate-300">
+                        {formatTime(currentTime)} / {formatTime(duration)}
+                      </span>
+                    </div>
+
+                    <div className="flex items-center gap-3">
+                      <span className="text-[10px] sm:text-[11px] font-mono px-2 py-0.5 rounded bg-slate-800/80 text-slate-300 border border-slate-700">
+                        1080p HD
+                      </span>
+                      <button
+                        type="button"
+                        onClick={toggleFullscreen}
+                        className="hover:text-brand-orange transition-colors cursor-pointer"
+                        aria-label="Toggle fullscreen"
+                      >
+                        <FiMaximize className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </div>
                 </div>
               </div>
 

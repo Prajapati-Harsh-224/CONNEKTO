@@ -41,3 +41,4 @@ screenshots/
 reference/
 backend/test_connekto_e2e.py
 
+.vercel

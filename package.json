@@ -1,6 +1,7 @@
 {
   "name": "connekto",
   "scripts": {
+    "build": "cd frontend && npm install && npm run build",
     "tunnel": "npx ngrok http 5173",
     "tunnel:backend": "npx ngrok http 4000",
     "tunnel:docker": "docker compose --profile tunnel up ngrok"
