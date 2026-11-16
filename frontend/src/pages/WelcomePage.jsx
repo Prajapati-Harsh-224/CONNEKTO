@@ -19,12 +19,13 @@ import {
   FiSend,
 } from 'react-icons/fi'
 import { useLocale } from '../context/LocaleContext.jsx'
+import heroBg from '../assets/hero_bg.jpg'
 
 const HERO_TRANSLATIONS = {
   en: {
     badge: 'B2B Multi-Supplier Marketplace & Management Platform',
     headlinePrefix: 'Every Shop to Every ',
-    headlineHighlight: 'FMCG Supplier',
+    headlineHighlight: 'Supplier',
     headlineSuffix: ' — In One App.',
     subheadline:
       'Compare wholesale prices across multiple distributors, combine items into one consolidated cart, and restock your shop in minutes — all in your preferred language.',
@@ -40,7 +41,7 @@ const HERO_TRANSLATIONS = {
   gu: {
     badge: 'B2B મલ્ટી-સપ્લાયર માર્કેટપ્લેસ અને મેનેજમેન્ટ પ્લેટફોર્મ',
     headlinePrefix: 'દરેક દુકાનથી દરેક ',
-    headlineHighlight: 'FMCG સપ્લાયર',
+    headlineHighlight: 'સપ્લાયર',
     headlineSuffix: ' સુધી — એક જ એપમાં.',
     subheadline:
       'અનેક ડિસ્ટ્રિબ્યુટર્સના જથ્થાબંધ ભાવોની તુલના કરો, એક જ કાર્ટમાં ઓર્ડર ભેગા કરો અને મિનિટોમાં તમારી દુકાનનો સ્ટોક ભરો — બધું તમારી મનપસંદ ભાષામાં.',
@@ -56,7 +57,7 @@ const HERO_TRANSLATIONS = {
   hi: {
     badge: 'B2B मल्टी-सप्लायर मार्केटप्लेस और मैनेजमेंट प्लेटफॉर्म',
     headlinePrefix: 'हर दुकान से हर ',
-    headlineHighlight: 'FMCG सप्लायर',
+    headlineHighlight: 'सप्लायर',
     headlineSuffix: ' तक — अब एक ही ऐप में।',
     subheadline:
       'कई डिस्ट्रीब्यूटर्स के थोक दामों की तुलना करें, एक ही कार्ट में ऑर्डर जोड़ें और मिनटों में अपनी दुकान का स्टॉक पूरा करें।',
@@ -258,93 +259,82 @@ export default function WelcomePage() {
   return (
     <div className="min-h-[100dvh] w-full overflow-x-hidden bg-white flex flex-col justify-between text-slate-900 selection:bg-orange-500/20 selection:text-orange-600">
 
-      {/* ── HERO SECTION (Crisp Orange & White) ── */}
+      {/* ── HERO SECTION (Left-Aligned with Clear Grocery Shelves Background) ── */}
       <section
-        className="relative w-full overflow-hidden min-h-[100dvh] pt-6 sm:pt-10 lg:pt-16 pb-12 sm:pb-16 lg:pb-24 flex items-center snap-start scroll-mt-20 bg-white bg-gradient-to-b from-orange-50/70 via-white to-white"
+        className="relative w-full overflow-hidden min-h-[460px] lg:min-h-[520px] pt-4 sm:pt-6 lg:pt-8 pb-10 sm:pb-14 lg:pb-18 flex items-center snap-start scroll-mt-20 bg-white"
         id="home"
         aria-label="Hero"
       >
-        {/* Soft, subtle warm orange highlights */}
-        <div
-          className="absolute top-1/4 left-1/4 -translate-x-1/2 -translate-y-1/2 w-96 sm:w-[580px] h-96 sm:h-[580px] bg-gradient-to-tr from-orange-100/60 via-amber-50/20 to-transparent rounded-full blur-3xl pointer-events-none"
-          aria-hidden="true"
-        />
-        <div
-          className="absolute top-1/3 right-1/4 w-80 sm:w-[500px] h-80 sm:h-[500px] bg-gradient-to-bl from-orange-100/50 via-amber-50/15 to-transparent rounded-full blur-3xl pointer-events-none"
-          aria-hidden="true"
-        />
-        <div
-          className="absolute bottom-6 left-1/3 w-72 sm:w-[420px] h-72 sm:h-[420px] bg-gradient-to-t from-orange-50/60 to-transparent rounded-full blur-3xl pointer-events-none"
-          aria-hidden="true"
-        />
-        <div
-          className="absolute inset-0 bg-[radial-gradient(#f9731612_1px,transparent_1px)] [background-size:24px_24px] pointer-events-none opacity-60"
-          aria-hidden="true"
-        />
+        {/* Hero Background Image - Vivid & Clear Store Shelves */}
+        <div className="absolute inset-0 z-0 pointer-events-none overflow-hidden" aria-hidden="true">
+          <img
+            src={heroBg}
+            alt=""
+            className="w-full h-full object-cover object-[78%_center] sm:object-[72%_center] lg:object-right opacity-85 sm:opacity-90 select-none"
+          />
+          {/* Left-to-right gradient: soft white wash on the left to ensure crisp text readability, fully transparent on the right so the store shelves are vivid */}
+          <div className="absolute inset-0 bg-gradient-to-r from-white via-white/80 to-transparent lg:w-[65%]" />
+          {/* Subtle bottom blend into next section */}
+          <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-white/90" />
+        </div>
 
-        {/* Hero Content Layer - Centered and Prominent without Mobile Mockup */}
-        <div className="relative z-10 max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 w-full text-center flex flex-col items-center space-y-6 sm:space-y-7">
-          {/* Top Pill Badge */}
-          <div>
-            <span className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-xs sm:text-sm font-bold tracking-wide text-orange-600 bg-orange-50 border border-orange-200 shadow-2xs">
-              <span className="text-orange-500">✦</span>
-              <span>{hero.badge}</span>
-            </span>
-          </div>
+        {/* Hero Content Layer - Left-aligned on the screen */}
+        <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
+          <div className="max-w-2xl lg:max-w-xl flex flex-col items-start text-left space-y-4 sm:space-y-5">
+            {/* Main Headline */}
+            <h1 className="text-3xl sm:text-5xl lg:text-5xl xl:text-6xl font-black text-slate-900 tracking-tight leading-[1.14]">
+              {hero.headlinePrefix}<span className="text-orange-600">{hero.headlineHighlight}</span>{hero.headlineSuffix}
+            </h1>
 
-          {/* Main Headline */}
-          <h1 className="text-3xl sm:text-5xl lg:text-6xl font-black text-slate-900 tracking-tight leading-[1.14] max-w-3xl">
-            {hero.headlinePrefix}<span className="text-orange-600">{hero.headlineHighlight}</span>{hero.headlineSuffix}
-          </h1>
+            {/* Subheadline */}
+            <p className="text-base sm:text-lg lg:text-xl text-slate-700 font-medium leading-relaxed">
+              {hero.subheadline}
+            </p>
 
-          {/* Subheadline */}
-          <p className="text-base sm:text-xl text-slate-600 font-medium leading-relaxed max-w-2xl mx-auto">
-            {hero.subheadline}
-          </p>
+            {/* Feature Highlights (Quick Pills/Bullets) */}
+            <div className="flex flex-wrap items-center justify-start gap-2 sm:gap-2.5 text-xs sm:text-sm pt-1">
+              {hero.features.map((feat, idx) => (
+                <span
+                  key={idx}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-1.5 rounded-lg bg-white/90 backdrop-blur-xs border border-orange-200/90 text-orange-800 font-medium shadow-2xs"
+                >
+                  <FiCheck className="w-4 h-4 text-orange-500 shrink-0" />
+                  <span>{feat}</span>
+                </span>
+              ))}
+            </div>
 
-          {/* Feature Highlights (Quick Pills/Bullets inside Hero) */}
-          <div className="flex flex-wrap justify-center gap-2.5 text-xs sm:text-sm pt-1">
-            {hero.features.map((feat, idx) => (
-              <span
-                key={idx}
-                className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-orange-50 border border-orange-200/80 text-orange-800 font-medium shadow-2xs"
+            {/* Action CTAs */}
+            <div className="flex flex-wrap items-center justify-start gap-3 sm:gap-3.5 pt-2 w-full sm:w-auto">
+              {/* Primary CTA Button: Start Ordering as a Shop */}
+              <Link
+                className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl text-sm sm:text-base font-semibold !text-white text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 shadow-md shadow-orange-500/25 active:scale-95 transition-all w-full sm:w-auto text-center"
+                to="/signup?role=SHOP_OWNER"
               >
-                <FiCheck className="w-4 h-4 text-orange-500 shrink-0" />
-                <span>{feat}</span>
-              </span>
-            ))}
-          </div>
+                <span className="!text-white text-white">{hero.primaryCta}</span>
+                <FiArrowRight className="w-4 h-4 sm:w-5 sm:h-5 !text-white text-white" />
+              </Link>
 
-          {/* Action CTAs */}
-          <div className="flex flex-wrap items-center justify-center gap-3.5 pt-2 w-full sm:w-auto">
-            {/* Primary CTA Button: Start Ordering as a Shop */}
-            <Link
-              className="inline-flex items-center justify-center gap-2 px-7 py-3.5 rounded-xl text-sm sm:text-base font-semibold !text-white text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 shadow-md shadow-orange-500/25 active:scale-95 transition-all w-full sm:w-auto"
-              to="/signup?role=SHOP_OWNER"
-            >
-              <span className="!text-white text-white">{hero.primaryCta}</span>
-              <FiArrowRight className="w-4 h-4 sm:w-5 sm:h-5 !text-white text-white" />
-            </Link>
+              {/* Secondary CTA Button: Join as a Supplier */}
+              <Link
+                className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-3.5 rounded-xl text-sm sm:text-base font-semibold text-orange-600 bg-white/95 backdrop-blur-xs hover:bg-orange-50 border border-orange-200 shadow-2xs active:scale-95 transition-all w-full sm:w-auto text-center"
+                to="/signup?role=SUPPLIER"
+              >
+                <span>{hero.secondaryCta}</span>
+              </Link>
 
-            {/* Secondary CTA Button: Join as a Supplier */}
-            <Link
-              className="inline-flex items-center justify-center gap-2 px-6 py-3.5 rounded-xl text-sm sm:text-base font-semibold text-orange-600 bg-white hover:bg-orange-50 border border-orange-200 shadow-2xs active:scale-95 transition-all w-full sm:w-auto"
-              to="/signup?role=SUPPLIER"
-            >
-              <span>{hero.secondaryCta}</span>
-            </Link>
-
-            {/* Video Action: Watch Demo */}
-            <button
-              type="button"
-              onClick={() => setIsVideoModalOpen(true)}
-              className="inline-flex items-center justify-center gap-2 px-5 py-3.5 rounded-xl text-xs sm:text-sm font-semibold text-orange-600 bg-white hover:bg-orange-50 border border-orange-200 shadow-2xs active:scale-95 transition-all cursor-pointer group w-full sm:w-auto"
-            >
-              <span className="w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
-                <FiPlay className="w-2.5 h-2.5 fill-current ml-0.5" />
-              </span>
-              <span>{hero.demoCta}</span>
-            </button>
+              {/* Video Action: Watch Demo */}
+              <button
+                type="button"
+                onClick={() => setIsVideoModalOpen(true)}
+                className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm font-semibold text-orange-600 bg-white/95 backdrop-blur-xs hover:bg-orange-50 border border-orange-200 shadow-2xs active:scale-95 transition-all cursor-pointer group w-full sm:w-auto text-center"
+              >
+                <span className="w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <FiPlay className="w-2.5 h-2.5 fill-current ml-0.5" />
+                </span>
+                <span>{hero.demoCta}</span>
+              </button>
+            </div>
           </div>
         </div>
       </section>
