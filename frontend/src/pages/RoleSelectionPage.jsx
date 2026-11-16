@@ -39,7 +39,7 @@ export default function RoleSelectionPage() {
   }
 
   return (
-    <section className="w-full min-h-[calc(100vh-4rem)] lg:h-[calc(100vh-4rem)] lg:max-h-[calc(100vh-4rem)] lg:overflow-hidden max-w-7xl xl:max-w-[1360px] 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-3 sm:py-5 lg:py-6 flex flex-col justify-center">
+    <section className="w-full min-h-[calc(100vh-4rem)] max-w-7xl xl:max-w-[1360px] 2xl:max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 py-5 sm:py-7 lg:py-8 flex flex-col justify-center">
       <div className="grid grid-cols-1 lg:grid-cols-[minmax(0,0.88fr)_minmax(0,1.12fr)] gap-6 lg:gap-10 xl:gap-12 items-stretch w-full">
         {/* Left Column: Context, Features, Quote */}
         <div className="flex flex-col justify-between h-full max-w-xl lg:max-w-none">

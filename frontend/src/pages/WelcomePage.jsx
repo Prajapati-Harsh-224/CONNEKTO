@@ -282,12 +282,12 @@ export default function WelcomePage() {
         <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full">
           <div className="max-w-2xl lg:max-w-xl flex flex-col items-start text-left space-y-4 sm:space-y-5">
             {/* Main Headline */}
-            <h1 className="text-3xl sm:text-5xl lg:text-5xl xl:text-6xl font-black text-slate-900 tracking-tight leading-[1.14]">
+            <h1 className="text-3xl min-[400px]:text-4xl sm:text-5xl lg:text-5xl xl:text-6xl font-black text-slate-900 tracking-tight leading-[1.14] break-words">
               {hero.headlinePrefix}<span className="text-orange-600">{hero.headlineHighlight}</span>{hero.headlineSuffix}
             </h1>
 
             {/* Subheadline */}
-            <p className="text-base sm:text-lg lg:text-xl text-slate-700 font-medium leading-relaxed">
+            <p className="text-sm sm:text-lg lg:text-xl text-slate-700 font-medium leading-relaxed">
               {hero.subheadline}
             </p>
 
@@ -296,7 +296,7 @@ export default function WelcomePage() {
               {hero.features.map((feat, idx) => (
                 <span
                   key={idx}
-                  className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-1.5 rounded-lg bg-white/90 backdrop-blur-xs border border-orange-200/90 text-orange-800 font-medium shadow-2xs"
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 sm:px-3.5 sm:py-1.5 rounded-lg bg-white/95 backdrop-blur-xs border border-orange-200/90 text-orange-800 font-medium shadow-2xs"
                 >
                   <FiCheck className="w-4 h-4 text-orange-500 shrink-0" />
                   <span>{feat}</span>
@@ -308,7 +308,7 @@ export default function WelcomePage() {
             <div className="flex flex-wrap items-center justify-start gap-3 sm:gap-3.5 pt-2 w-full sm:w-auto">
               {/* Primary CTA Button: Start Ordering as a Shop */}
               <Link
-                className="inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl text-sm sm:text-base font-semibold !text-white text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 shadow-md shadow-orange-500/25 active:scale-95 transition-all w-full sm:w-auto text-center"
+                className="min-h-[48px] inline-flex items-center justify-center gap-2 px-6 sm:px-7 py-3 sm:py-3.5 rounded-xl text-sm sm:text-base font-semibold !text-white text-white bg-orange-500 hover:bg-orange-600 active:bg-orange-700 shadow-md shadow-orange-500/25 active:scale-95 transition-all w-full sm:w-auto text-center"
                 to="/signup?role=SHOP_OWNER"
               >
                 <span className="!text-white text-white">{hero.primaryCta}</span>
@@ -317,7 +317,7 @@ export default function WelcomePage() {
 
               {/* Secondary CTA Button: Join as a Supplier */}
               <Link
-                className="inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-3.5 rounded-xl text-sm sm:text-base font-semibold text-orange-600 bg-white/95 backdrop-blur-xs hover:bg-orange-50 border border-orange-200 shadow-2xs active:scale-95 transition-all w-full sm:w-auto text-center"
+                className="min-h-[48px] inline-flex items-center justify-center gap-2 px-5 sm:px-6 py-3 sm:py-3.5 rounded-xl text-sm sm:text-base font-semibold text-orange-600 bg-white/95 backdrop-blur-xs hover:bg-orange-50 border border-orange-200 shadow-2xs active:scale-95 transition-all w-full sm:w-auto text-center"
                 to="/signup?role=SUPPLIER"
               >
                 <span>{hero.secondaryCta}</span>
@@ -327,9 +327,9 @@ export default function WelcomePage() {
               <button
                 type="button"
                 onClick={() => setIsVideoModalOpen(true)}
-                className="inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm font-semibold text-orange-600 bg-white/95 backdrop-blur-xs hover:bg-orange-50 border border-orange-200 shadow-2xs active:scale-95 transition-all cursor-pointer group w-full sm:w-auto text-center"
+                className="min-h-[48px] inline-flex items-center justify-center gap-2 px-4 sm:px-5 py-3 sm:py-3.5 rounded-xl text-xs sm:text-sm font-semibold text-orange-600 bg-white/95 backdrop-blur-xs hover:bg-orange-50 border border-orange-200 shadow-2xs active:scale-95 transition-all cursor-pointer group w-full sm:w-auto text-center"
               >
-                <span className="w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <span className="w-6 h-6 rounded-full bg-orange-100 text-orange-600 flex items-center justify-center group-hover:scale-110 transition-transform shrink-0">
                   <FiPlay className="w-2.5 h-2.5 fill-current ml-0.5" />
                 </span>
                 <span>{hero.demoCta}</span>
@@ -341,12 +341,12 @@ export default function WelcomePage() {
 
       {/* ── ABOUT SECTION ── */}
       <section
-        className="relative w-full h-auto min-h-0 max-h-none sm:min-h-[580px] flex flex-col sm:items-center justify-center snap-start scroll-mt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-6 sm:py-20 overflow-hidden"
+        className="relative w-full h-auto min-h-0 max-h-none sm:min-h-[580px] flex flex-col sm:items-center justify-center snap-start scroll-mt-20 px-4 sm:px-6 lg:px-8 max-w-7xl mx-auto py-8 sm:py-20 overflow-hidden"
         id="about"
         aria-labelledby="about-heading"
       >
         <div className="w-full flex flex-col justify-center">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 sm:gap-8 lg:gap-14 items-center">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 sm:gap-8 lg:gap-14 items-center">
             <div className="lg:col-span-7 space-y-2.5 sm:space-y-4">
               <span className="text-[11px] sm:text-xs font-bold uppercase tracking-wider text-brand-orange">{t('aboutEyebrow')}</span>
               <h2 id="about-heading" className="text-xl sm:text-4xl font-extrabold text-brand-navy leading-snug">{t('aboutHeading')}</h2>
@@ -358,7 +358,7 @@ export default function WelcomePage() {
               <p className="text-xs sm:text-base font-semibold text-brand-navy pt-1 sm:pt-2">{t('aboutClosing')}</p>
 
               {/* Compact Role Indicator for mobile */}
-              <div className="grid grid-cols-2 gap-2 pt-1 sm:hidden">
+              <div className="grid grid-cols-1 min-[380px]:grid-cols-2 gap-2 pt-1 sm:hidden">
                 <Link
                   to="/signup?role=SHOP_OWNER"
                   className="flex items-center gap-2 p-2 rounded-xl bg-orange-50/80 border border-orange-100 shadow-2xs hover:bg-orange-100/70 transition-all"
